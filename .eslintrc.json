@@ -1,3 +1,7 @@
 {
-  "extends": "next/core-web-vitals"
+  "extends": "next/core-web-vitals",
+  "rules": {
+    "@typescript-eslint/no-explicit-any": "off", // Desativa a regra que desautoriza o uso de any
+    "@typescript-eslint/explicit-module-boundary-types": "off" // Desativa a necessidade de tipar explicitamente funções públicas
+  }
 }
