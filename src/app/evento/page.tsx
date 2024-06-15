@@ -1,4 +1,6 @@
-'use client'
+// src/app/pagamento/page.tsx
+"use client";
+
 import { useState } from 'react';
 
 const CreateEventPage = () => {
