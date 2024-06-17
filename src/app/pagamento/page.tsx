@@ -3,8 +3,6 @@
 
 import { useState } from "react";
 import {
-  Box,
-  Button,
   TextField,
   MenuItem,
   Select,
@@ -13,6 +11,7 @@ import {
   Autocomplete,
   Tabs,
   Tab,
+  Button,
 } from "@mui/material";
 
 const CreatePaymentPage = () => {
@@ -61,88 +60,110 @@ const CreatePaymentPage = () => {
   };
 
   return (
-    <Box className="container">
-      <Box
-        component="form"
+    <div className="container mx-auto">
+      <form
         onSubmit={handleSubmit}
-        sx={{
-          p: 3,
-          borderRadius: 2,
-        }}
+        className="bg-white rounded-lg p-6 w-full md:max-w-md"
       >
-        <Autocomplete
-          options={projects}
-          getOptionLabel={(option) => option}
-          fullWidth
-          onInputChange={(event, newInputValue) => setProject(newInputValue)}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              label="Projeto"
-              variant="outlined"
-              required
-            />
-          )}
-        />
+
+        <div className="mb-4">
+          <Autocomplete
+            options={projects}
+            getOptionLabel={(option) => option}
+            fullWidth
+            onInputChange={(event, newInputValue) => setProject(newInputValue)}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                id="project"
+                label="Projeto"
+                variant="outlined"
+                required
+                className="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              />
+            )}
+            className="mt-2"
+          />
+        </div>
+
         {project && (
-          <FormControl fullWidth margin="normal">
-            <InputLabel>Item Orçamentário</InputLabel>
-            <Select
-              value={budgetItem}
-              onChange={(e) => setBudgetItem(e.target.value)}
-              label="Item Orçamentário"
-              required
-            >
-              {budgetItems.map((item) => (
-                <MenuItem key={item} value={item}>
-                  {item}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+           <div className="mb-4">
+           <Autocomplete
+             options={budgetItems}
+             getOptionLabel={(option) => option}
+             fullWidth
+             onInputChange={(event, newInputValue) => setBudgetItem(newInputValue)}
+             renderInput={(params) => (
+               <TextField
+                 {...params}
+                 id="budgetItem"
+                 label="Item Orçamentário"
+                 variant="outlined"
+                 required
+                 className="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+               />
+             )}
+             className="mt-2"
+           />
+         </div>
         )}
-        <Autocomplete
-          options={suppliers}
-          getOptionLabel={(option) => option}
-          fullWidth
-          onInputChange={(event, newInputValue) => setSupplier(newInputValue)}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              label="Fornecedor"
-              variant="outlined"
-              required
-            />
-          )}
-        />
-        <TextField
-          label="Valor"
-          fullWidth
-          margin="normal"
-          value={amount}
-          onChange={handleAmountChange}
-          required
-        />
-        <TextField
-          label="Descrição"
-          fullWidth
-          margin="normal"
-          multiline
-          rows={4}
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
+
+        <div className="mb-4">
+          <Autocomplete
+            options={suppliers}
+            getOptionLabel={(option) => option}
+            fullWidth
+            onInputChange={(event, newInputValue) => setSupplier(newInputValue)}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                id="supplier"
+                label="Fornecedor"
+                variant="outlined"
+                required
+                className="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              />
+            )}
+            className="mt-2"
+          />
+        </div>
+
+        <div className="mb-4">
+          <TextField
+            id="amount"
+            label="Valor"
+            fullWidth
+            value={amount}
+            onChange={handleAmountChange}
+            required
+            className="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          />
+        </div>
+
+        <div className="mb-4">
+          <TextField
+            id="description"
+            label="Descrição"
+            fullWidth
+            multiline
+            rows={4}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          />
+        </div>
+
         <Button
           type="submit"
           variant="contained"
           color="primary"
           fullWidth
-          sx={{ mt: 3 }}
+          className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
         >
           Salvar
         </Button>
-      </Box>
-    </Box>
+      </form>
+    </div>
   );
 };
 
