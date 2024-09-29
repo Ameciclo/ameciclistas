@@ -69,13 +69,13 @@ export default function SolicitarPagamento() {
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <h2 className="text-2xl font-bold text-teal-600">💰 Solicitar Pagamento</h2>
+    <div className="container">
+      <h2 className="text-primary">💰 Solicitar Pagamento</h2>
 
-      <div className="form-group mb-4">
-        <label className="font-bold">Projeto:</label>
+      <div className="form-group">
+        <label className="form-label">Projeto:</label>
         <select
-          className="w-full p-2 border border-gray-300 rounded-md"
+          className="form-input"
           value={projetoSelecionado?.id || ""}
           onChange={(e) => {
             const projeto = projetosEmAndamento.find((p) => p.id === Number(e.target.value));
@@ -93,10 +93,10 @@ export default function SolicitarPagamento() {
       </div>
 
       {projetoSelecionado && (
-        <div className="form-group mb-4">
-          <label className="font-bold">Rubrica:</label>
+        <div className="form-group">
+          <label className="form-label">Rubrica:</label>
           <select
-            className="w-full p-2 border border-gray-300 rounded-md"
+            className="form-input"
             value={rubricaSelecionada?.id || ""}
             onChange={(e) => {
               const rubrica = projetoSelecionado.rubricas.find(
@@ -115,8 +115,8 @@ export default function SolicitarPagamento() {
         </div>
       )}
 
-      <div className="form-group mb-4">
-        <label className="font-bold">Fornecedor:</label>
+      <div className="form-group">
+        <label className="form-label">Fornecedor:</label>
         <FornecedorAutocomplete
           fornecedores={fornecedoresMock}
           value={fornecedor}
@@ -124,31 +124,25 @@ export default function SolicitarPagamento() {
         />
       </div>
 
-      <div className="form-group mb-4">
-        <label className="font-bold">Descrição:</label>
+      <div className="form-group">
+        <label className="form-label">Descrição:</label>
         <textarea
-          className="w-full p-2 border border-gray-300 rounded-md"
+          className="form-input"
           value={descricao}
           onChange={(e) => setDescricao(e.target.value)}
           rows={4}
         ></textarea>
       </div>
 
-      <div className="form-group mb-4">
-        <label className="font-bold">Valor:</label>
+      <div className="form-group">
+        <label className="form-label">Valor:</label>
         <ValorInput valor={valor} setValor={setValor} />
       </div>
 
-      <button
-        className="bg-teal-600 text-white p-3 rounded-md hover:bg-teal-700"
-        onClick={handleSubmit}
-      >
+      <button className="button-full" onClick={handleSubmit}>
         Enviar Solicitação
       </button>
-      <button
-        className="bg-gray-600 text-white p-3 rounded-md ml-2 hover:bg-gray-700"
-        onClick={() => navigate(-1)}
-      >
+      <button className="button-secondary-full" onClick={() => navigate(-1)}>
         ⬅️ Voltar
       </button>
     </div>
