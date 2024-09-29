@@ -6,3 +6,52 @@ html,
 body {
   @apply bg-white font-sans; 
 }
+
+/* Estilos customizados */
+.container {
+  @apply mx-auto p-4 max-w-lg;
+}
+
+.form-group {
+  @apply mb-4;
+}
+
+.form-label {
+  @apply font-bold text-gray-700;
+}
+
+.form-input {
+  @apply w-full p-2 border border-gray-300 rounded-md;
+}
+
+.button-primary {
+  @apply bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700 transition-colors;
+}
+
+.button-secondary {
+  @apply bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition-colors;
+}
+
+.button-secondary-full {
+  @apply w-full bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-red-500 transition-colors mb-4 text-lg;
+}
+
+.button-full {
+  @apply w-full bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-red-500 transition-colors mb-4 text-lg;
+}
+
+.text-primary {
+  @apply text-teal-600 font-bold;
+}
+
+h1, h2 {
+  @apply text-teal-600 font-bold;
+}
+
+h1 {
+  @apply text-3xl;
+}
+
+h2 {
+  @apply text-2xl;
+}

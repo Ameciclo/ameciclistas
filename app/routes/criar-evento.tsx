@@ -42,43 +42,43 @@ export default function CriarEvento() {
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <h2 className="text-2xl font-bold text-teal-600">📅 Criar Evento</h2>
+    <div className="container">
+      <h2 className="text-primary">📅 Criar Evento</h2>
 
-      <div className="form-group mb-4">
-        <label className="font-bold">Título do Evento:</label>
+      <div className="form-group">
+        <label className="form-label">Título do Evento:</label>
         <input
-          className="w-full p-2 border border-gray-300 rounded-md"
+          className="form-input"
           type="text"
           value={titulo}
           onChange={(e) => setTitulo(e.target.value)}
         />
       </div>
 
-      <div className="form-group mb-4">
-        <label className="font-bold">Data:</label>
+      <div className="form-group">
+        <label className="form-label">Data:</label>
         <input
-          className="w-full p-2 border border-gray-300 rounded-md"
+          className="form-input"
           type="date"
           value={data}
           onChange={(e) => setData(e.target.value)}
         />
       </div>
 
-      <div className="form-group mb-4">
-        <label className="font-bold">Hora:</label>
+      <div className="form-group">
+        <label className="form-label">Hora:</label>
         <input
-          className="w-full p-2 border border-gray-300 rounded-md"
+          className="form-input"
           type="time"
           value={hora}
           onChange={(e) => setHora(e.target.value)}
         />
       </div>
 
-      <div className="form-group mb-4">
-        <label className="font-bold">Duração (em horas):</label>
+      <div className="form-group">
+        <label className="form-label">Duração (em horas):</label>
         <input
-          className="w-full p-2 border border-gray-300 rounded-md"
+          className="form-input"
           type="number"
           value={duracao}
           onChange={(e) => setDuracao(e.target.value)}
@@ -88,20 +88,20 @@ export default function CriarEvento() {
         />
       </div>
 
-      <div className="form-group mb-4">
-        <label className="font-bold">Descrição:</label>
+      <div className="form-group">
+        <label className="form-label">Descrição:</label>
         <textarea
-          className="w-full p-2 border border-gray-300 rounded-md"
+          className="form-input"
           value={descricao}
           onChange={(e) => setDescricao(e.target.value)}
           rows={4}
         ></textarea>
       </div>
 
-      <div className="form-group mb-4">
-        <label className="font-bold">Agenda:</label>
+      <div className="form-group">
+        <label className="form-label">Agenda:</label>
         <select
-          className="w-full p-2 border border-gray-300 rounded-md"
+          className="form-input"
           value={agenda}
           onChange={(e) => setAgenda(e.target.value)}
         >
@@ -114,16 +114,10 @@ export default function CriarEvento() {
         </select>
       </div>
 
-      <button
-        className="bg-teal-600 text-white p-3 rounded-md hover:bg-teal-700"
-        onClick={handleSubmit}
-      >
+      <button className="button-full" onClick={handleSubmit}>
         Criar Evento
       </button>
-      <button
-        className="bg-gray-600 text-white p-3 rounded-md ml-2 hover:bg-gray-700"
-        onClick={() => navigate(-1)}
-      >
+      <button className="button-secondary-full" onClick={() => navigate(-1)}>
         ⬅️ Voltar
       </button>
     </div>
