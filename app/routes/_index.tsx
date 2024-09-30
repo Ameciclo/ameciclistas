@@ -25,7 +25,7 @@ export default function Index() {
             🔗 Lista de Links Úteis
           </button>
         </Link>
-        <Link to="/grupos-de-trabalho">
+        <Link to="/user">
           <button className="button-full">
             👥 Grupos de Trabalho
           </button>
