@@ -46,26 +46,31 @@ export default function SolicitarPagamento() {
   const projetosEmAndamento = projetosMock.filter((p) => p.status === "em andamento");
 
   useEffect(() => {
-    const telegram = (window as any).Telegram.WebApp;
-    const userId = telegram.initDataUnsafe.user?.id;
-    const allowedUserIds = [123456789, 987654321];
+    const telegram = (window as any)?.Telegram?.WebApp;
+    const userId = telegram?.initDataUnsafe?.user?.id;
 
+    const allowedUserIds = [123456789, 987654321];
     if (!allowedUserIds.includes(userId)) {
-      telegram.close();
+      telegram?.close();
     }
   }, []);
 
   const handleSubmit = () => {
-    const data = {
-      projeto: projetoSelecionado?.nome,
-      rubrica: rubricaSelecionada?.nome,
-      fornecedor,
-      descricao,
-      valor,
-    };
+    try {
+      const data = {
+        projeto: projetoSelecionado?.nome,
+        rubrica: rubricaSelecionada?.nome,
+        fornecedor,
+        descricao,
+        valor,
+      };
 
-    const telegram = (window as any).Telegram.WebApp;
-    telegram.sendData(JSON.stringify(data));
+      const telegram = (window as any)?.Telegram?.WebApp;
+      telegram?.sendData(JSON.stringify(data));
+    } catch (error) {
+      console.error("Erro ao enviar dados:", error);
+      // Adicione uma mensagem de erro ao usuário, se desejado
+    }
   };
 
   return (
