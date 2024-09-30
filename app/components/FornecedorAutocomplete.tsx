@@ -1,5 +1,3 @@
-// app/components/FornecedorAutocomplete.tsx
-
 import React, { useState } from "react";
 import Autosuggest from "react-autosuggest";
 
