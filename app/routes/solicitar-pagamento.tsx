@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "@remix-run/react";
-import ValorInput from '~/components/ValorInput';
+import ValorInput from "~/components/ValorInput";
 import FornecedorAutocomplete from "~/components/FornecedorAutocomplete";
 
 interface Projeto {
@@ -20,13 +20,19 @@ const projetosMock: Projeto[] = [
     id: 1,
     nome: "Projeto A",
     status: "em andamento",
-    rubricas: [{ id: 1, nome: "Rubrica A1" }, { id: 2, nome: "Rubrica A2" }],
+    rubricas: [
+      { id: 1, nome: "Rubrica A1" },
+      { id: 2, nome: "Rubrica A2" },
+    ],
   },
   {
     id: 2,
     nome: "Projeto B",
     status: "concluído",
-    rubricas: [{ id: 3, nome: "Rubrica B1" }, { id: 4, nome: "Rubrica B2" }],
+    rubricas: [
+      { id: 3, nome: "Rubrica B1" },
+      { id: 4, nome: "Rubrica B2" },
+    ],
   },
 ];
 
@@ -37,13 +43,19 @@ const fornecedoresMock = [
 
 export default function SolicitarPagamento() {
   const navigate = useNavigate();
-  const [projetoSelecionado, setProjetoSelecionado] = useState<Projeto | null>(null);
-  const [rubricaSelecionada, setRubricaSelecionada] = useState<Rubrica | null>(null);
+  const [projetoSelecionado, setProjetoSelecionado] = useState<Projeto | null>(
+    null
+  );
+  const [rubricaSelecionada, setRubricaSelecionada] = useState<Rubrica | null>(
+    null
+  );
   const [descricao, setDescricao] = useState("");
   const [valor, setValor] = useState("");
   const [fornecedor, setFornecedor] = useState("");
 
-  const projetosEmAndamento = projetosMock.filter((p) => p.status === "em andamento");
+  const projetosEmAndamento = projetosMock.filter(
+    (p) => p.status === "em andamento"
+  );
 
   useEffect(() => {
     const telegram = (window as any)?.Telegram?.WebApp;
@@ -83,7 +95,9 @@ export default function SolicitarPagamento() {
           className="form-input"
           value={projetoSelecionado?.id || ""}
           onChange={(e) => {
-            const projeto = projetosEmAndamento.find((p) => p.id === Number(e.target.value));
+            const projeto = projetosEmAndamento.find(
+              (p) => p.id === Number(e.target.value)
+            );
             setProjetoSelecionado(projeto || null);
             setRubricaSelecionada(null);
           }}
