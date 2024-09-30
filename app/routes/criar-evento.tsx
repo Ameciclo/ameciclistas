@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
 import { useNavigate } from "@remix-run/react";
+import { useState, useEffect } from "react";
 
 export default function CriarEvento() {
   const navigate = useNavigate();
@@ -18,27 +18,32 @@ export default function CriarEvento() {
   ];
 
   useEffect(() => {
-    const telegram = (window as any).Telegram.WebApp;
-    const userId = telegram.initDataUnsafe.user?.id;
+    const telegram = (window as any)?.Telegram?.WebApp;
+    const userId = telegram?.initDataUnsafe?.user?.id;
     const allowedUserIds = [123456789, 987654321];
 
     if (!allowedUserIds.includes(userId)) {
-      telegram.close();
+      telegram?.close();
     }
   }, []);
 
   const handleSubmit = () => {
-    const eventoData = {
-      titulo,
-      data,
-      hora,
-      duracao,
-      descricao,
-      agenda,
-    };
+    try {
+      const eventoData = {
+        titulo,
+        data,
+        hora,
+        duracao,
+        descricao,
+        agenda,
+      };
 
-    const telegram = (window as any).Telegram.WebApp;
-    telegram.sendData(JSON.stringify(eventoData));
+      const telegram = (window as any)?.Telegram?.WebApp;
+      telegram?.sendData(JSON.stringify(eventoData));
+    } catch (error) {
+      console.error("Erro ao enviar dados:", error);
+      // Adicione uma mensagem de erro ao usuário, se desejado
+    }
   };
 
   return (
