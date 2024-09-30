@@ -1,6 +1,4 @@
-// app/components/ValorInput.tsx
-
-import React, { useState } from 'react';
+import React from 'react';
 
 interface ValorInputProps {
   valor: string;

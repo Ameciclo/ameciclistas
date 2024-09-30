@@ -57,15 +57,28 @@ export default function SolicitarPagamento() {
     (p) => p.status === "em andamento"
   );
 
+
   useEffect(() => {
     const telegram = (window as any)?.Telegram?.WebApp;
-    const userId = telegram?.initDataUnsafe?.user?.id;
-
-    const allowedUserIds = [123456789, 987654321];
+    if (!telegram) {
+      console.warn('Telegram WebApp is not available.');
+      return;
+    }
+  
+    const userId = telegram.initDataUnsafe?.user?.id;
+    if (!userId) {
+      console.error('User ID is undefined. Closing the app.');
+      telegram.close();
+      return;
+    }
+  
+    const allowedUserIds = [157783985];
     if (!allowedUserIds.includes(userId)) {
-      telegram?.close();
+      console.error('User is not allowed. Closing the app.');
+      telegram.close();
     }
   }, []);
+  
 
   const handleSubmit = () => {
     try {
