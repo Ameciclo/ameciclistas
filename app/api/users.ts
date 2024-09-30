@@ -52,7 +52,7 @@ export const users: User[] = [
   {
     id: 179092489,
     name: "Lígia Lima",
-    categories: [UserCategory.AMECICLISTAS], // Apenas a categoria mais alta
+    categories: [UserCategory.ANY_USER], // Apenas a categoria mais alta
   },
   {
     id: 1049358865,
