@@ -1,0 +1,21 @@
+[
+    {
+      "id": 1,
+      "nome": "Fornecedor X",
+      "cpfCnpj": "123.456.789-00",
+      "email": "contato@fornecedorx.com",
+      "telefone": "(11) 99999-9999",
+      "chavePix": "contato@fornecedorx.com",
+      "tipoChavePix": "email"
+    },
+    {
+      "id": 2,
+      "nome": "Fornecedor Y",
+      "cpfCnpj": "987.654.321-00",
+      "email": "contato@fornecedory.com",
+      "telefone": "(21) 88888-8888",
+      "chavePix": "98765432100",
+      "tipoChavePix": "cpf/cnpj"
+    }
+  ]
+  

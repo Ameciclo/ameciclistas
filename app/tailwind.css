@@ -40,6 +40,16 @@ body {
   @apply w-full bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-red-500 transition-colors mb-4 text-lg;
 }
 
+/* Estilo para botões desativados */
+.button-disabled {
+  @apply bg-gray-400 text-gray-300 cursor-not-allowed opacity-50; /* Torna o botão mais claro e opaco */
+}
+
+/* Removendo hover para botões desativados */
+.button-disabled:hover {
+  @apply bg-gray-400; /* Mantém a mesma cor ao passar o mouse */
+}
+
 .text-primary {
   @apply text-teal-600 font-bold;
 }
