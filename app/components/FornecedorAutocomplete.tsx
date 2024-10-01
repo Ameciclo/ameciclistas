@@ -13,9 +13,12 @@ const FornecedorAutocomplete: React.FC<Props> = ({ fornecedores, value, onChange
 
   const getSuggestions = (inputValue: string) => {
     const lowercasedInput = inputValue.toLowerCase();
-    return fornecedores.filter(fornecedor =>
-      fornecedor.nome.toLowerCase().includes(lowercasedInput)
-    );
+    // Limitar a 5 sugestões
+    return fornecedores
+      .filter(fornecedor =>
+        fornecedor.nome.toLowerCase().includes(lowercasedInput)
+      )
+      .slice(0, 5);
   };
 
   const onSuggestionsFetchRequested = ({ value }: { value: string }) => {
@@ -28,7 +31,12 @@ const FornecedorAutocomplete: React.FC<Props> = ({ fornecedores, value, onChange
 
   const getSuggestionValue = (suggestion: Supplier) => suggestion.nome;
 
-  const renderSuggestion = (suggestion: Supplier) => <div>{suggestion.nome}</div>;
+  const renderSuggestion = (suggestion: Supplier) => (
+    <div style={{ cursor: "pointer" }}>
+      <span>➕ </span>
+      {suggestion.nome}
+    </div>
+  );
 
   return (
     <Autosuggest
@@ -40,7 +48,8 @@ const FornecedorAutocomplete: React.FC<Props> = ({ fornecedores, value, onChange
       inputProps={{
         value: value,
         onChange: (_event, { newValue }) => onChange(newValue),
-        placeholder: "Digite o nome do fornecedor"
+        placeholder: "Digite o nome do fornecedor",
+        className: "form-input", // Aplicando a mesma classe do input de data
       }}
     />
   );
