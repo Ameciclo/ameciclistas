@@ -2,83 +2,71 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "@remix-run/react";
 import ValorInput from "~/components/ValorInput";
 import FornecedorAutocomplete from "~/components/FornecedorAutocomplete";
-
-interface Projeto {
-  id: number;
-  nome: string;
-  status: string;
-  rubricas: Rubrica[];
-}
-
-interface Rubrica {
-  id: number;
-  nome: string;
-}
-
-const projetosMock: Projeto[] = [
-  {
-    id: 1,
-    nome: "Projeto A",
-    status: "em andamento",
-    rubricas: [
-      { id: 1, nome: "Rubrica A1" },
-      { id: 2, nome: "Rubrica A2" },
-    ],
-  },
-  {
-    id: 2,
-    nome: "Projeto B",
-    status: "concluído",
-    rubricas: [
-      { id: 3, nome: "Rubrica B1" },
-      { id: 4, nome: "Rubrica B2" },
-    ],
-  },
-];
-
-const fornecedoresMock = [
-  { label: "Fornecedor X", value: "Fornecedor X" },
-  { label: "Fornecedor Y", value: "Fornecedor Y" },
-];
+import { getUserCategories, UserCategory } from "../api/users";
+import Unauthorized from "~/components/Unauthorized";
+import { Project, Budget } from "~/api/types";
 
 export default function SolicitarPagamento() {
   const navigate = useNavigate();
-  const [projetoSelecionado, setProjetoSelecionado] = useState<Projeto | null>(
+  const [projetoSelecionado, setProjetoSelecionado] = useState<Project | null>(
     null
   );
-  const [rubricaSelecionada, setRubricaSelecionada] = useState<Rubrica | null>(
+  const [rubricaSelecionada, setRubricaSelecionada] = useState<Budget | null>(
     null
   );
   const [descricao, setDescricao] = useState("");
   const [valor, setValor] = useState("");
   const [fornecedor, setFornecedor] = useState("");
-
-  const projetosEmAndamento = projetosMock.filter(
-    (p) => p.status === "em andamento"
-  );
-
+  const [projetos, setProjetos] = useState<Project[]>([]);
+  const [fornecedores, setFornecedores] = useState<any[]>([]);
+  const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
-    const telegram = (window as any)?.Telegram?.WebApp;
-    if (!telegram) {
-      console.warn('Telegram WebApp is not available.');
-      return;
+    let userId;
+    const isDevelopment = process.env.NODE_ENV === "development";
+
+    if (isDevelopment) {
+      // Carregar o ID do usuário a partir do arquivo JSON em desenvolvimento
+      fetch("/devUserId.json")
+        .then((response) => response.json())
+        .then((data) => {
+          userId = data.userId;
+          checkPermissions(userId);
+        })
+        .catch((error) => {
+          console.error(
+            "Error loading the user ID from devUserId.json:",
+            error
+          );
+        });
+    } else {
+      const telegram = (window as any)?.Telegram?.WebApp;
+      userId = telegram?.initDataUnsafe?.user?.id;
+
+      if (!userId) {
+        console.error("User ID is undefined. Closing the app.");
+        telegram?.close();
+        return;
+      }
+      checkPermissions(userId);
     }
-  
-    const userId = telegram.initDataUnsafe?.user?.id;
-    if (!userId) {
-      console.error('User ID is undefined. Closing the app.');
-      telegram.close();
-      return;
-    }
-  
-    const allowedUserIds = [157783985];
-    if (!allowedUserIds.includes(userId)) {
-      console.error('User is not allowed. Closing the app.');
-      telegram.close();
-    }
+
+    // Carregar projetos e fornecedores
+    fetch("/app/api/projects.json")
+      .then((response) => response.json())
+      .then((data) => setProjetos(data))
+      .catch((error) => console.error("Failed to load projects:", error));
+
+    fetch("/app/api/suppliers.json")
+      .then((response) => response.json())
+      .then((data) => setFornecedores(data))
+      .catch((error) => console.error("Failed to load suppliers:", error));
   }, []);
-  
+
+  const checkPermissions = (userId: number) => {
+    const userCategories = getUserCategories(userId);
+    setIsAuthorized(userCategories.includes(UserCategory.AMECICLISTAS));
+  };
 
   const handleSubmit = () => {
     try {
@@ -94,9 +82,17 @@ export default function SolicitarPagamento() {
       telegram?.sendData(JSON.stringify(data));
     } catch (error) {
       console.error("Erro ao enviar dados:", error);
-      // Adicione uma mensagem de erro ao usuário, se desejado
     }
   };
+
+  if (!isAuthorized) {
+    return (
+      <Unauthorized
+        pageName="Solicitar Pagamento"
+        requiredPermission="AMECICLISTAS"
+      />
+    );
+  }
 
   return (
     <div className="container">
@@ -108,7 +104,7 @@ export default function SolicitarPagamento() {
           className="form-input"
           value={projetoSelecionado?.id || ""}
           onChange={(e) => {
-            const projeto = projetosEmAndamento.find(
+            const projeto = projetos.find(
               (p) => p.id === Number(e.target.value)
             );
             setProjetoSelecionado(projeto || null);
@@ -116,11 +112,13 @@ export default function SolicitarPagamento() {
           }}
         >
           <option value="">Selecione um projeto</option>
-          {projetosEmAndamento.map((projeto) => (
-            <option key={projeto.id} value={projeto.id}>
-              {projeto.nome}
-            </option>
-          ))}
+          {projetos
+            .filter((p) => p.status === "em andamento")
+            .map((projeto) => (
+              <option key={projeto.id} value={projeto.id}>
+                {projeto.nome}
+              </option>
+            ))}
         </select>
       </div>
 
@@ -150,7 +148,7 @@ export default function SolicitarPagamento() {
       <div className="form-group">
         <label className="form-label">Fornecedor:</label>
         <FornecedorAutocomplete
-          fornecedores={fornecedoresMock}
+          fornecedores={fornecedores}
           value={fornecedor}
           onChange={setFornecedor}
         />

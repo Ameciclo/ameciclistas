@@ -79,7 +79,7 @@ export default function Index() {
             🔗 Lista de Links Úteis
           </button>
         </Link>
-        <Link to="/user">
+        <Link to="/grupos-de-trabalho">
           <button
             className={`button-full ${
               !isAccessible(UserCategory.AMECICLISTAS) ? "button-disabled" : ""
@@ -97,6 +97,16 @@ export default function Index() {
             disabled={!isAccessible(UserCategory.AMECICLISTAS)}
           >
             📊 Projetos em Andamento
+          </button>
+        </Link>
+        <Link to="/user">
+          <button
+            className={`button-full ${
+              !isAccessible(UserCategory.ANY_USER) ? "button-disabled" : ""
+            }`}
+            disabled={!isAccessible(UserCategory.ANY_USER)}
+          >
+            ⚙️ Suas configurações
           </button>
         </Link>
       </div>

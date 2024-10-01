@@ -1,24 +1,20 @@
 import React, { useState } from "react";
 import Autosuggest from "react-autosuggest";
-
-interface Fornecedor {
-  label: string;
-  value: string;
-}
+import { Supplier } from "~/api/types";
 
 interface Props {
-  fornecedores: Fornecedor[];
+  fornecedores: Supplier[];
   value: string;
   onChange: (value: string) => void;
 }
 
 const FornecedorAutocomplete: React.FC<Props> = ({ fornecedores, value, onChange }) => {
-  const [suggestions, setSuggestions] = useState<Fornecedor[]>([]);
+  const [suggestions, setSuggestions] = useState<Supplier[]>([]);
 
   const getSuggestions = (inputValue: string) => {
     const lowercasedInput = inputValue.toLowerCase();
     return fornecedores.filter(fornecedor =>
-      fornecedor.label.toLowerCase().includes(lowercasedInput)
+      fornecedor.nome.toLowerCase().includes(lowercasedInput)
     );
   };
 
@@ -30,9 +26,9 @@ const FornecedorAutocomplete: React.FC<Props> = ({ fornecedores, value, onChange
     setSuggestions([]);
   };
 
-  const getSuggestionValue = (suggestion: Fornecedor) => suggestion.label;
+  const getSuggestionValue = (suggestion: Supplier) => suggestion.nome;
 
-  const renderSuggestion = (suggestion: Fornecedor) => <div>{suggestion.label}</div>;
+  const renderSuggestion = (suggestion: Supplier) => <div>{suggestion.nome}</div>;
 
   return (
     <Autosuggest

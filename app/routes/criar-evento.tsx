@@ -1,6 +1,7 @@
 import { useNavigate } from "@remix-run/react";
 import { useState, useEffect } from "react";
 import { getUserCategories, UserCategory } from "../api/users";
+import { Agenda } from "../api/types"; // Importe a interface Agenda
 
 export default function CriarEvento() {
   const navigate = useNavigate();
@@ -10,13 +11,8 @@ export default function CriarEvento() {
   const [duracao, setDuracao] = useState("");
   const [descricao, setDescricao] = useState("");
   const [agenda, setAgenda] = useState("");
+  const [agendas, setAgendas] = useState<Agenda[]>([]);
   const [isAuthorized, setIsAuthorized] = useState(false);
-  const agendas = [
-    "Eventos Internos",
-    "Eventos Externos",
-    "Divulgação de Eventos",
-    "Organizacionais",
-  ];
 
   useEffect(() => {
     let userId;
@@ -31,10 +27,7 @@ export default function CriarEvento() {
           checkPermissions(userId);
         })
         .catch((error) => {
-          console.error(
-            "Error loading the user ID from devUserId.json:",
-            error
-          );
+          console.error("Error loading the user ID from devUserId.json:", error);
         });
     } else {
       const telegram = (window as any)?.Telegram?.WebApp;
@@ -47,10 +40,17 @@ export default function CriarEvento() {
       }
       checkPermissions(userId);
     }
+
+    // Carregar as agendas do calendars.json
+    fetch("/app/api/calendars.json")
+      .then((response) => response.json())
+      .then((data) => setAgendas(data)) // Ajustado para a nova estrutura
+      .catch((error) => {
+        console.error("Error loading calendars:", error);
+      });
   }, []);
 
   const checkPermissions = (userId: number) => {
-    // Verificar permissão do usuário
     const userCategories = getUserCategories(userId);
     setIsAuthorized(userCategories.includes(UserCategory.AMECICLISTAS));
   };
@@ -134,8 +134,8 @@ export default function CriarEvento() {
             >
               <option value="">Selecione uma agenda</option>
               {agendas.map((ag, index) => (
-                <option key={index} value={ag}>
-                  {ag}
+                <option key={index} value={ag.name}>
+                  {ag.name}
                 </option>
               ))}
             </select>
