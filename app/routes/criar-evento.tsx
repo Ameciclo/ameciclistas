@@ -42,7 +42,7 @@ export default function CriarEvento() {
     }
 
     // Carregar as agendas do calendars.json
-    fetch("/app/api/calendars.json")
+    fetch("/app/mockup/calendars.json")
       .then((response) => response.json())
       .then((data) => setAgendas(data)) // Ajustado para a nova estrutura
       .catch((error) => {

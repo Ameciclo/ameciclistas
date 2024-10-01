@@ -52,12 +52,12 @@ export default function SolicitarPagamento() {
     }
 
     // Carregar projetos e fornecedores
-    fetch("/app/api/projects.json")
+    fetch("/app/mockup/projects.json")
       .then((response) => response.json())
       .then((data) => setProjetos(data))
       .catch((error) => console.error("Failed to load projects:", error));
 
-    fetch("/app/api/suppliers.json")
+    fetch("/app/mockup/suppliers.json")
       .then((response) => response.json())
       .then((data) => setFornecedores(data))
       .catch((error) => console.error("Failed to load suppliers:", error));
