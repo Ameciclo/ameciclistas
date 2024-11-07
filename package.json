@@ -17,7 +17,10 @@
     "@remix-run/vercel": "^1.19.3",
     "@twa-dev/sdk": "^7.10.1",
     "dotenv": "^16.4.5",
+    "googleapis": "^144.0.0",
     "isbot": "^4.1.0",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0",
     "react": "^18.2.0",
     "react-autosuggest": "^10.1.0",
     "react-dom": "^18.2.0"
