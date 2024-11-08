@@ -13,4 +13,10 @@ export default defineConfig({
     }),
     tsconfigPaths(),
   ],
+  server: {
+    port: 8002, // Porta do servidor Vite
+    hmr: {
+      port: 8002, // Força o HMR a usar a mesma porta
+    },
+  },
 });
