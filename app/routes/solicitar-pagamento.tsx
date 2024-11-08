@@ -5,6 +5,8 @@ import FornecedorAutocomplete from "~/components/FornecedorAutocomplete";
 import { getUserCategories, UserCategory } from "../api/users";
 import Unauthorized from "~/components/Unauthorized";
 import { Project, Budget } from "~/api/types";
+import googleService from '../services/googleService';
+
 
 export default function SolicitarPagamento() {
   const navigate = useNavigate();
@@ -20,6 +22,25 @@ export default function SolicitarPagamento() {
   const [projetos, setProjetos] = useState<Project[]>([]);
   const [fornecedores, setFornecedores] = useState<any[]>([]);
   const [isAuthorized, setIsAuthorized] = useState(false);
+  
+
+  const handleRequestPayment = async () => {
+    try {
+      // Adicionar linha na planilha do Google Sheets
+      await googleService.appendSheetRow(
+        process.env.GOOGLE_SHEET_ID,
+        'Página1!A1',
+        [descricao, valor, fornecedor ]
+      );
+
+      // Criar evento no Google Calendar
+     
+
+      alert("Solicitação de pagamento enviada com sucesso!");
+    } catch (error) {
+      console.error("Erro ao enviar solicitação:", error);
+    }
+  };
 
   useEffect(() => {
     let userId;
@@ -67,32 +88,6 @@ export default function SolicitarPagamento() {
     const userCategories = getUserCategories(userId);
     setIsAuthorized(userCategories.includes(UserCategory.AMECICLISTAS));
   };
-
-  const handleSubmit = () => {
-    try {
-      const data = {
-        projeto: projetoSelecionado?.nome,
-        rubrica: rubricaSelecionada?.nome,
-        fornecedor,
-        descricao,
-        valor,
-      };
-
-      const telegram = (window as any)?.Telegram?.WebApp;
-      telegram?.sendData(JSON.stringify(data));
-    } catch (error) {
-      console.error("Erro ao enviar dados:", error);
-    }
-  };
-
-  if (!isAuthorized) {
-    return (
-      <Unauthorized
-        pageName="Solicitar Pagamento"
-        requiredPermission="AMECICLISTAS"
-      />
-    );
-  }
 
   return (
     <div className="container">
@@ -169,7 +164,7 @@ export default function SolicitarPagamento() {
         <ValorInput valor={valor} setValor={setValor} />
       </div>
 
-      <button className="button-full" onClick={handleSubmit}>
+      <button className="button-full" onClick={handleRequestPayment}>
         Enviar Solicitação
       </button>
       <button className="button-secondary-full" onClick={() => navigate(-1)}>
