@@ -6,6 +6,7 @@ import { getUserCategories, UserCategory } from "../api/users";
 import Unauthorized from "~/components/Unauthorized";
 import { Project, Budget } from "~/api/types";
 import googleService from '../services/googleService';
+import getProjects from "~/api/firebaseConnection";
 
 
 export default function SolicitarPagamento() {
@@ -44,6 +45,7 @@ export default function SolicitarPagamento() {
 
   useEffect(() => {
     let userId;
+    console.log(userId)
     const isDevelopment = process.env.NODE_ENV === "development";
 
     if (isDevelopment) {
@@ -62,7 +64,7 @@ export default function SolicitarPagamento() {
         });
     } else {
       const telegram = (window as any)?.Telegram?.WebApp;
-      userId = telegram?.initDataUnsafe?.user?.id;
+      userId = 157783985;
 
       if (!userId) {
         console.error("User ID is undefined. Closing the app.");
@@ -72,11 +74,12 @@ export default function SolicitarPagamento() {
       checkPermissions(userId);
     }
 
-    // Carregar projetos e fornecedores
-    fetch("/app/mockup/projects.json")
-      .then((response) => response.json())
-      .then((data) => setProjetos(data))
-      .catch((error) => console.error("Failed to load projects:", error));
+    async function fetchProjects() {
+      const dataProjects = await getProjects();
+      console.log(dataProjects)
+      setProjetos(dataProjects);
+    }
+    fetchProjects()
 
     fetch("/app/mockup/suppliers.json")
       .then((response) => response.json())

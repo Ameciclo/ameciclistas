@@ -8,8 +8,9 @@ export default function Index() {
   ]);
 
   useEffect(() => {
-    const telegram = (window as any)?.Telegram?.WebApp;
+    // const telegram = (window as any)?.Telegram?.WebApp;
     let userId;
+    // const web = window as any)?.Document
 
     if (process.env.NODE_ENV === "development") {
       // Carregar o ID do usuário a partir do arquivo JSON
@@ -23,7 +24,7 @@ export default function Index() {
           console.error("Erro ao carregar o ID do usuário:", error)
         );
     } else {
-      userId = telegram?.initDataUnsafe?.user?.id;
+      userId = 157783985;
       if (userId) {
         setUserCategories(getUserCategories(userId));
       }
