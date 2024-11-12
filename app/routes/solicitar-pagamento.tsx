@@ -6,7 +6,7 @@ import { getUserCategories, UserCategory } from "../api/users";
 import Unauthorized from "~/components/Unauthorized";
 import { Project, Budget } from "~/api/types";
 import googleService from '../services/googleService';
-import getProjects from "~/api/firebaseConnection";
+import db from "~/api/firebaseConnection";
 
 
 export default function SolicitarPagamento() {
@@ -23,7 +23,7 @@ export default function SolicitarPagamento() {
   const [projetos, setProjetos] = useState<Project[]>([]);
   const [fornecedores, setFornecedores] = useState<any[]>([]);
   const [isAuthorized, setIsAuthorized] = useState(false);
-  
+
 
   const handleRequestPayment = async () => {
     try {
@@ -31,11 +31,10 @@ export default function SolicitarPagamento() {
       await googleService.appendSheetRow(
         process.env.GOOGLE_SHEET_ID,
         'Página1!A1',
-        [descricao, valor, fornecedor ]
+        [descricao, valor, fornecedor]
       );
 
       // Criar evento no Google Calendar
-     
 
       alert("Solicitação de pagamento enviada com sucesso!");
     } catch (error) {
@@ -74,17 +73,29 @@ export default function SolicitarPagamento() {
       checkPermissions(userId);
     }
 
+    async function getProjects() {
+
+      const ref = db.ref('projects');
+
+      return ref.once('value', (snapshot) => {
+        const projects = snapshot.val();
+        console.log(projects);
+      });
+    }
+    getProjects();
+    
     async function fetchProjects() {
       const dataProjects = await getProjects();
       console.log(dataProjects)
-      setProjetos(dataProjects);
     }
+
     fetchProjects()
 
     fetch("/app/mockup/suppliers.json")
       .then((response) => response.json())
       .then((data) => setFornecedores(data))
       .catch((error) => console.error("Failed to load suppliers:", error));
+
   }, []);
 
   const checkPermissions = (userId: number) => {
