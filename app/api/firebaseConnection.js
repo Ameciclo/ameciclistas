@@ -20,4 +20,3 @@ export async function getProjects() {
 getProjects()
 
 export default db;
-
