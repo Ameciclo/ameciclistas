@@ -13,7 +13,6 @@ const db = admin.database();
 export async function getProjects() {
   const ref = db.ref('projects');
   const snapshot = await ref.once('value');
-  console.log(snapshot.val())
   return snapshot.val();
 }
 
