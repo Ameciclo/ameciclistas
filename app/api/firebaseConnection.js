@@ -16,6 +16,14 @@ export async function getProjects() {
   return snapshot.val();
 }
 
-getProjects()
+export async function getSuppliers() {
+  const ref = db.ref('recipients');
+  const snapshot = await ref.once('value');
+  return snapshot.val();
+}
+
+// export async function setPaymentRequest() {
+//   return 
+// }
 
 export default db;

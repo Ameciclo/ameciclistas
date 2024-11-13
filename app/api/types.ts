@@ -13,7 +13,6 @@ export interface Supplier {
 }
 
 export interface Budget {
-  id: number;
   nome: string;
 }
 
@@ -21,5 +20,5 @@ export interface Project {
   id: number;
   nome: string;
   status: string;
-  rubricas: Budget[];
+  rubricas: string[];
 }

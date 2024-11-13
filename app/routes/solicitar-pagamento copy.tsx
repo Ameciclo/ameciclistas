@@ -7,47 +7,29 @@ import Unauthorized from "~/components/Unauthorized";
 import { Project, Budget } from "~/api/types";
 import { getProjects, getSuppliers } from "~/api/firebaseConnection";
 
-
 export async function loader() {
-  let projects = await getProjects();
-  let suppliers = await getSuppliers();
-
-  projects = Object.values(projects).map((project: any) => {
-    return {
-      id: project.spreadsheet_id,
-      nome: project.name,
-      status: "em andamento",
-      rubrica: project.budget_items,
-    }
-  })
-
+  const projects = await getProjects();
+  const suppliers = await getSuppliers();
   return json({projects, suppliers});
 }
 
 export default function SolicitarPagamento() {
-  const navigate = useNavigate();
-
   const {projects, suppliers} = useLoaderData<typeof loader>();
-
-
+  const navigate = useNavigate();
   const [projetoSelecionado, setProjetoSelecionado] = useState<Project | null>(
     null
   );
-  const [rubricaSelecionada, setRubricaSelecionada] = useState<string | null>(
+  const [rubricaSelecionada, setRubricaSelecionada] = useState<Budget | null>(
     null
   );
   const [descricao, setDescricao] = useState("");
   const [valor, setValor] = useState("");
   const [fornecedor, setFornecedor] = useState("");
-  const [projetos, setProjetos] = useState<Project[]>([]);
-  const [fornecedores, setFornecedores] = useState<any[]>([]);
+  const [projetos, _setProjetos] = useState<Project[]>(projects);
+  const [fornecedores, _setFornecedores] = useState<any[]>(suppliers);
   const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
-
-    setProjetos(projects);
-    // setFornecedores
-
     let userId;
     const isDevelopment = process.env.NODE_ENV === "development";
 
@@ -82,6 +64,7 @@ export default function SolicitarPagamento() {
     //   .then((response) => response.json())
     //   .then((data) => setProjetos(data))
     //   .catch((error) => console.error("Failed to load projects:", error));
+
 
     // fetch("/app/mockup/suppliers.json")
     //   .then((response) => response.json())
