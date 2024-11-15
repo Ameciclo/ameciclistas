@@ -5,7 +5,13 @@ import FornecedorAutocomplete from "~/components/FornecedorAutocomplete";
 import { getUserCategories, UserCategory } from "../api/users";
 import Unauthorized from "~/components/Unauthorized";
 import { Project, Budget } from "~/api/types";
-import { getProjects, getSuppliers } from "~/api/firebaseConnection";
+import { getProjects, getSuppliers, savePaymentRequest } from "~/api/firebaseConnection";
+
+const parseFormattedValue = (formattedValue: string): number => {
+  return parseFloat(
+    formattedValue.replace("R$", "").replace(/\./g, "").replace(",", ".").trim()
+  );
+};
 
 export async function loader() {
   let projects = await getProjects();
@@ -103,20 +109,60 @@ export default function SolicitarPagamento() {
     setIsAuthorized(userCategories.includes(UserCategory.AMECICLISTAS));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     try {
-      const data = {
-        projeto: projetoSelecionado?.nome,
+      // Verifica se todos os campos foram preenchidos
+      if (!projetoSelecionado) {
+        alert("Por favor, selecione um projeto.");
+        return;
+      }
+
+      if (!rubricaSelecionada) {
+        alert("Por favor, selecione uma rubrica.");
+        return;
+      }
+
+      if (!fornecedor) {
+        alert("Por favor, selecione um fornecedor.");
+        return;
+      }
+
+      if (!descricao.trim()) {
+        alert("Por favor, insira uma descrição.");
+        return;
+      }
+
+      if (!valor.trim()) {
+        alert("Por favor, insira um valor.");
+        return;
+      }
+
+      const numericValue = parseFormattedValue(valor);
+
+      if (isNaN(numericValue)) {
+        alert("Por favor, insira um valor numérico válido.");
+        return;
+      }
+
+      // Monta o objeto da solicitação
+      const paymentRequest = {
+        projeto: projetoSelecionado.nome,
         rubrica: rubricaSelecionada,
         fornecedor,
         descricao,
-        valor,
+        valor: numericValue, // Usa o valor convertido
       };
 
-      const telegram = (window as any)?.Telegram?.WebApp;
-      telegram?.sendData(JSON.stringify(data));
+      // Salva a solicitação no Firebase
+      //const response = savePaymentRequest(paymentRequest);
+
+      alert("Solicitação enviada com sucesso!");
+      navigate(-1); // Retorna à página anterior após o envio
     } catch (error) {
-      console.error("Erro ao enviar dados:", error);
+      console.error("Erro ao enviar solicitação:", error);
+      alert(
+        "Ocorreu um erro ao enviar a solicitação. Por favor, tente novamente."
+      );
     }
   };
 
