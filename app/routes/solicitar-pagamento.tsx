@@ -11,6 +11,30 @@ export async function loader() {
   let projects = await getProjects();
   let suppliers = await getSuppliers();
 
+  suppliers = Object.values(suppliers).map((supplier: any) => {
+    let tipoChavePix: string;
+
+    // Determina o tipo da chave PIX
+    if (supplier.id.startsWith("CPF")) {
+      tipoChavePix = "cpf/cnpj";
+    } else if (supplier.bank_code === "PIX") {
+      tipoChavePix = "pix";
+    } else {
+      tipoChavePix = "outro";
+    }
+
+    // Retorna no formato esperado
+    return {
+      id: supplier.id,
+      nome: supplier.name,
+      cpfCnpj: supplier.id, // Assume-se que o ID é o CPF ou CNPJ
+      email: "", // Preenchido manualmente ou mantido vazio se não disponível
+      telefone: "", // Não há telefone disponível nos dados reais
+      chavePix: supplier.id, // Usa o ID como chave PIX por padrão
+      tipoChavePix: tipoChavePix,
+    };
+  });
+
   projects = Object.values(projects).map((project: any, index: number) => {
     return {
       id: index + 1, // Gera um id numérico temporário (começando de 1)

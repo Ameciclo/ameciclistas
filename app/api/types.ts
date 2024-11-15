@@ -3,13 +3,13 @@ export interface Agenda {
 }
 
 export interface Supplier {
-  id: number;
-  nome: string;
-  cpfCnpj: string;
-  email: string;
-  telefone: string;
-  chavePix: string;
-  tipoChavePix: string;
+  id: string; // Usando string porque os IDs do Firebase incluem letras e números
+  nome: string; // Nome do fornecedor
+  cpfCnpj: string; // Pode ser CPF ou CNPJ
+  email?: string; // Nem todos os fornecedores têm email
+  telefone?: string; // Nem todos têm telefone
+  chavePix: string; // PIX
+  tipoChavePix: string; // Tipo de chave PIX (cpf/cnpj, email, etc.)
 }
 
 export interface Budget {
