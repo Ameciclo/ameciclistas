@@ -7,28 +7,26 @@ import Unauthorized from "~/components/Unauthorized";
 import { Project, Budget } from "~/api/types";
 import { getProjects, getSuppliers } from "~/api/firebaseConnection";
 
-
 export async function loader() {
   let projects = await getProjects();
   let suppliers = await getSuppliers();
 
-  projects = Object.values(projects).map((project: any) => {
+  projects = Object.values(projects).map((project: any, index: number) => {
     return {
-      id: project.spreadsheet_id,
+      id: index + 1, // Gera um id numérico temporário (começando de 1)
+      spreadsheet_id: project.spreadsheet_id, // Mantém o spreadsheet_id original
       nome: project.name,
-      status: "em andamento",
-      rubrica: project.budget_items,
-    }
-  })
+      rubricas: project.budget_items,
+    };
+  });
 
-  return json({projects, suppliers});
+  return json({ projects, suppliers });
 }
 
 export default function SolicitarPagamento() {
   const navigate = useNavigate();
 
-  const {projects, suppliers} = useLoaderData<typeof loader>();
-
+  const { projects, suppliers } = useLoaderData<typeof loader>();
 
   const [projetoSelecionado, setProjetoSelecionado] = useState<Project | null>(
     null
@@ -39,20 +37,18 @@ export default function SolicitarPagamento() {
   const [descricao, setDescricao] = useState("");
   const [valor, setValor] = useState("");
   const [fornecedor, setFornecedor] = useState("");
-  const [projetos, setProjetos] = useState<Project[]>([]);
-  const [fornecedores, setFornecedores] = useState<any[]>([]);
+  const [projetos, setProjetos] = useState<Project[]>(projects);
+  const [fornecedores, setFornecedores] = useState<any[]>(suppliers);
   const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
-
     setProjetos(projects);
-    // setFornecedores
+    setFornecedores(suppliers);
 
     let userId;
     const isDevelopment = process.env.NODE_ENV === "development";
 
     if (isDevelopment) {
-      // Carregar o ID do usuário a partir do arquivo JSON em desenvolvimento
       fetch("/devUserId.json")
         .then((response) => response.json())
         .then((data) => {
@@ -76,18 +72,7 @@ export default function SolicitarPagamento() {
       }
       checkPermissions(userId);
     }
-
-    // Carregar projetos e fornecedores
-    // fetch("/app/mockup/projects.json")
-    //   .then((response) => response.json())
-    //   .then((data) => setProjetos(data))
-    //   .catch((error) => console.error("Failed to load projects:", error));
-
-    // fetch("/app/mockup/suppliers.json")
-    //   .then((response) => response.json())
-    //   .then((data) => setFornecedores(data))
-    //   .catch((error) => console.error("Failed to load suppliers:", error));
-  }, []);
+  }, [projects, suppliers]);
 
   const checkPermissions = (userId: number) => {
     const userCategories = getUserCategories(userId);
@@ -98,7 +83,7 @@ export default function SolicitarPagamento() {
     try {
       const data = {
         projeto: projetoSelecionado?.nome,
-        rubrica: rubricaSelecionada?.nome,
+        rubrica: rubricaSelecionada,
         fornecedor,
         descricao,
         valor,
@@ -131,20 +116,18 @@ export default function SolicitarPagamento() {
           value={projetoSelecionado?.id || ""}
           onChange={(e) => {
             const projeto = projetos.find(
-              (p) => p.id === Number(e.target.value)
+              (p) => p.id === Number(e.target.value) // Converte e.target.value para número
             );
             setProjetoSelecionado(projeto || null);
-            setRubricaSelecionada(null);
+            setRubricaSelecionada(null); // Resetar a rubrica quando mudar o projeto
           }}
         >
           <option value="">Selecione um projeto</option>
-          {projetos
-            .filter((p) => p.status === "em andamento")
-            .map((projeto) => (
-              <option key={projeto.id} value={projeto.id}>
-                {projeto.nome}
-              </option>
-            ))}
+          {projetos.map((projeto) => (
+            <option key={projeto.id} value={projeto.id}>
+              {projeto.nome}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -153,18 +136,13 @@ export default function SolicitarPagamento() {
           <label className="form-label">Rubrica:</label>
           <select
             className="form-input"
-            value={rubricaSelecionada?.id || ""}
-            onChange={(e) => {
-              const rubrica = projetoSelecionado.rubricas.find(
-                (r) => r.id === Number(e.target.value)
-              );
-              setRubricaSelecionada(rubrica || null);
-            }}
+            value={rubricaSelecionada || ""}
+            onChange={(e) => setRubricaSelecionada(e.target.value)}
           >
             <option value="">Selecione uma rubrica</option>
             {projetoSelecionado.rubricas.map((rubrica) => (
-              <option key={rubrica.id} value={rubrica.id}>
-                {rubrica.nome}
+              <option key={rubrica} value={rubrica}>
+                {rubrica}
               </option>
             ))}
           </select>

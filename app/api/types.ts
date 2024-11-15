@@ -19,6 +19,6 @@ export interface Budget {
 export interface Project {
   id: number;
   nome: string;
-  status: string;
+  spreadsheet_id: string;
   rubricas: string[];
 }
