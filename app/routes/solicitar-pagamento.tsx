@@ -1,11 +1,23 @@
 import { useState, useEffect } from "react";
-import { json, useLoaderData, useNavigate } from "@remix-run/react";
+import {
+  json,
+  redirect,
+  useLoaderData,
+  useNavigate,
+  Form,
+} from "@remix-run/react";
 import ValorInput from "~/components/ValorInput";
 import FornecedorAutocomplete from "~/components/FornecedorAutocomplete";
 import { getUserCategories, UserCategory } from "../api/users";
 import Unauthorized from "~/components/Unauthorized";
-import { Project, Budget } from "~/api/types";
-import { getProjects, getSuppliers, savePaymentRequest } from "~/api/firebaseConnection";
+import { Project } from "~/api/types";
+import {
+  getProjects,
+  getSuppliers,
+  savePaymentRequest,
+} from "~/api/firebaseConnection.server"; // Importação atualizada
+
+import { ActionFunction } from "@remix-run/node";
 
 const parseFormattedValue = (formattedValue: string): number => {
   return parseFloat(
@@ -53,9 +65,28 @@ export async function loader() {
   return json({ projects, suppliers });
 }
 
+export const action: ActionFunction = async ({ request }) => {
+  const formData = await request.formData();
+  console.log(formData);
+  const paymentRequest = {
+    projeto: formData.get("projeto"),
+    rubrica: formData.get("rubrica"),
+    fornecedor: formData.get("fornecedor"),
+    descricao: formData.get("descricao"),
+    valor: formData.get("valor"),
+  };
+
+  try {
+    await savePaymentRequest(paymentRequest);
+    return redirect("/solicitar-pagamento-sucesso"); 
+  } catch (error: any) {
+    console.error("Erro ao enviar solicitação:", error);
+    return json({ error: error.message }, { status: 500 });
+  }
+};
+
 export default function SolicitarPagamento() {
   const navigate = useNavigate();
-
   const { projects, suppliers } = useLoaderData<typeof loader>();
 
   const [projetoSelecionado, setProjetoSelecionado] = useState<Project | null>(
@@ -109,63 +140,6 @@ export default function SolicitarPagamento() {
     setIsAuthorized(userCategories.includes(UserCategory.AMECICLISTAS));
   };
 
-  const handleSubmit = async () => {
-    try {
-      // Verifica se todos os campos foram preenchidos
-      if (!projetoSelecionado) {
-        alert("Por favor, selecione um projeto.");
-        return;
-      }
-
-      if (!rubricaSelecionada) {
-        alert("Por favor, selecione uma rubrica.");
-        return;
-      }
-
-      if (!fornecedor) {
-        alert("Por favor, selecione um fornecedor.");
-        return;
-      }
-
-      if (!descricao.trim()) {
-        alert("Por favor, insira uma descrição.");
-        return;
-      }
-
-      if (!valor.trim()) {
-        alert("Por favor, insira um valor.");
-        return;
-      }
-
-      const numericValue = parseFormattedValue(valor);
-
-      if (isNaN(numericValue)) {
-        alert("Por favor, insira um valor numérico válido.");
-        return;
-      }
-
-      // Monta o objeto da solicitação
-      const paymentRequest = {
-        projeto: projetoSelecionado.nome,
-        rubrica: rubricaSelecionada,
-        fornecedor,
-        descricao,
-        valor: numericValue, // Usa o valor convertido
-      };
-
-      // Salva a solicitação no Firebase
-      //const response = savePaymentRequest(paymentRequest);
-
-      alert("Solicitação enviada com sucesso!");
-      navigate(-1); // Retorna à página anterior após o envio
-    } catch (error) {
-      console.error("Erro ao enviar solicitação:", error);
-      alert(
-        "Ocorreu um erro ao enviar a solicitação. Por favor, tente novamente."
-      );
-    }
-  };
-
   if (!isAuthorized) {
     return (
       <Unauthorized
@@ -176,12 +150,13 @@ export default function SolicitarPagamento() {
   }
 
   return (
-    <div className="container">
+    <Form method="post" className="container">
       <h2 className="text-primary">💰 Solicitar Pagamento</h2>
 
       <div className="form-group">
         <label className="form-label">Projeto:</label>
         <select
+          name="projeto" // Adicionado
           className="form-input"
           value={projetoSelecionado?.id || ""}
           onChange={(e) => {
@@ -205,6 +180,7 @@ export default function SolicitarPagamento() {
         <div className="form-group">
           <label className="form-label">Rubrica:</label>
           <select
+            name="rubrica" // Adicionado
             className="form-input"
             value={rubricaSelecionada || ""}
             onChange={(e) => setRubricaSelecionada(e.target.value)}
@@ -226,11 +202,14 @@ export default function SolicitarPagamento() {
           value={fornecedor}
           onChange={setFornecedor}
         />
+        <input type="hidden" name="fornecedor" value={fornecedor} />{" "}
+        {/* Adicionado */}
       </div>
 
       <div className="form-group">
         <label className="form-label">Descrição:</label>
         <textarea
+          name="descricao"
           className="form-input"
           value={descricao}
           onChange={(e) => setDescricao(e.target.value)}
@@ -240,15 +219,19 @@ export default function SolicitarPagamento() {
 
       <div className="form-group">
         <label className="form-label">Valor:</label>
-        <ValorInput valor={valor} setValor={setValor} />
+        <ValorInput name="valor" valor={valor} setValor={setValor} />
       </div>
 
-      <button className="button-full" onClick={handleSubmit}>
+      <button type="submit" className="button-full">
         Enviar Solicitação
       </button>
-      <button className="button-secondary-full" onClick={() => navigate(-1)}>
+      <button
+        type="button"
+        className="button-secondary-full"
+        onClick={() => navigate(-1)}
+      >
         ⬅️ Voltar
       </button>
-    </div>
+    </Form>
   );
 }
