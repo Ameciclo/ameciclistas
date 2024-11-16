@@ -177,7 +177,7 @@ export default function AdicionarFornecedor() {
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="exemplo@dominio.com"
+          placeholder="contato@ameciclo.org"
         />
       </div>
 
