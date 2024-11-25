@@ -2,6 +2,8 @@
 
 # credentials
 app/api/serviceAccountKey.json
+serviceAccountKey.json
+
 
 # dependencies
 /node_modules

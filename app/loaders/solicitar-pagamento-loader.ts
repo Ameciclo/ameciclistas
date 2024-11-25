@@ -26,13 +26,6 @@ export async function loader() {
     };
   });
 
-  projects = Object.values(projects).map((project: any, index: number) => {
-    return {
-      id: index + 1,
-      spreadsheet_id: project.spreadsheet_id,
-      nome: project.name,
-      rubricas: project.budget_items,
-    };
-  });
+  projects = Object.values(projects);
   return json({ projects, suppliers });
 }

@@ -8,14 +8,17 @@ export default function Index() {
   ]);
 
   useEffect(() => {
-    // const telegram = (window as any)?.Telegram?.WebApp;
     let userId;
-    // const web = window as any)?.Document
-
+  
     if (process.env.NODE_ENV === "development") {
       // Carregar o ID do usuário a partir do arquivo JSON
-      fetch("/devUserId.json")
-        .then((response) => response.json())
+      fetch("/app/mockup/devUserId.json")
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.json();
+        })
         .then((data) => {
           userId = data.userId;
           setUserCategories(getUserCategories(userId));
@@ -30,6 +33,7 @@ export default function Index() {
       }
     }
   }, []);
+  
 
   const isAccessible = (requiredCategory: UserCategory) =>
     userCategories.includes(requiredCategory);

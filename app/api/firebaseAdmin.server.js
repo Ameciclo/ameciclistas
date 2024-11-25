@@ -6,7 +6,6 @@ const dbURL =
     ? "https://ameciclo-admin-bot.firebaseio.com"
     : "https://ameciclo-bot-test-default-rtdb.firebaseio.com";
 
-console.log(dbURL);
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),

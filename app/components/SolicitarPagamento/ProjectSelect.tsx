@@ -21,19 +21,19 @@ const ProjectSelect: React.FC<ProjectSelectProps> = ({
       <select
         name="projeto"
         className="form-input"
-        value={projetoSelecionado?.id || ""}
+        value={projetoSelecionado?.spreadsheet_id || ""}
         onChange={(e) => {
           const projeto = projetos.find(
-            (p) => p.id === Number(e.target.value)
+            (p) => p.spreadsheet_id === e.target.value
           );
           setProjetoSelecionado(projeto || null);
           setRubricaSelecionada(null);
         }}
       >
         <option value="">Selecione um projeto</option>
-        {projetos.map((projeto) => (
-          <option key={projeto.id} value={projeto.id}>
-            {projeto.nome}
+        {projetos.map((projeto, index) => (
+          <option key={index} value={projeto.spreadsheet_id}>
+            {projeto.name}
           </option>
         ))}
       </select>

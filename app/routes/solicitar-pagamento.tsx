@@ -38,7 +38,7 @@ export default function SolicitarPagamento() {
   const [fornecedor, setFornecedor] = useState("");
 
   // Filtra o fornecedor selecionado, se necessário
-  const fornecedorSelecionado = suppliers.find((s) => s.id === fornecedor);
+  const fornecedorSelecionado = suppliers.find((s:any) => s.id === fornecedor);
 
   // Prepara os dados do projeto e fornecedor como JSON
   const projetoJSON = projetoSelecionado
@@ -109,7 +109,7 @@ export default function SolicitarPagamento() {
       <input
         type="hidden"
         name="project"
-        value={projetoJSON} // Envia o objeto do projeto como JSON
+        value={JSON.stringify(projetoJSON)} // Envia o objeto do projeto como JSON
       />
 
       <input

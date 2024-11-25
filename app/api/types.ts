@@ -17,8 +17,10 @@ export interface Budget {
 }
 
 export interface Project {
-  id: number;
-  nome: string;
-  spreadsheet_id: string;
-  rubricas: string[];
+    account: string;
+    balance: number;
+    budget_items: string[],
+    name: string,
+    responsible: string,
+    spreadsheet_id: string
 }

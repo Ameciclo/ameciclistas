@@ -23,7 +23,7 @@ const RubricaSelect: React.FC<RubricaSelectProps> = ({
         onChange={(e) => setRubricaSelecionada(e.target.value)}
       >
         <option value="">Selecione uma rubrica</option>
-        {projetoSelecionado.rubricas.map((rubrica) => (
+        {projetoSelecionado.budget_items.map((rubrica) => (
           <option key={rubrica} value={rubrica}>
             {rubrica}
           </option>
