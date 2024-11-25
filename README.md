@@ -2,6 +2,14 @@
 
 - 📖 [Remix docs](https://remix.run/docs)
 
+## Installation
+**node>=20.0.0
+Run the the install:
+
+```shellscript
+npm i
+```
+
 ## Development
 
 Run the dev server:
