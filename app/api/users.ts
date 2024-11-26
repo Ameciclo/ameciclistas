@@ -64,7 +64,7 @@ export const users: TelegramUser[] = [
   // Add more users as needed
 ];
 
-export const getUserInfo = (): UserData | null => {
+export const getTelegramUserInfo = (): UserData | null => {
   // Verifica se estamos no navegador
   if (typeof window !== 'undefined') {
     const telegram = (window as any).Telegram.WebApp;

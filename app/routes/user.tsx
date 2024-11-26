@@ -3,13 +3,13 @@
 import { useEffect, useState } from 'react';
 import { Link } from '@remix-run/react';
 import { UserData } from '~/api/types';
-import { getUserInfo } from '~/api/users';
+import { getTelegramUserInfo } from '~/api/users';
 
 
 export default function User() {
   const [userData, setUserData] = useState<UserData | null>(null);
 
-  useEffect(() => setUserData(() => getUserInfo()), []);
+  useEffect(() => setUserData(() => getTelegramUserInfo()), []);
 
   return (
     <div className="container mx-auto py-8 px-4">

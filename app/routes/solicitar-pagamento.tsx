@@ -18,7 +18,7 @@ import { Project } from "~/api/types";
 import { useAuthorization } from "~/hooks/useAuthorization";
 import { loader } from "~/loaders/solicitar-pagamento-loader";
 import { action } from "~/loaders/solicitar-pagamento-action";
-import { getUserInfo } from "~/api/users";
+import { getTelegramUserInfo } from "~/api/users";
 
 export { loader, action };
 
@@ -35,12 +35,12 @@ export default function SolicitarPagamento() {
     null
   );
   const [descricao, setDescricao] = useState("");
-  const [valor, setValor] = useState("");
+  const [valor, setValor] = useState("0");
   const [fornecedor, setFornecedor] = useState("");
   const [userData, setUserData] = useState<UserData | null>(null);
 
   useEffect(() => {
-    setUserData(() => getUserInfo());
+    setUserData(() => getTelegramUserInfo());
     console.log(userData);
   }, []);
 
@@ -98,22 +98,21 @@ export default function SolicitarPagamento() {
         <ValorInput name="valor" valor={valor} setValor={setValor} />
       </div>
 
-      {/* Campos ocultos para enviar dados adicionais
       <input
         type="hidden"
         name="telegramUserId"
-        value={telegramUser?.id || ""}
+        value={userData?.id || ""}
       />
       <input
         type="hidden"
         name="telegramUserName"
-        value={telegramUser?.username || ""}
+        value={userData?.username || ""}
       />
       <input
         type="hidden"
         name="telegramUserFirstName"
-        value={telegramUser?.first_name || ""}
-      /> */}
+        value={userData?.first_name || ""}
+      />
 
       <input
         type="hidden"
