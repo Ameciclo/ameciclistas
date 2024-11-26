@@ -131,9 +131,6 @@ export default function SolicitarPagamento() {
       >
         ⬅️ Voltar
       </button>
-      <p>{Array.isArray(telegramData)
-        ? telegramData.map((item, index) => <span key={index}>{item}</span>)
-        : JSON.stringify(telegramData, null, 2)}</p>
     </Form>
   );
 }
