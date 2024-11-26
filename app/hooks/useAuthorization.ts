@@ -9,6 +9,13 @@ export function useAuthorization(requiredCategory: UserCategory) {
   useEffect(() => {
     let userId;
     const isDevelopment = process.env.NODE_ENV === "development";
+    
+    // show on console if user is in development
+    console.log("User ID:", userId);
+
+    // check permissions for production
+    // show on console if user is not authorized
+    console.log("User is not authorized:",!isAuthorized);
 
     if (isDevelopment) {
       fetch("./app/mockup/telegram-user.json")
@@ -16,6 +23,7 @@ export function useAuthorization(requiredCategory: UserCategory) {
         .then((data) => {
           userId = data.id;
           checkPermissions(userId);
+          console.log(userId);
         })
         .catch((error) => {
           console.error(
