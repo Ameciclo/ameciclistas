@@ -48,9 +48,9 @@ export default function Index() {
         <Link to="/criar-evento">
           <button
             className={`button-full ${
-              !isAccessible(UserCategory.AMECICLISTAS) ? "button-disabled" : ""
+              isAccessible(UserCategory.AMECICLISTAS) ? "button-disabled" : ""
             }`}
-            disabled={!isAccessible(UserCategory.AMECICLISTAS)}
+            disabled={isAccessible(UserCategory.AMECICLISTAS)}
           >
             📅 Criar Evento
           </button>
@@ -58,9 +58,9 @@ export default function Index() {
         <Link to="/solicitar-pagamento">
           <button
             className={`button-full ${
-              !isAccessible(UserCategory.PROJECT_COORDINATORS) ? "button-disabled" : ""
+              isAccessible(UserCategory.PROJECT_COORDINATORS) ? "button-disabled" : ""
             }`}
-            disabled={!isAccessible(UserCategory.PROJECT_COORDINATORS)}
+            disabled={isAccessible(UserCategory.PROJECT_COORDINATORS)}
           >
             💰 Solicitar Pagamento
           </button>
@@ -68,9 +68,9 @@ export default function Index() {
         <Link to="/adicionar-fornecedor">
           <button
             className={`button-full ${
-              !isAccessible(UserCategory.PROJECT_COORDINATORS) ? "button-disabled" : ""
+              isAccessible(UserCategory.PROJECT_COORDINATORS) ? "button-disabled" : ""
             }`}
-            disabled={!isAccessible(UserCategory.PROJECT_COORDINATORS)}
+            disabled={isAccessible(UserCategory.PROJECT_COORDINATORS)}
           >
             📦 Adicionar Fornecedor
           </button>
@@ -78,9 +78,9 @@ export default function Index() {
         <Link to="/links-uteis">
           <button
             className={`button-full ${
-              !isAccessible(UserCategory.ANY_USER) ? "button-disabled" : ""
+              isAccessible(UserCategory.ANY_USER) ? "button-disabled" : ""
             }`}
-            disabled={!isAccessible(UserCategory.ANY_USER)}
+            disabled={isAccessible(UserCategory.ANY_USER)}
           >
             🔗 Lista de Links Úteis
           </button>
@@ -88,9 +88,9 @@ export default function Index() {
         <Link to="/grupos-de-trabalho">
           <button
             className={`button-full ${
-              !isAccessible(UserCategory.AMECICLISTAS) ? "button-disabled" : ""
+              isAccessible(UserCategory.AMECICLISTAS) ? "button-disabled" : ""
             }`}
-            disabled={!isAccessible(UserCategory.AMECICLISTAS)}
+            disabled={isAccessible(UserCategory.AMECICLISTAS)}
           >
             👥 Grupos de Trabalho
           </button>
@@ -98,9 +98,9 @@ export default function Index() {
         <Link to="/lista-projetos">
           <button
             className={`button-full ${
-              !isAccessible(UserCategory.AMECICLISTAS) ? "button-disabled" : ""
+              isAccessible(UserCategory.AMECICLISTAS) ? "button-disabled" : ""
             }`}
-            disabled={!isAccessible(UserCategory.AMECICLISTAS)}
+            disabled={isAccessible(UserCategory.AMECICLISTAS)}
           >
             📊 Projetos em Andamento
           </button>
@@ -108,9 +108,9 @@ export default function Index() {
         <Link to="/user">
           <button
             className={`button-full ${
-              !isAccessible(UserCategory.ANY_USER) ? "button-disabled" : ""
+              isAccessible(UserCategory.ANY_USER) ? "button-disabled" : ""
             }`}
-            disabled={!isAccessible(UserCategory.ANY_USER)}
+            disabled={isAccessible(UserCategory.ANY_USER)}
           >
             ⚙️ Suas configurações
           </button>
