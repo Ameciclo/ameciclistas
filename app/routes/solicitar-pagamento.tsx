@@ -106,7 +106,7 @@ export default function SolicitarPagamento() {
       <input
         type="hidden"
         name="telegramUserInfo"
-        value={userJSON || ""}
+        value={userJSON}
       />
 
       <input
