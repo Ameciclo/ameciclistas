@@ -18,6 +18,7 @@ import { Project } from "~/api/types";
 import { useAuthorization } from "~/hooks/useAuthorization";
 import { loader } from "~/loaders/solicitar-pagamento-loader";
 import { action } from "~/loaders/solicitar-pagamento-action";
+import { getTelegramUserInfo } from "~/api/users";
 
 export { loader, action };
 
@@ -39,7 +40,7 @@ export default function SolicitarPagamento() {
   const [userData, setUserData] = useState<UserData | null>(null);
 
   useEffect(() => {
-    setUserData(() => getUserInfo());
+    setUserData(() => getTelegramUserInfo());
     console.log(userData);
   }, []);
 
@@ -138,8 +139,5 @@ export default function SolicitarPagamento() {
       </button>
     </Form>
   );
-}
-function getUserInfo(): UserData | null {
-  throw new Error("Function not implemented.");
 }
 
