@@ -43,6 +43,7 @@ export default function SolicitarPagamento() {
   useEffect(() => {
     setUserData(() => getTelegramUserInfo());
     setTelegramData(() => getTelegramGeneralDataInfo())
+    console.log(telegramData)
   }, []);
 
   // Filtra o fornecedor selecionado, se necessário
@@ -102,7 +103,6 @@ export default function SolicitarPagamento() {
         <ValorInput name="valor" valor={valor} setValor={setValor} />
       </div>
 
-      // Campos ocultos para enviar dados adicionais
       <input
         type="hidden"
         name="telegramUserInfo"
@@ -131,7 +131,9 @@ export default function SolicitarPagamento() {
       >
         ⬅️ Voltar
       </button>
-      <p>{telegramData}</p>
+      <p>{Array.isArray(telegramData)
+        ? telegramData.map((item, index) => <span key={index}>{item}</span>)
+        : JSON.stringify(telegramData, null, 2)}</p>
     </Form>
   );
 }
