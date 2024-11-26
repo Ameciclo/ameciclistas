@@ -7,8 +7,16 @@ export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
   console.log(formData);
 
+  const date = new Date();
+
+  const formatter = new Intl.DateTimeFormat("pt-BR", {
+    timeZone: "America/Sao_Paulo",
+    dateStyle: "short",
+    timeStyle: "medium",
+  });
+
   const paymentRequest = {
-    date: new Date(),
+    date: formatter.format(date),
     project: formData.get("project"),
     budgetItem: formData.get("rubrica"),
     recipientName: formData.get("fornecedor"),
