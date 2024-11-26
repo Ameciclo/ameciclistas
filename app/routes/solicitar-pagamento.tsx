@@ -18,7 +18,6 @@ import { Project } from "~/api/types";
 import { useAuthorization } from "~/hooks/useAuthorization";
 import { loader } from "~/loaders/solicitar-pagamento-loader";
 import { action } from "~/loaders/solicitar-pagamento-action";
-import { getTelegramUserInfo } from "~/api/users";
 
 export { loader, action };
 
@@ -26,7 +25,7 @@ export default function SolicitarPagamento() {
   const { projects, suppliers } = useLoaderData<typeof loader>();
   const navigate = useNavigate();
 
-  const isAuthorized = useAuthorization(UserCategory.ANY_USER);
+  const isAuthorized = true; //useAuthorization(UserCategory.AMECICLISTAS);
 
   const [projetoSelecionado, setProjetoSelecionado] = useState<Project | null>(
     null
@@ -35,12 +34,12 @@ export default function SolicitarPagamento() {
     null
   );
   const [descricao, setDescricao] = useState("");
-  const [valor, setValor] = useState("0");
+  const [valor, setValor] = useState("");
   const [fornecedor, setFornecedor] = useState("");
   const [userData, setUserData] = useState<UserData | null>(null);
 
   useEffect(() => {
-    setUserData(() => getTelegramUserInfo());
+    setUserData(() => getUserInfo());
     console.log(userData);
   }, []);
 
@@ -98,21 +97,22 @@ export default function SolicitarPagamento() {
         <ValorInput name="valor" valor={valor} setValor={setValor} />
       </div>
 
+      {/* Campos ocultos para enviar dados adicionais
       <input
         type="hidden"
         name="telegramUserId"
-        value={userData?.id || ""}
+        value={telegramUser?.id || ""}
       />
       <input
         type="hidden"
         name="telegramUserName"
-        value={userData?.username || ""}
+        value={telegramUser?.username || ""}
       />
       <input
         type="hidden"
         name="telegramUserFirstName"
-        value={userData?.first_name || ""}
-      />
+        value={telegramUser?.first_name || ""}
+      /> */}
 
       <input
         type="hidden"
@@ -139,3 +139,7 @@ export default function SolicitarPagamento() {
     </Form>
   );
 }
+function getUserInfo(): UserData | null {
+  throw new Error("Function not implemented.");
+}
+
