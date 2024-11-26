@@ -24,3 +24,25 @@ export interface Project {
     responsible: string,
     spreadsheet_id: string
 }
+
+export interface UserData {
+  id: number;
+  first_name: string;
+  last_name?: string;
+  username?: string;
+  language_code: string;
+  is_premium?: boolean;
+}
+
+export enum UserCategory {
+  ANY_USER = "ANY_USER", // Mudar para "ANY_USER" para refletir o nome
+  AMECICLISTAS = "AMECICLISTAS",
+  PROJECT_COORDINATORS = "PROJECT_COORDINATORS",
+  AMECICLO_COORDINATORS = "AMECICLO_COORDINATORS",
+}
+
+export interface TelegramUser {
+  id: number; // Telegram user ID
+  name: string;
+  categories: UserCategory[];
+}

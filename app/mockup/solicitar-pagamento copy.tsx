@@ -2,10 +2,10 @@ import { useState, useEffect } from "react";
 import { json, useLoaderData, useNavigate } from "@remix-run/react";
 import ValorInput from "~/components/ValorInput";
 import FornecedorAutocomplete from "~/components/FornecedorAutocomplete";
-import { getUserCategories, UserCategory } from "../api/users";
+import { getUserCategories } from "../api/users";
 import Unauthorized from "~/components/Unauthorized";
 import { Project, Budget } from "~/api/types";
-import { getProjects, getSuppliers } from "~/api/firebaseConnection";
+import { getProjects, getSuppliers } from "~/api/firebaseConnection.server";
 
 export async function loader() {
   const projects = await getProjects();

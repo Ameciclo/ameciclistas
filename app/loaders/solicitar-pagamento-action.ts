@@ -5,7 +5,7 @@ import { savePaymentRequest } from "~/api/firebaseConnection.server";
 export const action: ActionFunction = async ({ request }) => {
 
   const formData = await request.formData();
-  console.log(formData)
+  console.log(formData);
 
   const paymentRequest = {
     projeto: formData.get("project"),

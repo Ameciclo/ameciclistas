@@ -2,30 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { Link } from '@remix-run/react';
+import { UserData } from '~/api/types';
+import { getUserInfo } from '~/api/users';
 
-interface UserData {
-  id: number;
-  first_name: string;
-  last_name?: string;
-  username?: string;
-  language_code: string;
-  is_premium?: boolean;
-}
 
 export default function User() {
   const [userData, setUserData] = useState<UserData | null>(null);
 
-  useEffect(() => {
-    // Verifica se estamos no navegador
-    if (typeof window !== 'undefined') {
-      const telegram = (window as any).Telegram.WebApp;
-
-      // Verifica se o usuário está disponível
-      if (telegram && telegram.initDataUnsafe && telegram.initDataUnsafe.user) {
-        setUserData(telegram.initDataUnsafe.user as UserData);
-      }
-    }
-  }, []);
+  useEffect(() => setUserData(() => getUserInfo()), []);
 
   return (
     <div className="container mx-auto py-8 px-4">

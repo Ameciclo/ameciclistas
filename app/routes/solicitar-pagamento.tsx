@@ -1,6 +1,6 @@
 // routes/solicitar-pagamento.tsx
 // Group external libraries
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLoaderData, useNavigate, Form } from "@remix-run/react";
 
 // Group internal components
@@ -12,12 +12,13 @@ import ValorInput from "~/components/ValorInput";
 import Unauthorized from "~/components/Unauthorized";
 
 // Group utilities and types
-import { UserCategory } from "../api/users";
+import { UserCategory, UserData } from "../api/types";
 import { Project } from "~/api/types";
 
 import { useAuthorization } from "~/hooks/useAuthorization";
 import { loader } from "~/loaders/solicitar-pagamento-loader";
 import { action } from "~/loaders/solicitar-pagamento-action";
+import { getUserInfo } from "~/api/users";
 
 export { loader, action };
 
@@ -36,9 +37,15 @@ export default function SolicitarPagamento() {
   const [descricao, setDescricao] = useState("");
   const [valor, setValor] = useState("");
   const [fornecedor, setFornecedor] = useState("");
+  const [userData, setUserData] = useState<UserData | null>(null);
+
+  useEffect(() => {
+    setUserData(() => getUserInfo());
+    console.log(userData);
+  }, []);
 
   // Filtra o fornecedor selecionado, se necessário
-  const fornecedorSelecionado = suppliers.find((s:any) => s.id === fornecedor);
+  const fornecedorSelecionado = suppliers.find((s: any) => s.id === fornecedor);
 
   // Prepara os dados do projeto e fornecedor como JSON
   const projetoJSON = projetoSelecionado
@@ -59,6 +66,8 @@ export default function SolicitarPagamento() {
 
   return (
     <Form method="post" className="container">
+      <h2 className="text-xl font-semibold">Bem-vindo, {userData?.first_name}!</h2>
+
       <h2 className="text-primary">💰 Solicitar Pagamento</h2>
 
       <ProjectSelect
@@ -109,7 +118,7 @@ export default function SolicitarPagamento() {
       <input
         type="hidden"
         name="project"
-        value={JSON.stringify(projetoJSON)} // Envia o objeto do projeto como JSON
+        value={projetoJSON} // Envia o objeto do projeto como JSON
       />
 
       <input

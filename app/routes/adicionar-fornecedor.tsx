@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "@remix-run/react";
 import Unauthorized from "~/components/Unauthorized"; // Importar o componente Unauthorized
-import { getUserCategories, UserCategory } from "../api/users";
+import { getUserCategories } from "../api/users";
+import { UserCategory } from "~/api/types";
 
 export default function AdicionarFornecedor() {
   const navigate = useNavigate();

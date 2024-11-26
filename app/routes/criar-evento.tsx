@@ -1,6 +1,7 @@
 import { useNavigate } from "@remix-run/react";
 import { useState, useEffect } from "react";
-import { getUserCategories, UserCategory } from "../api/users";
+import { getUserCategories } from "../api/users";
+import { UserCategory } from "~/api/types";
 import { Agenda } from "../api/types"; // Importe a interface Agenda
 
 export default function CriarEvento() {

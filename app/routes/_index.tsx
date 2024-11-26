@@ -1,6 +1,7 @@
 import { Link } from "@remix-run/react";
 import { useEffect, useState } from "react";
-import { getUserCategories, UserCategory } from "../api/users";
+import { getUserCategories } from "../api/users";
+import { UserCategory } from "~/api/types";
 
 export default function Index() {
   const [userCategories, setUserCategories] = useState<UserCategory[]>([
