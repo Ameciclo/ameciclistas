@@ -13,7 +13,7 @@ export default function Index() {
   
     if (process.env.NODE_ENV === "development") {
       // Carregar o ID do usuário a partir do arquivo JSON
-      fetch("/app/mockup/devUserId.json")
+      fetch("/app/mockup/telegram-user.json")
         .then((response) => {
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
