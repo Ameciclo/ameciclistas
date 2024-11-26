@@ -24,6 +24,7 @@ export { loader, action };
 
 export default function SolicitarPagamento() {
   const { projects, suppliers } = useLoaderData<typeof loader>();
+  console.log(projects, suppliers)
   const navigate = useNavigate();
 
   const isAuthorized = useAuthorization(UserCategory.AMECICLISTAS);
