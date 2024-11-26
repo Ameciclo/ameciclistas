@@ -71,7 +71,7 @@ export default function SolicitarPagamento() {
 
   return (
     <Form method="post" className="container">
-      <h2 className="text-xl font-semibold">Bem-vindo, {userData?.first_name}! Estamos no ambiente de {process.env.NODE_ENV}</h2>
+      <h2 className="text-xl font-semibold">Bem-vindo, {userData?.first_name}! Estamos no ambiente de {process.env.NODE_ENV === 'production' ? 'PRODUÇÃO' : 'DESENVOLVIMENTO'}</h2>
 
       <h2 className="text-primary">💰 Solicitar Pagamento</h2>
 
