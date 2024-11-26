@@ -8,11 +8,17 @@ export const action: ActionFunction = async ({ request }) => {
   console.log(formData);
 
   const paymentRequest = {
-    projeto: formData.get("project"),
-    rubrica: formData.get("rubrica"),
-    fornecedor: formData.get("fornecedor"),
-    descricao: formData.get("descricao"),
-    valor: formData.get("valor"),
+    date: new Date(),
+    project: formData.get("project"),
+    budgetItem: formData.get("rubrica"),
+    recipientName: formData.get("fornecedor"),
+    description: formData.get("descricao"),
+    value: formData.get("valor"),
+    from_chat_id: "",
+    group_message_id: "",
+    invoice_url: "",
+    from: formData.get("telegramUserInfo"),
+    recipient_information: "",
   };
 
   try {

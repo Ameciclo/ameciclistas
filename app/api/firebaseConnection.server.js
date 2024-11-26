@@ -13,8 +13,6 @@ export async function getSuppliers() {
 }
 
 export async function savePaymentRequest(paymentRequest) {
-  paymentRequest.date = new Date().getTime();
-  paymentRequest.invoice_url = "";
 
   return new Promise((resolve, reject) => {
     const ref = db.ref("requests");

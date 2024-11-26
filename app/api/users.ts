@@ -77,3 +77,18 @@ export const getTelegramUserInfo = (): UserData | null => {
 
   return null;
 }
+
+
+export const getTelegramGeneralDataInfo = (): any => {
+  // Verifica se estamos no navegador
+  if (typeof window !== 'undefined') {
+    const telegram = (window as any)?.Telegram.WebApp;
+
+    // Verifica se o dado está disponível
+    if (telegram && telegram.initDataUnsafe) {
+      return telegram.initDataUnsafe as UserData;
+    }
+  }
+
+  return null;
+}

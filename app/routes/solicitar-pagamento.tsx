@@ -18,7 +18,7 @@ import { Project } from "~/api/types";
 import { useAuthorization } from "~/hooks/useAuthorization";
 import { loader } from "~/loaders/solicitar-pagamento-loader";
 import { action } from "~/loaders/solicitar-pagamento-action";
-import { getTelegramUserInfo } from "~/api/users";
+import { getTelegramGeneralDataInfo, getTelegramUserInfo } from "~/api/users";
 
 export { loader, action };
 
@@ -38,9 +38,11 @@ export default function SolicitarPagamento() {
   const [valor, setValor] = useState("0");
   const [fornecedor, setFornecedor] = useState("");
   const [userData, setUserData] = useState<UserData | null>(null);
+  const [telegramData, setTelegramData] = useState([]);
 
   useEffect(() => {
     setUserData(() => getTelegramUserInfo());
+    setTelegramData(() => getTelegramGeneralDataInfo())
   }, []);
 
   // Filtra o fornecedor selecionado, se necessário
@@ -129,6 +131,7 @@ export default function SolicitarPagamento() {
       >
         ⬅️ Voltar
       </button>
+      <p>{telegramData}</p>
     </Form>
   );
 }
