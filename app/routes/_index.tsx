@@ -23,7 +23,8 @@ export const loader = async () => {
       ];
     } else {
       const telegramUserData = getTelegramUserInfo()
-      userCategories = await getCategoryByUserId(telegramUserData?.id)
+      let userCategoriesString = await getCategoryByUserId(telegramUserData?.id)
+      userCategories = [userCategoriesString]
     }
   } catch (error) {
     console.error("Error loading data:", error);
