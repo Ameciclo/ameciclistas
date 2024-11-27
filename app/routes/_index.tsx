@@ -1,6 +1,6 @@
 import { Link, useLoaderData } from "@remix-run/react";
 import { json } from "@remix-run/node";
-import { getTelegramGeneralDataInfo, getUserCategories } from "../api/users";
+import { getTelegramGeneralDataInfo } from "../api/users";
 import { UserCategory, UserData } from "~/api/types";
 import { getCategoryByUserId } from "~/api/firebaseConnection.server";
 import { useEffect } from "react";
@@ -20,11 +20,10 @@ export const loader = async () => {
     if (process.env.NODE_ENV === "production" && userData?.id) {
       const telegramUserCategory = await getCategoryByUserId(userData.id);
       if (telegramUserCategory) {
-        userCategories = telegramUserCategory;
+        userCategories = [telegramUserCategory];
       }
     } else {
       if (process.env.NODE_ENV === "development") {
-        // Permitir o acesso a todas as categorias no ambiente de desenvolvimento, para testar cada uma comente ou apague a linha
         userCategories = [
           UserCategory.ANY_USER,
           UserCategory.AMECICLISTAS,
@@ -39,6 +38,7 @@ export const loader = async () => {
 
   return json<LoaderData>({ userCategories, userData });
 };
+
 
 const hasAccessToCategory = (userCategories: UserCategory[], category: UserCategory) => {
   const accessHierarchy = {

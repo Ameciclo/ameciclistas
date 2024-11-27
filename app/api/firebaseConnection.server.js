@@ -39,22 +39,16 @@ export async function savePaymentRequest(paymentRequest) {
 // Função para buscar a categoria de um usuário no Firebase Realtime Database
 export const getCategoryByUserId = async (userId) => {
   try {
-    // Referência ao nó 'telegram_user' no banco de dados, com o userId fornecido
     const userRef = db.ref(`telegram_user/${userId}`);
-    
-    // Obtém o valor associado ao userId
     const snapshot = await userRef.once("value");
 
     if (snapshot.exists()) {
-      // Retorna a categoria do usuário
-      return [snapshot.val()];
+      return snapshot.val(); 
     } else {
-      // Caso o ID não exista no banco de dados
       console.error("No data available for this user.");
       return null;
     }
   } catch (error) {
-    // Erro ao buscar no banco de dados
     console.error("Error fetching user category:", error);
     return null;
   }
