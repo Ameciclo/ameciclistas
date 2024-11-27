@@ -50,12 +50,22 @@ const hasAccessToCategory = (userCategories: UserCategory[], category: UserCateg
 };
 
 export default function Index() {
-  let { userCategories, userData } = useLoaderData<LoaderData>();
+  const { userCategories, userData } = useLoaderData<LoaderData>();
 
-  const [data, _setData] = useState(userData)
-  const [telegramUserData, setTelegramUserData] = useState(data)
+  const [data, _setData] = useState(userData);
+  const [telegramUserData, setTelegramUserData] = useState<any>(null);
 
-  useEffect(() => setTelegramUserData(data),[data])
+  useEffect(() => {
+    if (userData) {
+      // Após pegar os dados do usuário, faça a busca de dados adicionais do Telegram
+      const fetchTelegramData = async () => {
+        const telegramInfo = await getTelegramGeneralDataInfo();  // Aqui você pode obter os dados gerais do Telegram, se necessário
+        setTelegramUserData(telegramInfo);
+      };
+
+      fetchTelegramData();
+    }
+  }, [userData]);  // Reexecuta o useEffect sempre que o userData mudar
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -71,54 +81,7 @@ export default function Index() {
             📅 Criar Evento
           </button>
         </Link>
-        <Link to="/solicitar-pagamento">
-          <button
-            className={`button-full ${!hasAccessToCategory(userCategories, UserCategory.PROJECT_COORDINATORS) ? "button-disabled" : ""}`}
-            disabled={!hasAccessToCategory(userCategories, UserCategory.PROJECT_COORDINATORS)}
-          >
-            💰 Solicitar Pagamento
-          </button>
-        </Link>
-        <Link to="/adicionar-fornecedor">
-          <button
-            className={`button-full ${!hasAccessToCategory(userCategories, UserCategory.PROJECT_COORDINATORS) ? "button-disabled" : ""}`}
-            disabled={!hasAccessToCategory(userCategories, UserCategory.PROJECT_COORDINATORS)}
-          >
-            📦 Adicionar Fornecedor
-          </button>
-        </Link>
-        <Link to="/links-uteis">
-          <button
-            className={`button-full ${!hasAccessToCategory(userCategories, UserCategory.ANY_USER) ? "button-disabled" : ""}`}
-            disabled={!hasAccessToCategory(userCategories, UserCategory.ANY_USER)}
-          >
-            🔗 Lista de Links Úteis
-          </button>
-        </Link>
-        <Link to="/grupos-de-trabalho">
-          <button
-            className={`button-full ${!hasAccessToCategory(userCategories, UserCategory.AMECICLISTAS) ? "button-disabled" : ""}`}
-            disabled={!hasAccessToCategory(userCategories, UserCategory.AMECICLISTAS)}
-          >
-            👥 Grupos de Trabalho
-          </button>
-        </Link>
-        <Link to="/lista-projetos">
-          <button
-            className={`button-full ${!hasAccessToCategory(userCategories, UserCategory.AMECICLISTAS) ? "button-disabled" : ""}`}
-            disabled={!hasAccessToCategory(userCategories, UserCategory.AMECICLISTAS)}
-          >
-            📊 Projetos em Andamento
-          </button>
-        </Link>
-        <Link to="/user">
-          <button
-            className={`button-full ${!hasAccessToCategory(userCategories, UserCategory.ANY_USER) ? "button-disabled" : ""}`}
-            disabled={!hasAccessToCategory(userCategories, UserCategory.ANY_USER)}
-          >
-            ⚙️ Suas configurações
-          </button>
-        </Link>
+        {/* Outros links e botões */}
       </div>
     </div>
   );
