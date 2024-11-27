@@ -49,13 +49,30 @@ export default function Index() {
   const [currentUserCategories, setCurrentUserCategories] = useState<UserCategory[]>(userCategories);
 
   useEffect(() => {
+    // Verifica se o WebApp do Telegram está disponível
+    if (window.Telegram?.WebApp) {
+      // Inicializa o Telegram Web App
+      window.Telegram.WebApp.ready();
+
+      // Exemplo: Configurações iniciais opcionais
+      console.log("Plataforma:", window.Telegram.WebApp.platform);
+      console.log("Dados do usuário:", window.Telegram.WebApp.initDataUnsafe);
+
+      // Atualiza a interface com base no tema do Telegram
+      document.body.style.backgroundColor =
+        window.Telegram.WebApp.themeParams.bg_color || "#ffffff";
+      document.body.style.color =
+        window.Telegram.WebApp.themeParams.text_color || "#000000";
+    } else {
+      console.warn("Telegram WebApp SDK não está disponível.");
+    }
     const userInfo = getTelegramUserInfo();
 
     if (userInfo?.id && userCategoriesObject[userInfo.id]) {
       setCurrentUserCategories([userCategoriesObject[userInfo.id] as any]);
     } else {
       // Permitir o acesso a todas a categoria ANY_USER no ambiente de produção, para testar 
-      if(process.env.NODE_ENV === "production") setCurrentUserCategories([UserCategory.ANY_USER]);
+      if (process.env.NODE_ENV === "production") setCurrentUserCategories([UserCategory.ANY_USER]);
     }
   }, [userCategoriesObject]);
 
