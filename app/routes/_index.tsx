@@ -13,7 +13,7 @@ export const loader = async () => {
   let userCategories: UserCategory[] = [UserCategory.ANY_USER];
 
   try {
-    if (process.env.NODE_ENV === "development") {
+    if (process.env.NODE_ENV === "") {
       // Permitir o acesso a todas as categorias no ambiente de desenvolvimento, para testar cada uma comente ou apague a linha
       userCategories = [
         // UserCategory.ANY_USER,
@@ -26,7 +26,8 @@ export const loader = async () => {
       const userCategoriesObject = await getCategories()
 
       if (userCategoriesObject[telegramUserData?.id as number]) {
-        userCategories = [userCategoriesObject[telegramUserData?.id as number]] 
+        userCategories = [userCategoriesObject[telegramUserData?.id as number]]
+        console.log(userCategories)
       } else {
         userCategories = [UserCategory.ANY_USER]
       }

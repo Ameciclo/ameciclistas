@@ -70,12 +70,12 @@ export const getTelegramUserInfo = (): UserData | null => {
     const telegram = (window as any).Telegram.WebApp;
 
     // Verifica se o usuário está disponível
-    if (telegram && telegram.initDataUnsafe && telegram.initDataUnsafe.user) {
+    if (telegram) {
       return telegram.initDataUnsafe.user as UserData;
     }
   }
 
-  return null;
+  return null
 }
 
 
