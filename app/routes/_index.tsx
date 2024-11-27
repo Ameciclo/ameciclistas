@@ -3,7 +3,7 @@ import { json } from "@remix-run/node";
 import { getTelegramUserInfo } from "~/api/users";
 import { UserCategory, UserData } from "~/api/types";
 import { useEffect, useState } from "react";
-import { getCategoryByUserId } from "~/api/firebaseConnection.server";
+import { getCategories } from "~/api/firebaseConnection.server";
 
 type LoaderData = {
   userCategories: UserCategory[];
@@ -16,14 +16,20 @@ export const loader = async () => {
     if (process.env.NODE_ENV === "development") {
       // Permitir o acesso a todas as categorias no ambiente de desenvolvimento, para testar cada uma comente ou apague a linha
       userCategories = [
-        UserCategory.ANY_USER,
-        UserCategory.AMECICLISTAS,
-        UserCategory.PROJECT_COORDINATORS,
+        // UserCategory.ANY_USER,
+        // UserCategory.AMECICLISTAS,
+        // UserCategory.PROJECT_COORDINATORS,
         UserCategory.AMECICLO_COORDINATORS,
       ];
     } else {
-      let telegramUserData = getTelegramUserInfo();
-      userCategories = await getCategoryByUserId(telegramUserData?.id);
+      const telegramUserData = await getTelegramUserInfo();
+      const userCategoriesObject = await getCategories()
+
+      if (userCategoriesObject[telegramUserData?.id as number]) {
+        userCategories = [userCategoriesObject[telegramUserData?.id as number]] 
+      } else {
+        userCategories = [UserCategory.ANY_USER]
+      }
     }
   } catch (error) {
     console.error("Error loading data:", error);
