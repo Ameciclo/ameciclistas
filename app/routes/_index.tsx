@@ -57,12 +57,6 @@ export default function Index() {
       // Exemplo: Configurações iniciais opcionais
       console.log("Plataforma:", window.Telegram.WebApp.platform);
       console.log("Dados do usuário:", window.Telegram.WebApp.initDataUnsafe);
-
-      // Atualiza a interface com base no tema do Telegram
-      document.body.style.backgroundColor =
-        window.Telegram.WebApp.themeParams.bg_color || "#ffffff";
-      document.body.style.color =
-        window.Telegram.WebApp.themeParams.text_color || "#000000";
     } else {
       console.warn("Telegram WebApp SDK não está disponível.");
     }
