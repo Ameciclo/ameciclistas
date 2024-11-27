@@ -1,12 +1,19 @@
 import { Link } from "@remix-run/react";
 import { useEffect, useState } from "react";
-import { getUserCategories } from "../api/users";
-import { UserCategory } from "~/api/types";
+import { getTelegramGeneralDataInfo, getUserCategories } from "../api/users";
+import { UserCategory, UserData } from "~/api/types";
+import { getCategoryByUserId } from "~/api/firebaseConnection.server";
 
 export default function Index() {
   const [userCategories, setUserCategories] = useState<UserCategory[]>([
     UserCategory.ANY_USER,
   ]);
+
+  const [userData, setUserData] = useState<UserData | null>(null);
+
+  useEffect(() => {
+    setUserData(() => getTelegramGeneralDataInfo());
+  }, []);
 
   useEffect(() => {
     let userId;
@@ -27,14 +34,23 @@ export default function Index() {
         .catch((error) =>
           console.error("Erro ao carregar o ID do usuário:", error)
         );
-    } else {
-      userId = 157783985;
-      if (userId) {
-        setUserCategories(getUserCategories(userId));
-      }
     }
-  }, []);
   
+    if (process.env.NODE_ENV === "production") {
+      (async () => {
+        try {
+          const telegramUserCategory = await getCategoryByUserId(userData?.id);
+  
+          // Verifique se `telegramUserCategory` não é `null` antes de atualizar o estado
+          if (telegramUserCategory) {
+            setUserCategories(telegramUserCategory);
+          }
+        } catch (error) {
+          console.error("Erro ao buscar categorias do usuário no banco de dados:", error);
+        }
+      })();
+    }
+  }, [userData]);
 
   const isAccessible = (requiredCategory: UserCategory) =>
     userCategories.includes(requiredCategory);
@@ -47,9 +63,8 @@ export default function Index() {
       <div className="mt-6">
         <Link to="/criar-evento">
           <button
-            className={`button-full ${
-              !isAccessible(UserCategory.AMECICLISTAS) ? "button-disabled" : ""
-            }`}
+            className={`button-full ${!isAccessible(UserCategory.AMECICLISTAS) ? "button-disabled" : ""
+              }`}
             disabled={!isAccessible(UserCategory.AMECICLISTAS)}
           >
             📅 Criar Evento
@@ -57,9 +72,8 @@ export default function Index() {
         </Link>
         <Link to="/solicitar-pagamento">
           <button
-            className={`button-full ${
-              !isAccessible(UserCategory.PROJECT_COORDINATORS) ? "button-disabled" : ""
-            }`}
+            className={`button-full ${!isAccessible(UserCategory.PROJECT_COORDINATORS) ? "button-disabled" : ""
+              }`}
             disabled={!isAccessible(UserCategory.PROJECT_COORDINATORS)}
           >
             💰 Solicitar Pagamento
@@ -67,9 +81,8 @@ export default function Index() {
         </Link>
         <Link to="/adicionar-fornecedor">
           <button
-            className={`button-full ${
-              !isAccessible(UserCategory.PROJECT_COORDINATORS) ? "button-disabled" : ""
-            }`}
+            className={`button-full ${!isAccessible(UserCategory.PROJECT_COORDINATORS) ? "button-disabled" : ""
+              }`}
             disabled={!isAccessible(UserCategory.PROJECT_COORDINATORS)}
           >
             📦 Adicionar Fornecedor
@@ -77,9 +90,8 @@ export default function Index() {
         </Link>
         <Link to="/links-uteis">
           <button
-            className={`button-full ${
-              !isAccessible(UserCategory.ANY_USER) ? "button-disabled" : ""
-            }`}
+            className={`button-full ${!isAccessible(UserCategory.ANY_USER) ? "button-disabled" : ""
+              }`}
             disabled={!isAccessible(UserCategory.ANY_USER)}
           >
             🔗 Lista de Links Úteis
@@ -87,9 +99,8 @@ export default function Index() {
         </Link>
         <Link to="/grupos-de-trabalho">
           <button
-            className={`button-full ${
-              !isAccessible(UserCategory.AMECICLISTAS) ? "button-disabled" : ""
-            }`}
+            className={`button-full ${!isAccessible(UserCategory.AMECICLISTAS) ? "button-disabled" : ""
+              }`}
             disabled={!isAccessible(UserCategory.AMECICLISTAS)}
           >
             👥 Grupos de Trabalho
@@ -97,9 +108,8 @@ export default function Index() {
         </Link>
         <Link to="/lista-projetos">
           <button
-            className={`button-full ${
-              !isAccessible(UserCategory.AMECICLISTAS) ? "button-disabled" : ""
-            }`}
+            className={`button-full ${!isAccessible(UserCategory.AMECICLISTAS) ? "button-disabled" : ""
+              }`}
             disabled={!isAccessible(UserCategory.AMECICLISTAS)}
           >
             📊 Projetos em Andamento
@@ -107,9 +117,8 @@ export default function Index() {
         </Link>
         <Link to="/user">
           <button
-            className={`button-full ${
-              !isAccessible(UserCategory.ANY_USER) ? "button-disabled" : ""
-            }`}
+            className={`button-full ${!isAccessible(UserCategory.ANY_USER) ? "button-disabled" : ""
+              }`}
             disabled={!isAccessible(UserCategory.ANY_USER)}
           >
             ⚙️ Suas configurações

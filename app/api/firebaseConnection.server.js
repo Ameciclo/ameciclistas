@@ -47,7 +47,7 @@ export const getCategoryByUserId = async (userId) => {
 
     if (snapshot.exists()) {
       // Retorna a categoria do usuário
-      return snapshot.val();
+      return [snapshot.val()];
     } else {
       // Caso o ID não exista no banco de dados
       console.error("No data available for this user.");
