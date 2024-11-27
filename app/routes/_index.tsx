@@ -1,18 +1,18 @@
 import { Link, useLoaderData } from "@remix-run/react";
 import { json } from "@remix-run/node";
 import { getTelegramUserInfo } from "~/api/users";
-import { UserCategory, UserData } from "~/api/types";
+import { TelegramUser, UserCategory } from "~/api/types";
 import { getCategories } from "~/api/firebaseConnection.server";
 import { useEffect, useState } from "react";
 
 type LoaderData = {
   userCategories: UserCategory[];
-  userCategoriesObject: Record<string, UserCategory>; // Tipo mais específico
+  userCategoriesObject: Record<string, TelegramUser>; // Tipo mais específico
 };
 
 export const loader = async () => {
   let userCategories: UserCategory[] = [UserCategory.ANY_USER];
-  let userCategoriesObject: Record<string, UserCategory> = {};
+  let userCategoriesObject: Record<string, TelegramUser> = {};
 
   try {
     if (process.env.NODE_ENV === "development") {
@@ -52,8 +52,9 @@ export default function Index() {
     const userInfo = getTelegramUserInfo();
 
     if (userInfo?.id && userCategoriesObject[userInfo.id]) {
-      setCurrentUserCategories([userCategoriesObject[userInfo.id]]);
+      setCurrentUserCategories([userCategoriesObject[userInfo.id] as any]);
     } else {
+      // Permitir o acesso a todas a categoria ANY_USER no ambiente de produção, para testar 
       if(process.env.NODE_ENV === "production") setCurrentUserCategories([UserCategory.ANY_USER]);
     }
   }, [userCategoriesObject]);
@@ -61,7 +62,7 @@ export default function Index() {
   return (
     <div className="container mx-auto py-8 px-4">
       <h1 className="text-3xl font-bold text-teal-600 text-center">
-        Ameciclobot Miniapp {currentUserCategories}
+        Ameciclobot Miniapp
       </h1>
       <div className="mt-6">
         <Link to="/criar-evento">
