@@ -48,7 +48,7 @@ export default function Index() {
   return (
     <div className="container mx-auto py-8 px-4">
       <h1 className="text-3xl font-bold text-teal-600 text-center">
-        Ameciclobot Miniapp {userCategories[1]}
+        Ameciclobot Miniapp {userCategories[0]}
       </h1>
       <div className="mt-6">
         <Link to="/criar-evento">
