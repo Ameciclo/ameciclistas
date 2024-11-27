@@ -1,6 +1,6 @@
 import { Link, useLoaderData } from "@remix-run/react";
 import { json } from "@remix-run/node";
-import { getTelegramGeneralDataInfo } from "../api/users";
+import { getTelegramGeneralDataInfo, getTelegramUserInfo } from "../api/users";
 import { UserCategory, UserData } from "~/api/types";
 import { getCategoryByUserId } from "~/api/firebaseConnection.server";
 
@@ -14,7 +14,7 @@ export const loader = async () => {
   let userCategories: UserCategory[] = [UserCategory.ANY_USER];
 
   try {
-    userData = getTelegramGeneralDataInfo();
+    userData = getTelegramUserInfo();
 
     if (process.env.NODE_ENV === "production" && userData?.id) {
       const DBUserCategory = await getCategoryByUserId(userData.id);
