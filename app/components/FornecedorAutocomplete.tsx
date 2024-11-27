@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Autosuggest from "react-autosuggest";
-import { Supplier } from "~/api/types";
+import { Supplier } from "~/utils/types";
 
 interface Props {
   fornecedores: Supplier[];

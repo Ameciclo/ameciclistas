@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { Link } from '@remix-run/react';
-import { UserData } from '~/api/types';
-import { getTelegramUserInfo } from '~/api/users';
+import { UserData } from '~/utils/types';
+import { getTelegramUserInfo } from '~/api/usersRoles';
 
 
 export default function User() {

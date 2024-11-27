@@ -1,6 +1,6 @@
 // components/SolicitarPagamento/ProjectSelect.tsx
 import React from "react";
-import { Project } from "~/api/types";
+import { Project } from "~/utils/types";
 
 interface ProjectSelectProps {
   projetos: Project[];

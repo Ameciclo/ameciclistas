@@ -1,4 +1,4 @@
-import { TelegramUser, UserCategory } from "~/api/types";
+import { TelegramUser, UserCategory } from "~/utils/types";
 
 // Define your users and their categories
 export const users: TelegramUser[] = [

@@ -1,6 +1,6 @@
 // userRoles.ts
 import { users } from "~/mockup/users";
-import { UserCategory, UserData } from "./types";
+import { UserCategory, UserData } from "../utils/types";
 
 const categoryHierarchy: Record<UserCategory, UserCategory[]> = {
   [UserCategory.ANY_USER]: [],

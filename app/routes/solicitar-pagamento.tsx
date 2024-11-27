@@ -12,13 +12,13 @@ import ValorInput from "~/components/ValorInput";
 import Unauthorized from "~/components/Unauthorized";
 
 // Group utilities and types
-import { UserCategory, UserData } from "../api/types";
-import { Project } from "~/api/types";
+import { UserCategory, UserData } from "../utils/types";
+import { Project } from "~/utils/types";
 
 import { useAuthorization } from "~/hooks/useAuthorization";
 import { loader } from "~/loaders/solicitar-pagamento-loader";
 import { action } from "~/loaders/solicitar-pagamento-action";
-import { getTelegramGeneralDataInfo, getTelegramUserInfo } from "~/api/users";
+import { getTelegramGeneralDataInfo, getTelegramUserInfo } from "~/api/usersRoles";
 
 export { loader, action };
 

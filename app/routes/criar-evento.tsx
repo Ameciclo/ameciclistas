@@ -1,8 +1,8 @@
 import { useNavigate } from "@remix-run/react";
 import { useState, useEffect } from "react";
-import { getUserCategories } from "../api/users";
-import { UserCategory } from "~/api/types";
-import { Agenda } from "../api/types"; // Importe a interface Agenda
+import { getUserCategories } from "../api/usersRoles";
+import { UserCategory } from "~/utils/types";
+import { Agenda } from "../utils/types"; // Importe a interface Agenda
 
 export default function CriarEvento() {
   const navigate = useNavigate();
