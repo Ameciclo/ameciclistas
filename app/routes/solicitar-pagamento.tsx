@@ -18,7 +18,7 @@ import { Project } from "~/utils/types";
 import { useAuthorization } from "~/hooks/useAuthorization";
 import { loader } from "~/loaders/solicitar-pagamento-loader";
 import { action } from "~/loaders/solicitar-pagamento-action";
-import { getTelegramGeneralDataInfo, getTelegramUserInfo } from "~/api/usersRoles";
+import { getTelegramGeneralDataInfo, getTelegramUserInfo } from "~/hooks/usersRoles";
 
 export { loader, action };
 

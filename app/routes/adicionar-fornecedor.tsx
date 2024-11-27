@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "@remix-run/react";
 import Unauthorized from "~/components/Unauthorized"; // Importar o componente Unauthorized
-import { getUserCategories } from "../api/usersRoles";
+import { getUserCategories } from "../hooks/usersRoles";
 import { UserCategory } from "~/utils/types";
 
 export default function AdicionarFornecedor() {

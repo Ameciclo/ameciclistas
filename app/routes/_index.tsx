@@ -1,6 +1,6 @@
 import { Link } from "@remix-run/react";
 import { useEffect, useState } from "react";
-import { getUserCategories } from "../api/usersRoles";
+import { getUserCategories } from "../hooks/usersRoles";
 import { UserCategory } from "~/utils/types";
 
 export default function Index() {

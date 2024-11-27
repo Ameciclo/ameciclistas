@@ -1,6 +1,6 @@
 import { useNavigate } from "@remix-run/react";
 import { useState, useEffect } from "react";
-import { getUserCategories } from "../api/usersRoles";
+import { getUserCategories } from "../hooks/usersRoles";
 import { UserCategory } from "~/utils/types";
 import { Agenda } from "../utils/types"; // Importe a interface Agenda
 

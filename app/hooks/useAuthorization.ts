@@ -1,6 +1,6 @@
 // hooks/useAuthorization.ts
 import { useEffect, useState } from "react";
-import { getUserCategories } from "../api/usersRoles";
+import { getUserCategories } from "./usersRoles";
 import { UserCategory } from "~/utils/types";
 
 export function useAuthorization(requiredCategory: UserCategory) {
