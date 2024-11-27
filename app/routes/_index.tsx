@@ -54,7 +54,7 @@ export default function Index() {
     if (userInfo?.id && userCategoriesObject[userInfo.id]) {
       setCurrentUserCategories([userCategoriesObject[userInfo.id]]);
     } else {
-      if(process.env.NODE_ENV === "") setCurrentUserCategories([UserCategory.ANY_USER]);
+      if(process.env.NODE_ENV === "production") setCurrentUserCategories([UserCategory.ANY_USER]);
     }
   }, [userCategoriesObject]);
 
