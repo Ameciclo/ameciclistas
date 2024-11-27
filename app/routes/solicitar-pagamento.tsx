@@ -16,9 +16,9 @@ import { UserCategory, UserData } from "../utils/types";
 import { Project } from "~/utils/types";
 
 import { useAuthorization } from "~/hooks/useAuthorization";
+import { getTelegramGeneralDataInfo, getTelegramUserInfo } from "~/api/telegramData";
 import { loader } from "~/loaders/solicitar-pagamento-loader";
 import { action } from "~/loaders/solicitar-pagamento-action";
-import { getTelegramGeneralDataInfo, getTelegramUserInfo } from "~/hooks/usersRoles";
 
 export { loader, action };
 

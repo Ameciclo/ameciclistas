@@ -1,6 +1,6 @@
 // userRoles.ts
 import { users } from "~/mockup/users";
-import { UserCategory, UserData } from "../utils/types";
+import { UserCategory } from "../utils/types";
 
 const categoryHierarchy: Record<UserCategory, UserCategory[]> = {
   [UserCategory.ANY_USER]: [],
@@ -30,32 +30,3 @@ export const getUserCategories = (userId: number): UserCategory[] => {
   }
   return [UserCategory.ANY_USER];
 };
-
-export const getTelegramUserInfo = (): UserData | null => {
-  // Verifica se estamos no navegador
-  if (typeof window !== 'undefined') {
-    const telegram = (window as any).Telegram.WebApp;
-
-    // Verifica se o usuário está disponível
-    if (telegram && telegram.initDataUnsafe && telegram.initDataUnsafe.user) {
-      return telegram.initDataUnsafe.user as UserData;
-    }
-  }
-
-  return null;
-}
-
-
-export const getTelegramGeneralDataInfo = (): any => {
-  // Verifica se estamos no navegador
-  if (typeof window !== 'undefined') {
-    const telegram = (window as any)?.Telegram.WebApp;
-
-    // Verifica se o dado está disponível
-    if (telegram && telegram.initDataUnsafe) {
-      return telegram.initDataUnsafe as UserData;
-    }
-  }
-
-  return null;
-}
