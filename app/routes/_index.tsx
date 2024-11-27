@@ -27,9 +27,8 @@ export const loader = async () => {
 
       if (userCategoriesObject[telegramUserData?.id as number]) {
         userCategories = [userCategoriesObject[telegramUserData?.id as number]]
-        console.log(userCategories)
       } else {
-        userCategories = [UserCategory.ANY_USER]
+        userCategories = [UserCategory.AMECICLO_COORDINATORS]
       }
     }
   } catch (error) {
