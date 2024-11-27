@@ -3,6 +3,7 @@ import { json } from "@remix-run/node";
 import { getTelegramUserInfo, getTelegramGeneralDataInfo } from "../api/users";
 import { UserCategory, UserData } from "~/api/types";
 import { getCategoryByUserId } from "~/api/firebaseConnection.server";
+import { useEffect, useState } from "react";
 
 type LoaderData = {
   userCategories: UserCategory[];
@@ -16,9 +17,8 @@ export const loader = async () => {
   let telegramData: any = {};  // Novo para armazenar os dados gerais do Telegram
 
   try {
-    // Agora chamamos as funções assíncronas corretamente
-    userData = getTelegramUserInfo();  // Assume-se que seja uma função assíncrona agora
-
+    userData = getTelegramUserInfo();
+    
     if (process.env.NODE_ENV === "production" && userData?.id) {
       const DBUserCategory = await getCategoryByUserId(userData?.id);
       userCategories = [DBUserCategory];
@@ -52,10 +52,15 @@ const hasAccessToCategory = (userCategories: UserCategory[], category: UserCateg
 export default function Index() {
   let { userCategories, userData } = useLoaderData<LoaderData>();
 
+  const [data, _setData] = useState(userData)
+  const [telegramUserData, setTelegramUserData] = useState(data)
+
+  useEffect(() => setTelegramUserData(data),[data])
+
   return (
     <div className="container mx-auto py-8 px-4">
       <h1 className="text-3xl font-bold text-teal-600 text-center">
-        Ameciclobot Miniapp
+        Ameciclobot Miniapp {telegramUserData?.id}
       </h1>
       <div className="mt-6">
         <Link to="/criar-evento">
@@ -63,7 +68,7 @@ export default function Index() {
             className={`button-full ${!hasAccessToCategory(userCategories, UserCategory.AMECICLISTAS) ? "button-disabled" : ""}`}
             disabled={!hasAccessToCategory(userCategories, UserCategory.AMECICLISTAS)}
           >
-            📅 Criar Evento {userData?.id}
+            📅 Criar Evento
           </button>
         </Link>
         <Link to="/solicitar-pagamento">
