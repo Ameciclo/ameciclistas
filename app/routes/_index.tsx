@@ -52,9 +52,6 @@ const hasAccessToCategory = (userCategories: UserCategory[], category: UserCateg
 
 export default function Index() {
   let { userCategories } = useLoaderData<LoaderData>();
-  console.log(userCategories);
-
-  useEffect(() => { }, []);
 
   return (
     <div className="container mx-auto py-8 px-4">
