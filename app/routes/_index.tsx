@@ -2,8 +2,8 @@ import { Link, useLoaderData } from "@remix-run/react";
 import { json } from "@remix-run/node";
 import { getTelegramUserInfo } from "~/api/users";
 import { UserCategory, UserData } from "~/api/types";
-import { getCategoryByUserId } from "~/api/firebaseConnection.server";
 import { useEffect, useState } from "react";
+import { getCategoryByUserId } from "~/api/firebaseConnection.server";
 
 type LoaderData = {
   userCategories: UserCategory[];
@@ -21,6 +21,9 @@ export const loader = async () => {
         UserCategory.PROJECT_COORDINATORS,
         UserCategory.AMECICLO_COORDINATORS,
       ];
+    } else {
+      const telegramUserData = getTelegramUserInfo()
+      userCategories = await getCategoryByUserId(telegramUserData?.id)
     }
   } catch (error) {
     console.error("Error loading data:", error);
@@ -40,19 +43,12 @@ const hasAccessToCategory = (userCategories: UserCategory[], category: UserCateg
 };
 
 export default function Index() {
-  const { userCategories } = useLoaderData<LoaderData>();
-  const [userData, setUserData] = useState<UserData | null>(null);
-  const [telegramData, setTelegramData] = useState([]);
-  console.log(userCategories)
-
-  useEffect(() => {
-    setUserData(() => getTelegramUserInfo());
-  }, []);
+  const { userCategories } = useLoaderData<typeof loader>();
 
   return (
     <div className="container mx-auto py-8 px-4">
       <h1 className="text-3xl font-bold text-teal-600 text-center">
-        Ameciclobot Miniapp {userData?.id}
+        Ameciclobot Miniapp {userCategories[0]}
       </h1>
       <div className="mt-6">
         <Link to="/criar-evento">
