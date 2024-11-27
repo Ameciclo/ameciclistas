@@ -48,7 +48,7 @@ const hasAccessToCategory = (userCategories: UserCategory[], category: UserCateg
 };
 
 export default function Index() {
-  let { userCategories } = useLoaderData<LoaderData>();
+  let { userCategories, userData } = useLoaderData<LoaderData>();
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -61,7 +61,7 @@ export default function Index() {
             className={`button-full ${!hasAccessToCategory(userCategories, UserCategory.AMECICLISTAS) ? "button-disabled" : ""}`}
             disabled={!hasAccessToCategory(userCategories, UserCategory.AMECICLISTAS)}
           >
-            📅 Criar Evento {userCategories[0]}
+            📅 Criar Evento {userData?.id}
           </button>
         </Link>
         <Link to="/solicitar-pagamento">
