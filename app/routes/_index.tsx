@@ -1,23 +1,26 @@
 import { Link, useLoaderData } from "@remix-run/react";
 import { json } from "@remix-run/node";
-import { getTelegramGeneralDataInfo, getTelegramUserInfo } from "../api/users";
+import { getTelegramUserInfo, getTelegramGeneralDataInfo } from "../api/users";
 import { UserCategory, UserData } from "~/api/types";
 import { getCategoryByUserId } from "~/api/firebaseConnection.server";
 
 type LoaderData = {
   userCategories: UserCategory[];
   userData: UserData | null;
+  telegramData: any;  // Adicionado para armazenar os dados gerais do Telegram
 };
 
 export const loader = async () => {
   let userData: UserData | null = null;
   let userCategories: UserCategory[] = [UserCategory.ANY_USER];
+  let telegramData: any = {};  // Novo para armazenar os dados gerais do Telegram
 
   try {
-    userData = getTelegramUserInfo();
+    // Agora chamamos as funções assíncronas corretamente
+    userData = getTelegramUserInfo();  // Assume-se que seja uma função assíncrona agora
 
-    if (process.env.NODE_ENV === "production" && userData?.id) {
-      const DBUserCategory = await getCategoryByUserId(userData.id);
+    if (process.env.NODE_ENV === "development") {
+      const DBUserCategory = await getCategoryByUserId(userData?.id);
       userCategories = [DBUserCategory];
     } else {
       if (process.env.NODE_ENV === "development") {
@@ -33,9 +36,8 @@ export const loader = async () => {
     console.error("Error loading data:", error);
   }
 
-  return json<LoaderData>({ userCategories, userData });
+  return json<LoaderData>({ userCategories, userData, telegramData });
 };
-
 
 const hasAccessToCategory = (userCategories: UserCategory[], category: UserCategory) => {
   const accessHierarchy = {
