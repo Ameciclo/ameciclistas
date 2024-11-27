@@ -22,11 +22,14 @@ import { getTelegramGeneralDataInfo, getTelegramUserInfo } from "~/api/users";
 
 export { loader, action };
 
+const pageAuthorization = UserCategory.PROJECT_COORDINATORS;
+
 export default function SolicitarPagamento() {
   const { projects, suppliers } = useLoaderData<typeof loader>();
   const navigate = useNavigate();
 
-  const isAuthorized = true; //useAuthorization(UserCategory.AMECICLISTAS);
+  const isAuthorized = useAuthorization(pageAuthorization);
+  console.log(isAuthorized);
 
   const [projetoSelecionado, setProjetoSelecionado] = useState<Project | null>(
     null
@@ -42,8 +45,8 @@ export default function SolicitarPagamento() {
 
   useEffect(() => {
     setUserData(() => getTelegramUserInfo());
-    setTelegramData(() => getTelegramGeneralDataInfo())
-    console.log(telegramData)
+    setTelegramData(() => getTelegramGeneralDataInfo());
+    console.log(telegramData);
   }, []);
 
   // Filtra o fornecedor selecionado, se necessário
@@ -56,11 +59,9 @@ export default function SolicitarPagamento() {
   const fornecedorJSON = fornecedorSelecionado
     ? JSON.stringify(fornecedorSelecionado)
     : "";
-  const userJSON = userData
-    ? JSON.stringify(userData)
-    : "";
+  const userJSON = userData ? JSON.stringify(userData) : "";
 
-  if (false) {
+  if (isAuthorized) {
     return (
       <Unauthorized
         pageName="Solicitar Pagamento"
@@ -71,7 +72,10 @@ export default function SolicitarPagamento() {
 
   return (
     <Form method="post" className="container">
-      <h2 className="text-xl font-semibold">Bem-vindo, {userData?.first_name}! Estamos no ambiente de {process.env.NODE_ENV === 'production' ? 'PRODUÇÃO' : 'DESENVOLVIMENTO'}</h2>
+      <h2 className="text-xl font-semibold">
+        Bem-vindo, {userData?.first_name}! Estamos no ambiente de{" "}
+        {process.env.NODE_ENV === "production" ? "PRODUÇÃO" : "DESENVOLVIMENTO"}
+      </h2>
 
       <h2 className="text-primary">💰 Solicitar Pagamento</h2>
 
@@ -103,11 +107,7 @@ export default function SolicitarPagamento() {
         <ValorInput name="valor" valor={valor} setValor={setValor} />
       </div>
 
-      <input
-        type="hidden"
-        name="telegramUserInfo"
-        value={userJSON}
-      />
+      <input type="hidden" name="telegramUserInfo" value={userJSON} />
 
       <input
         type="hidden"
@@ -134,4 +134,3 @@ export default function SolicitarPagamento() {
     </Form>
   );
 }
-
