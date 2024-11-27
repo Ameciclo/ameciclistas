@@ -3,7 +3,6 @@ import { json } from "@remix-run/node";
 import { getTelegramGeneralDataInfo } from "../api/users";
 import { UserCategory, UserData } from "~/api/types";
 import { getCategoryByUserId } from "~/api/firebaseConnection.server";
-import { useEffect } from "react";
 
 type LoaderData = {
   userCategories: UserCategory[];
@@ -18,10 +17,8 @@ export const loader = async () => {
     userData = getTelegramGeneralDataInfo();
 
     if (process.env.NODE_ENV === "production" && userData?.id) {
-      const telegramUserCategory = await getCategoryByUserId(userData.id);
-      if (telegramUserCategory) {
-        userCategories = [telegramUserCategory];
-      }
+      const DBUserCategory = await getCategoryByUserId(userData.id);
+      userCategories = [DBUserCategory];
     } else {
       if (process.env.NODE_ENV === "development") {
         userCategories = [
@@ -64,7 +61,7 @@ export default function Index() {
             className={`button-full ${!hasAccessToCategory(userCategories, UserCategory.AMECICLISTAS) ? "button-disabled" : ""}`}
             disabled={!hasAccessToCategory(userCategories, UserCategory.AMECICLISTAS)}
           >
-            📅 Criar Evento
+            📅 Criar Evento {userCategories[0]}
           </button>
         </Link>
         <Link to="/solicitar-pagamento">
