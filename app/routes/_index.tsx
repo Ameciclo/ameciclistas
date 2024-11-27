@@ -19,7 +19,7 @@ export const loader = async () => {
     // Agora chamamos as funções assíncronas corretamente
     userData = getTelegramUserInfo();  // Assume-se que seja uma função assíncrona agora
 
-    if (process.env.NODE_ENV === "development") {
+    if (process.env.NODE_ENV === "production" && userData?.id) {
       const DBUserCategory = await getCategoryByUserId(userData?.id);
       userCategories = [DBUserCategory];
     } else {
