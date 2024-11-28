@@ -1,6 +1,6 @@
 import { Link, useLoaderData } from "@remix-run/react";
 import { json } from "@remix-run/node";
-import { getTelegramUserInfo } from "~/api/users";
+import { getTelegramUserInfo } from "~/mockup/usersOLD";
 import { TelegramUser, UserCategory } from "~/api/types";
 import { getCategories } from "~/api/firebaseConnection.server";
 import { useEffect, useState } from "react";

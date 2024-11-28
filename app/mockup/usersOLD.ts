@@ -1,5 +1,6 @@
 // userRoles.ts
-import { TelegramUser, UserCategory, UserData } from "./types";
+
+import { TelegramUser, UserCategory, UserData } from "~/utils/types";
 
 const categoryHierarchy: Record<UserCategory, UserCategory[]> = {
   [UserCategory.ANY_USER]: [],

@@ -1,6 +1,7 @@
 // actions/solicitarPagamentoAction.ts
 import { redirect, json, ActionFunction } from "@remix-run/node";
 import { savePaymentRequest } from "~/api/firebaseConnection.server";
+import { parseJSONField } from "~/utils/jsonParser";
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
@@ -14,49 +15,12 @@ export const action: ActionFunction = async ({ request }) => {
     timeStyle: "medium",
   });
 
-  // Parse do campo "project"
-  const projectRaw = formData.get("project");
-  let project = null;
-
-  try {
-    project = projectRaw ? JSON.parse(projectRaw as string) : null;
-  } catch (error) {
-    console.error("Erro ao fazer parse do campo 'project':", error);
-    return json(
-      { error: "Erro ao processar os dados do projeto." },
-      { status: 400 }
-    );
-  }
-
-  // Parse do campo "from"
-  const fromRaw = formData.get("from");
-  let from = null;
-
-  try {
-    from = fromRaw ? JSON.parse(fromRaw as string) : null;
-  } catch (error) {
-    console.error("Erro ao fazer parse do campo 'from':", error);
-    return json(
-      { error: "Erro ao processar os dados do remetente ('from')." },
-      { status: 400 }
-    );
-  }
-
-  // Parse do campo "recipient_information"
-  const recipientInfoRaw = formData.get("recipient_information");
-  let recipientInformation = null;
-
-  try {
-    recipientInformation = recipientInfoRaw
-      ? JSON.parse(recipientInfoRaw as string)
-      : null;
-  } catch (error) {
-    console.error("Erro ao fazer parse do campo 'recipient_information':", error);
-    return json(
-      { error: "Erro ao processar os dados do destinatário ('recipient_information')." },
-      { status: 400 }
-    );
-  }
+  const project = parseJSONField(formData.get("project"), "project");
+  const from = parseJSONField(formData.get("from"), "from");
+  const recipientInformation = parseJSONField(
+    formData.get("recipient_information"),
+    "recipient_information"
+  );
 
   const paymentRequest = {
     date: formatter.format(date),
