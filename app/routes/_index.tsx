@@ -1,13 +1,10 @@
 import { Link, useLoaderData } from "@remix-run/react";
 import { json } from "@remix-run/node";
 import { getTelegramUserInfo } from "~/mockup/usersOLD";
-import { TelegramUser, UserCategory } from "~/api/types";
 import { getCategories } from "~/api/firebaseConnection.server";
 import { useEffect, useState } from "react";
-<<<<<<< HEAD
 import { getUserCategories } from "../hooks/usersRoles";
-import { UserCategory } from "~/utils/types";
-=======
+import { TelegramUser, UserCategory } from "~/utils/types";
 
 type LoaderData = {
   userCategories: UserCategory[];
@@ -46,8 +43,6 @@ const hasAccessToCategory = (crrUserCategories: UserCategory[], category: UserCa
   };
   return accessHierarchy[category]?.some((allowedCategory) => crrUserCategories.includes(allowedCategory));
 };
-
->>>>>>> italosergio-dev
 
 export default function Index() {
   const { userCategories, userCategoriesObject } = useLoaderData<typeof loader>();

@@ -4,19 +4,22 @@ import { useEffect, useState } from "react";
 import { useLoaderData, useNavigate, Form } from "@remix-run/react";
 
 // Group internal components
-import ProjectSelect from "~/components/SolicitarPagamento/ProjectSelect";
-import RubricaSelect from "~/components/SolicitarPagamento/RubricaSelect";
-import FornecedorInput from "~/components/SolicitarPagamento/FornecedorInput";
-import DescricaoInput from "~/components/SolicitarPagamento/DescricaoInput";
-import ValorInput from "~/components/ValorInput";
-import Unauthorized from "~/components/Unauthorized";
+import DropdownSelect from "~/components/FormsComponents/DropdownSelect";
+import TextInput from "~/components/FormsComponents/TextInput";
+import AutoCompleteInput from "~/components/FormsComponents/AutoCompleteInput";
+import CurrencyInput from "~/components/FormsComponents/CurrencyInput";
 
 // Group utilities and types
-import { UserCategory, UserData } from "../utils/types";
+import { Supplier, UserCategory, UserData } from "../utils/types";
 import { Project } from "~/utils/types";
 
+import Unauthorized from "~/components/Unauthorized";
 import { useAuthorization } from "~/hooks/useAuthorization";
-import { getTelegramGeneralDataInfo, getTelegramUserInfo } from "~/api/telegramData";
+import {
+  getTelegramGeneralDataInfo,
+  getTelegramUserInfo,
+} from "~/api/telegramWebAppConection";
+
 import { loader } from "~/loaders/solicitar-pagamento-loader";
 import { action } from "~/loaders/solicitar-pagamento-action";
 
@@ -29,39 +32,37 @@ export default function SolicitarPagamento() {
   const navigate = useNavigate();
 
   const isAuthorized = useAuthorization(pageAuthorization);
-  console.log(isAuthorized);
 
-  const [projetoSelecionado, setProjetoSelecionado] = useState<Project | null>(
+  const [selectedProject, setSelectedProject] = useState<Project | null>(
     null
   );
-  const [rubricaSelecionada, setRubricaSelecionada] = useState<string | null>(
+  const [selectedBudgetItem, setSelectedBudgetItem] = useState<string | null>(
     null
   );
-  const [descricao, setDescricao] = useState("");
-  const [valor, setValor] = useState("0");
-  const [fornecedor, setFornecedor] = useState("");
+  const [description, setDescription] = useState("");
+  const [value, setValue] = useState("0");
+  const [supplier, setSupplier] = useState("");
   const [userData, setUserData] = useState<UserData | null>(null);
   const [telegramData, setTelegramData] = useState([]);
 
   useEffect(() => {
     setUserData(() => getTelegramUserInfo());
     setTelegramData(() => getTelegramGeneralDataInfo());
-    console.log(telegramData);
   }, []);
 
   // Filtra o fornecedor selecionado, se necessário
-  const fornecedorSelecionado = suppliers.find((s: any) => s.id === fornecedor);
+  const selectedSupplier = suppliers.find((s: Supplier) => s.id === supplier);
 
   // Prepara os dados do projeto e fornecedor como JSON
-  const projetoJSON = projetoSelecionado
-    ? JSON.stringify(projetoSelecionado)
+  const selectedProjectStringfied = selectedProject
+    ? JSON.stringify(selectedProject)
     : "";
-  const fornecedorJSON = fornecedorSelecionado
-    ? JSON.stringify(fornecedorSelecionado)
+  const selectedSuppierStringfied = selectedSupplier
+    ? JSON.stringify(selectedSupplier)
     : "";
-  const userJSON = userData ? JSON.stringify(userData) : "";
+  const userDataStringfied = userData ? JSON.stringify(userData) : "";
 
-  if (isAuthorized) {
+  if (false) {
     return (
       <Unauthorized
         pageName="Solicitar Pagamento"
@@ -79,46 +80,72 @@ export default function SolicitarPagamento() {
 
       <h2 className="text-primary">💰 Solicitar Pagamento</h2>
 
-      <ProjectSelect
-        projetos={projects}
-        projetoSelecionado={projetoSelecionado}
-        setProjetoSelecionado={setProjetoSelecionado}
-        setRubricaSelecionada={setRubricaSelecionada}
+      <DropdownSelect
+        label="Projeto"
+        options={projects}
+        selectedValue={selectedProject?.spreadsheet_id || null}
+        onChange={(value) => {
+          const project = projects.find((p: Project) => p.spreadsheet_id === value);
+          setSelectedProject(project || null);
+          setSelectedBudgetItem(null); // Resetar a rubrica ao mudar o projeto
+        }}
+        valueKey="spreadsheet_id"
+        labelKey="name"
+        placeholder="Selecione um projeto"
       />
 
-      {projetoSelecionado && (
-        <RubricaSelect
-          projetoSelecionado={projetoSelecionado}
-          rubricaSelecionada={rubricaSelecionada}
-          setRubricaSelecionada={setRubricaSelecionada}
+      {selectedProject && (
+        <DropdownSelect
+          label="Rubrica"
+          options={selectedProject.budget_items.map((item) => ({
+            value: item,
+            label: item,
+          }))}
+          selectedValue={selectedBudgetItem}
+          onChange={(value) => setSelectedBudgetItem(value)}
+          valueKey="value"
+          labelKey="label"
+          placeholder="Selecione uma rubrica"
         />
       )}
 
-      <FornecedorInput
-        fornecedores={suppliers}
-        fornecedor={fornecedor}
-        setFornecedor={setFornecedor}
+      <AutoCompleteInput
+        label="Fornercedor"
+        options={suppliers}
+        value={supplier}
+        onChange={setSupplier}
+        name="supplier"
+        placeholder="Digite o nome do fornecedor"
+        getOptionLabel={(supplier: Supplier) => supplier.nome}
       />
 
-      <DescricaoInput descricao={descricao} setDescricao={setDescricao} />
+      <TextInput
+        label="Descrição"
+        value={description}
+        onChange={setDescription}
+        placeholder="Digite a descrição aqui"
+        name="descricao"
+      />
 
-      <div className="form-group">
-        <label className="form-label">Valor:</label>
-        <ValorInput name="valor" valor={valor} setValor={setValor} />
-      </div>
+      <CurrencyInput
+        label="Valor"
+        valor={value}
+        setValor={setValue}
+        name="valor"
+      />
 
-      <input type="hidden" name="telegramUserInfo" value={userJSON} />
+      <input type="hidden" name="telegramUserInfo" value={userDataStringfied} />
 
       <input
         type="hidden"
         name="project"
-        value={projetoJSON} // Envia o objeto do projeto como JSON
+        value={selectedProjectStringfied} // Envia o objeto do projeto como JSON
       />
 
       <input
         type="hidden"
         name="fornecedor"
-        value={fornecedorJSON} // Envia o objeto do fornecedor como JSON
+        value={selectedSuppierStringfied} // Envia o objeto do fornecedor como JSON
       />
 
       <button type="submit" className="button-full">

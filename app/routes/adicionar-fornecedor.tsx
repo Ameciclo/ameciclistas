@@ -128,7 +128,6 @@ export default function AdicionarFornecedor() {
       conta,
     };
 
-    console.log(fornecedorData); // Aqui você pode enviar os dados para a API ou fazer o que for necessário
   };
 
   // Se não autorizado, renderizar o componente Unauthorized
