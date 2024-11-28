@@ -1,3 +1,14 @@
+export interface ButtonItem {
+  label: string; // Texto do botão
+  onClick: () => void; // Ação ao clicar no botão
+  type?: "primary" | "secondary"; // Tipo de botão (estilo)
+  disabled?: boolean; // Desabilitar o botão
+}
+
+export interface ButtonListProps {
+  buttons: ButtonItem[]; // Lista de botões
+}
+
 export interface Agenda {
   name: string | number | readonly string[] | undefined;
 }

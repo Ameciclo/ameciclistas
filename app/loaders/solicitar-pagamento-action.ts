@@ -25,10 +25,10 @@ export const action: ActionFunction = async ({ request }) => {
   const paymentRequest = {
     date: formatter.format(date),
     project, // Agora project é um objeto parseado
-    budgetItem: formData.get("rubrica"),
-    recipientName: formData.get("fornecedor"),
-    description: formData.get("descricao"),
-    value: formData.get("valor"),
+    budgetItem: formData.get("budgetItem"),
+    recipientName: formData.get("supplierName"),
+    description: formData.get("description"),
+    value: formData.get("value"),
     from_chat_id: "",
     group_message_id: "",
     invoice_url: "",

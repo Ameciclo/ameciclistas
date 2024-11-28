@@ -109,6 +109,7 @@ export default function SolicitarPagamento() {
       </h2>
       <h2 className="text-primary">💰 Solicitar Pagamento</h2>
       <DropdownSelect
+        name="projectName"
         label="Projeto"
         options={projects}
         selectedValue={selectedProject?.spreadsheet_id || null}
@@ -125,6 +126,7 @@ export default function SolicitarPagamento() {
       />
       {selectedProject && (
         <DropdownSelect
+          name="budgetItem"
           label="Rubrica"
           options={selectedProject.budget_items.map((item) => ({
             value: item,
@@ -142,7 +144,7 @@ export default function SolicitarPagamento() {
         options={suppliers}
         value={supplier}
         onChange={setSupplier}
-        name="supplier"
+        name="supplierName"
         placeholder="Digite o nome do fornecedor"
         getOptionLabel={(supplier: Supplier) => supplier.nome}
       />
@@ -151,13 +153,13 @@ export default function SolicitarPagamento() {
         value={description}
         onChange={setDescription}
         placeholder="Digite a descrição aqui"
-        name="descricao"
+        name="description"
       />
       <CurrencyInput
         label="Valor"
         valor={value}
         setValor={setValue}
-        name="valor"
+        name="value"
       />
       <input type="hidden" name="telegramUserInfo" value={userDataStringfied} />
       <input
@@ -167,7 +169,7 @@ export default function SolicitarPagamento() {
       />
       <input
         type="hidden"
-        name="fornecedor"
+        name="supplier"
         value={selectedSuppierStringfied} // Envia o objeto do fornecedor como JSON
       />
       <button type="submit" className="button-full">

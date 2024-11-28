@@ -1,15 +1,17 @@
-// routes/sucesso.tsx
 import { useNavigate } from "@remix-run/react";
+import ButtonList from "~/components/ButtonList";
 import Unauthorized from "~/hooks/Unauthorized";
-import { getUserCategories } from "~/hooks/usersRoles";
-import { UserCategory } from "~/utils/types";
+import { getUserCategories } from "~/mockup/usersOLD";
+import { ButtonItem, UserCategory } from "~/utils/types";
 
 export default function Sucesso() {
   const navigate = useNavigate();
   const userId = 157783985; // Substitua com a lógica real para obter o ID do usuário
 
   // Verifica se o usuário tem permissão para acessar a página
-  const isAuthorized = getUserCategories(userId).includes(UserCategory.AMECICLISTAS);
+  const isAuthorized = getUserCategories(userId).includes(
+    UserCategory.AMECICLISTAS
+  );
 
   if (!isAuthorized) {
     return (
@@ -20,25 +22,25 @@ export default function Sucesso() {
     );
   }
 
+  const buttons: ButtonItem[] = [
+    {
+      label: "Solicitar Novo Pagamento",
+      onClick: () => navigate("/solicitar-pagamento"),
+      type: "primary", // Agora está correto
+    },
+    {
+      label: "Voltar",
+      onClick: () => navigate(-1),
+      type: "secondary", // Agora está correto
+    },
+  ];
+
   return (
     <div className="container">
       <h2 className="text-primary">✅ Solicitação Enviada com Sucesso!</h2>
       <p>A sua solicitação de pagamento foi processada e está em andamento.</p>
-      
-      <div className="button-group">
-        <button
-          className="button-primary"
-          onClick={() => navigate("/solicitar-pagamento")}
-        >
-          Solicitar Novo Pagamento
-        </button>
-        <button
-          className="button-secondary"
-          onClick={() => navigate(-1)} // Voltar à página anterior
-        >
-          Voltar
-        </button>
-      </div>
+
+      <ButtonList buttons={buttons} />
     </div>
   );
 }
