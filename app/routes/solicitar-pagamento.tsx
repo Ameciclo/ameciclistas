@@ -13,7 +13,7 @@ import CurrencyInput from "~/components/FormsComponents/CurrencyInput";
 import { Supplier, UserCategory, UserData } from "../utils/types";
 import { Project } from "~/utils/types";
 
-import Unauthorized from "~/components/Unauthorized";
+import Unauthorized from "~/hooks/Unauthorized";
 import { useAuthorization } from "~/hooks/useAuthorization";
 import {
   getTelegramGeneralDataInfo,
@@ -33,9 +33,7 @@ export default function SolicitarPagamento() {
 
   const isAuthorized = useAuthorization(pageAuthorization);
 
-  const [selectedProject, setSelectedProject] = useState<Project | null>(
-    null
-  );
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [selectedBudgetItem, setSelectedBudgetItem] = useState<string | null>(
     null
   );
@@ -71,21 +69,53 @@ export default function SolicitarPagamento() {
     );
   }
 
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    if (!selectedProject) {
+      alert("Por favor, selecione um projeto.");
+      e.preventDefault();
+      return;
+    }
+
+    if (!selectedBudgetItem) {
+      alert("Por favor, selecione uma rubrica.");
+      e.preventDefault();
+      return;
+    }
+
+    if (!supplier) {
+      alert("Por favor, selecione um fornecedor.");
+      e.preventDefault();
+      return;
+    }
+
+    if (!description.trim()) {
+      alert("Por favor, insira uma descrição.");
+      e.preventDefault();
+      return;
+    }
+
+    if (!value || parseFloat(value) <= 0) {
+      alert("Por favor, insira um valor válido.");
+      e.preventDefault();
+      return;
+    }
+  };
+
   return (
-    <Form method="post" className="container">
+    <Form method="post" className="container" onSubmit={handleSubmit}>
       <h2 className="text-xl font-semibold">
         Bem-vindo, {userData?.first_name}! Estamos no ambiente de{" "}
         {process.env.NODE_ENV === "production" ? "PRODUÇÃO" : "DESENVOLVIMENTO"}
       </h2>
-
       <h2 className="text-primary">💰 Solicitar Pagamento</h2>
-
       <DropdownSelect
         label="Projeto"
         options={projects}
         selectedValue={selectedProject?.spreadsheet_id || null}
         onChange={(value) => {
-          const project = projects.find((p: Project) => p.spreadsheet_id === value);
+          const project = projects.find(
+            (p: Project) => p.spreadsheet_id === value
+          );
           setSelectedProject(project || null);
           setSelectedBudgetItem(null); // Resetar a rubrica ao mudar o projeto
         }}
@@ -93,7 +123,6 @@ export default function SolicitarPagamento() {
         labelKey="name"
         placeholder="Selecione um projeto"
       />
-
       {selectedProject && (
         <DropdownSelect
           label="Rubrica"
@@ -108,7 +137,6 @@ export default function SolicitarPagamento() {
           placeholder="Selecione uma rubrica"
         />
       )}
-
       <AutoCompleteInput
         label="Fornercedor"
         options={suppliers}
@@ -118,7 +146,6 @@ export default function SolicitarPagamento() {
         placeholder="Digite o nome do fornecedor"
         getOptionLabel={(supplier: Supplier) => supplier.nome}
       />
-
       <TextInput
         label="Descrição"
         value={description}
@@ -126,28 +153,23 @@ export default function SolicitarPagamento() {
         placeholder="Digite a descrição aqui"
         name="descricao"
       />
-
       <CurrencyInput
         label="Valor"
         valor={value}
         setValor={setValue}
         name="valor"
       />
-
       <input type="hidden" name="telegramUserInfo" value={userDataStringfied} />
-
       <input
         type="hidden"
         name="project"
         value={selectedProjectStringfied} // Envia o objeto do projeto como JSON
       />
-
       <input
         type="hidden"
         name="fornecedor"
         value={selectedSuppierStringfied} // Envia o objeto do fornecedor como JSON
       />
-
       <button type="submit" className="button-full">
         Enviar Solicitação
       </button>

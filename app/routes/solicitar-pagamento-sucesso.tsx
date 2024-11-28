@@ -1,6 +1,6 @@
 // routes/sucesso.tsx
 import { useNavigate } from "@remix-run/react";
-import Unauthorized from "~/components/Unauthorized";
+import Unauthorized from "~/hooks/Unauthorized";
 import { getUserCategories } from "~/hooks/usersRoles";
 import { UserCategory } from "~/utils/types";
 

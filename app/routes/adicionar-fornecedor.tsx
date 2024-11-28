@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "@remix-run/react";
-import Unauthorized from "~/components/Unauthorized"; // Importar o componente Unauthorized
+import Unauthorized from "~/hooks/Unauthorized"; // Importar o componente Unauthorized
 import { getUserCategories } from "../hooks/usersRoles";
 import { UserCategory } from "~/utils/types";
 
