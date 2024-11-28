@@ -1,6 +1,6 @@
 // loaders/solicitarPagamentoLoader.ts
 import { json } from "@remix-run/node";
-import { getProjects, getSuppliers } from "~/api/firebaseConnection.server";
+import { getProjects, getSuppliers, getCategories } from "~/api/firebaseConnection.server";
 
 export async function loader() {
   let projects = await getProjects();

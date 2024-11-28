@@ -46,3 +46,29 @@ export interface TelegramUser {
   name: string;
   categories: UserCategory[];
 }
+
+export {};
+
+declare global {
+  interface Window {
+    Telegram: {
+      WebApp: {
+        ready: () => void;
+        platform: string;
+        initData: string;
+        initDataUnsafe: Record<string, any>;
+        themeParams: Record<string, string>;
+        close: () => void;
+        expand: () => void;
+        isExpanded: boolean;
+        MainButton: {
+          setText: (text: string) => void;
+          show: () => void;
+          hide: () => void;
+          enable: () => void;
+          disable: () => void;
+        };
+      };
+    };
+  }
+}
