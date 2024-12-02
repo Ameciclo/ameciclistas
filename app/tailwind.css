@@ -42,7 +42,7 @@ body {
 
 /* Estilo para botões desativados */
 .button-disabled {
-  @apply bg-gray-400 text-gray-300 cursor-not-allowed opacity-50; /* Torna o botão mais claro e opaco */
+  @apply w-full bg-slate-300 text-white px-4 py-2 rounded-md hover:bg-red-500 transition-colors mb-4 text-lg;/* Torna o botão mais claro e opaco */
 }
 
 /* Removendo hover para botões desativados */

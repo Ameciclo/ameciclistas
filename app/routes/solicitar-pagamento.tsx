@@ -12,7 +12,7 @@ import ValorInput from "~/components/ValorInput";
 import Unauthorized from "~/components/Unauthorized";
 
 // Group utilities and types
-import { UserCategory, UserData } from "../api/types";
+import { UserData } from "../api/types";
 import { Project } from "~/api/types";
 
 import { useAuthorization } from "~/hooks/useAuthorization";
@@ -25,8 +25,6 @@ export { loader, action };
 export default function SolicitarPagamento() {
   const { projects, suppliers } = useLoaderData<typeof loader>();
   const navigate = useNavigate();
-
-  const isAuthorized = true; //useAuthorization(UserCategory.AMECICLISTAS);
 
   const [projetoSelecionado, setProjetoSelecionado] = useState<Project | null>(
     null
@@ -42,9 +40,17 @@ export default function SolicitarPagamento() {
 
   useEffect(() => {
     setUserData(() => getTelegramUserInfo());
-    setTelegramData(() => getTelegramGeneralDataInfo())
-    console.log(telegramData)
+    setTelegramData(() => getTelegramGeneralDataInfo());
+    console.log(telegramData);
   }, []);
+
+  // Verifica se todos os campos obrigatórios estão preenchidos
+  const isFormValid =
+    projetoSelecionado !== null &&
+    rubricaSelecionada !== null &&
+    descricao.trim() !== "" &&
+    valor !== "0" &&
+    fornecedor.trim() !== "";
 
   // Filtra o fornecedor selecionado, se necessário
   const fornecedorSelecionado = suppliers.find((s: any) => s.id === fornecedor);
@@ -56,22 +62,14 @@ export default function SolicitarPagamento() {
   const fornecedorJSON = fornecedorSelecionado
     ? JSON.stringify(fornecedorSelecionado)
     : "";
-  const userJSON = userData
-    ? JSON.stringify(userData)
-    : "";
-
-  if (false) {
-    return (
-      <Unauthorized
-        pageName="Solicitar Pagamento"
-        requiredPermission="AMECICLISTAS"
-      />
-    );
-  }
+  const userJSON = userData ? JSON.stringify(userData) : "";
 
   return (
     <Form method="post" className="container">
-      <h2 className="text-xl font-semibold">Bem-vindo, {userData?.first_name}! Estamos no ambiente de {process.env.NODE_ENV === 'production' ? 'PRODUÇÃO' : 'DESENVOLVIMENTO'}</h2>
+      <h2 className="text-xl font-semibold">
+        Bem-vindo, {userData?.first_name}! Estamos no ambiente de{" "}
+        {process.env.NODE_ENV === "production" ? "PRODUÇÃO" : "DESENVOLVIMENTO"}
+      </h2>
 
       <h2 className="text-primary">💰 Solicitar Pagamento</h2>
 
@@ -103,25 +101,11 @@ export default function SolicitarPagamento() {
         <ValorInput name="valor" valor={valor} setValor={setValor} />
       </div>
 
-      <input
-        type="hidden"
-        name="telegramUserInfo"
-        value={userJSON}
-      />
+      <input type="hidden" name="telegramUserInfo" value={userJSON} />
+      <input type="hidden" name="project" value={projetoJSON} />
+      <input type="hidden" name="fornecedor" value={fornecedorJSON} />
 
-      <input
-        type="hidden"
-        name="project"
-        value={projetoJSON} // Envia o objeto do projeto como JSON
-      />
-
-      <input
-        type="hidden"
-        name="fornecedor"
-        value={fornecedorJSON} // Envia o objeto do fornecedor como JSON
-      />
-
-      <button type="submit" className="button-full">
+      <button type="submit" className={isFormValid ? "button-full" : "button-full button-disabled"} disabled={!isFormValid}>
         Enviar Solicitação
       </button>
       <button
@@ -134,4 +118,3 @@ export default function SolicitarPagamento() {
     </Form>
   );
 }
-
