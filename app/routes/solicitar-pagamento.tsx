@@ -56,13 +56,14 @@ export default function SolicitarPagamento() {
   const fornecedorSelecionado = suppliers.find((s: any) => s.id === fornecedor);
 
   // Prepara os dados do projeto e fornecedor como JSON
-  const projetoJSON = projetoSelecionado
+  const projectJSONStringfyed = projetoSelecionado
     ? JSON.stringify(projetoSelecionado)
     : "";
-  const fornecedorJSON = fornecedorSelecionado
+  const suppliersJSONStringfyed = JSON.stringify(suppliers)
+  const supplierJSONStringfyed = fornecedorSelecionado
     ? JSON.stringify(fornecedorSelecionado)
     : "";
-  const userJSON = userData ? JSON.stringify(userData) : "";
+  const userJSONStringfyed = userData ? JSON.stringify(userData) : "";
 
   return (
     <Form method="post" className="container">
@@ -101,9 +102,10 @@ export default function SolicitarPagamento() {
         <ValorInput name="valor" valor={valor} setValor={setValor} />
       </div>
 
-      <input type="hidden" name="telegramUserInfo" value={userJSON} />
-      <input type="hidden" name="project" value={projetoJSON} />
-      <input type="hidden" name="fornecedor" value={fornecedorJSON} />
+      <input type="hidden" name="telegramUserInfo" value={userJSONStringfyed} />
+      <input type="hidden" name="project" value={projectJSONStringfyed} />
+      <input type="hidden" name="fornecedor" value={supplierJSONStringfyed} />
+      <input type="hidden" name="fornecedores" value={suppliersJSONStringfyed} />
 
       <button type="submit" className={isFormValid ? "button-full" : "button-full button-disabled"} disabled={!isFormValid}>
         Enviar Solicitação

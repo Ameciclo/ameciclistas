@@ -5,7 +5,6 @@ import { savePaymentRequest } from "~/api/firebaseConnection.server";
 export const action: ActionFunction = async ({ request }) => {
 
   const formData = await request.formData();
-  console.log(formData);
 
   const date = new Date();
 
@@ -17,7 +16,7 @@ export const action: ActionFunction = async ({ request }) => {
 
   const paymentRequest = {
     date: formatter.format(date),
-    project: formData.get("project"),
+    project: JSON.parse(formData.get("project") as string),
     budgetItem: formData.get("rubrica"),
     recipientName: formData.get("fornecedor"),
     description: formData.get("descricao"),
@@ -26,11 +25,12 @@ export const action: ActionFunction = async ({ request }) => {
     group_message_id: "",
     invoice_url: "",
     from: formData.get("telegramUserInfo"),
-    recipient_information: "",
+    recipient_information: JSON.parse(formData.get("fornecedores") as string).find((s: any) => s.nome === formData.get("fornecedor")),
   };
 
   try {
     await savePaymentRequest(paymentRequest);
+    console.log(paymentRequest);
     return redirect("/solicitar-pagamento-sucesso");
   } catch (error: any) {
     console.error("Erro ao enviar solicitação:", error);
