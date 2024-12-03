@@ -66,7 +66,7 @@ export default function SolicitarPagamento() {
   const supplierJSONStringfyed = fornecedorSelecionado
     ? JSON.stringify(fornecedorSelecionado)
     : "";
-  const userJSONStringfyed = userInfo ? JSON.stringify(userInfo) : "";
+  const userJSONStringfyed = userInfo ? JSON.stringify(userInfo) : JSON.stringify({err: "Informações de usuário do telegram nao encontrado"});
 
   return isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS) ? (
     <Form method="post" className="container">
