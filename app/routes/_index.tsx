@@ -8,7 +8,7 @@ export { loader }
 
 export default function Index() {
   const { userCategoriesObject, currentUserCategories } = useLoaderData<typeof loader>();
-  const [userPermissions, setUserPermissions] = useState([""])
+  const [userPermissions, setUserPermissions] = useState(currentUserCategories)
   const [userInfo, setUserInfo] = useState<UserData | null>({} as UserData)
 
   useEffect(() => {
@@ -38,62 +38,59 @@ export default function Index() {
       <h1 className="text-3xl font-bold text-teal-600 text-center">
         Ameciclobot Miniapp
       </h1>
-      <span>{JSON.stringify(userPermissions)}</span>
-      <span>{JSON.stringify(userInfo)}</span>
-      <span>{JSON.stringify(userCategoriesObject)}</span>
       <div className="mt-6">
         <Link to="/criar-evento">
           <button
-            className={`button-full ${!isAuth(currentUserCategories, UserCategory.AMECICLISTAS) ? "button-disabled" : ""}`}
-            disabled={!isAuth(currentUserCategories, UserCategory.AMECICLISTAS)}
+            className={`button-full ${!isAuth(userPermissions, UserCategory.AMECICLISTAS) ? "button-disabled" : ""}`}
+            disabled={!isAuth(userPermissions, UserCategory.AMECICLISTAS)}
           >
             📅 Criar Evento
           </button>
         </Link>
         <Link to="/solicitar-pagamento">
           <button
-            className={`button-full ${!isAuth(currentUserCategories, UserCategory.PROJECT_COORDINATORS) ? "button-disabled" : ""}`}
-            disabled={!isAuth(currentUserCategories, UserCategory.PROJECT_COORDINATORS)}
+            className={`button-full ${!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS) ? "button-disabled" : ""}`}
+            disabled={!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)}
           >
             💰 Solicitar Pagamento
           </button>
         </Link>
         <Link to="/adicionar-fornecedor">
           <button
-            className={`button-full ${!isAuth(currentUserCategories, UserCategory.PROJECT_COORDINATORS) ? "button-disabled" : ""}`}
-            disabled={!isAuth(currentUserCategories, UserCategory.PROJECT_COORDINATORS)}
+            className={`button-full ${!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS) ? "button-disabled" : ""}`}
+            disabled={!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)}
           >
             📦 Adicionar Fornecedor
           </button>
         </Link>
         <Link to="/links-uteis">
           <button
-            className={`button-full ${!isAuth(currentUserCategories, UserCategory.ANY_USER) ? "button-disabled" : ""}`}
-            disabled={!isAuth(currentUserCategories, UserCategory.ANY_USER)}
+            className={`button-full ${!isAuth(userPermissions, UserCategory.ANY_USER) ? "button-disabled" : ""}`}
+            disabled={!isAuth(userPermissions, UserCategory.ANY_USER)}
           >
             🔗 Lista de Links Úteis
           </button>
         </Link>
         <Link to="/grupos-de-trabalho">
           <button
-            className={`button-full ${!isAuth(currentUserCategories, UserCategory.AMECICLISTAS) ? "button-disabled" : ""}`}
-            disabled={!isAuth(currentUserCategories, UserCategory.AMECICLISTAS)}
+            className={`button-full ${!isAuth(userPermissions, UserCategory.AMECICLISTAS) ? "button-disabled" : ""}`}
+            disabled={!isAuth(userPermissions, UserCategory.AMECICLISTAS)}
           >
             👥 Grupos de Trabalho
           </button>
         </Link>
         <Link to="/lista-projetos">
           <button
-            className={`button-full ${!isAuth(currentUserCategories, UserCategory.AMECICLISTAS) ? "button-disabled" : ""}`}
-            disabled={!isAuth(currentUserCategories, UserCategory.AMECICLISTAS)}
+            className={`button-full ${!isAuth(userPermissions, UserCategory.AMECICLISTAS) ? "button-disabled" : ""}`}
+            disabled={!isAuth(userPermissions, UserCategory.AMECICLISTAS)}
           >
             📊 Projetos em Andamento
           </button>
         </Link>
         <Link to="/user">
           <button
-            className={`button-full ${!isAuth(currentUserCategories, UserCategory.ANY_USER) ? "button-disabled" : ""}`}
-            disabled={!isAuth(currentUserCategories, UserCategory.ANY_USER)}
+            className={`button-full ${!isAuth(userPermissions, UserCategory.ANY_USER) ? "button-disabled" : ""}`}
+            disabled={!isAuth(userPermissions, UserCategory.ANY_USER)}
           >
             ⚙️ Suas configurações
           </button>

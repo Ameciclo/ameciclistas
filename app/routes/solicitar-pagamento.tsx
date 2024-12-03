@@ -16,16 +16,16 @@ import { Project } from "~/api/types";
 
 import { loader } from "~/loaders/solicitar-pagamento-loader";
 import { action } from "~/loaders/solicitar-pagamento-action";
-import { getTelegramGeneralDataInfo, getTelegramUserInfo } from "~/api/users";
+import { getTelegramUserInfo } from "~/api/users";
 import { isAuth } from "~/hooks/isAuthorized";
 import Unauthorized from "~/components/Unauthorized";
 
 export { loader, action };
 
 export default function SolicitarPagamento() {
-  const { projects, suppliers, currentUserCategories } = useLoaderData<typeof loader>();
+  const { projects, suppliers, currentUserCategories, userCategoriesObject } = useLoaderData<typeof loader>();
+  const [userPermissions, setUserPermissions] = useState(currentUserCategories)
   const navigate = useNavigate();
-
   const [projetoSelecionado, setProjetoSelecionado] = useState<Project | null>(
     null
   );
@@ -35,14 +35,17 @@ export default function SolicitarPagamento() {
   const [descricao, setDescricao] = useState("");
   const [valor, setValor] = useState("0");
   const [fornecedor, setFornecedor] = useState("");
-  const [userData, setUserData] = useState<UserData | null>(null);
-  const [telegramData, setTelegramData] = useState([]);
+  const [userInfo, setUserInfo] = useState<UserData | null>(null);
 
   useEffect(() => {
-    setUserData(() => getTelegramUserInfo());
-    setTelegramData(() => getTelegramGeneralDataInfo());
-    console.log(telegramData);
+    setUserInfo(() => getTelegramUserInfo());
   }, []);
+
+  useEffect(() => {
+    if (userInfo?.id && userCategoriesObject[userInfo.id]) {
+      setUserPermissions([userCategoriesObject[userInfo.id] as any]);
+    }
+  }, [userInfo])
 
   // Verifica se todos os campos obrigatórios estão preenchidos
   const isFormValid =
@@ -63,9 +66,9 @@ export default function SolicitarPagamento() {
   const supplierJSONStringfyed = fornecedorSelecionado
     ? JSON.stringify(fornecedorSelecionado)
     : "";
-  const userJSONStringfyed = userData ? JSON.stringify(userData) : "";
+  const userJSONStringfyed = userInfo ? JSON.stringify(userInfo) : "";
 
-  return isAuth(currentUserCategories, UserCategory.PROJECT_COORDINATORS) ? (
+  return isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS) ? (
     <Form method="post" className="container">
       <h2 className="text-primary">💰 Solicitar Pagamento</h2>
 
