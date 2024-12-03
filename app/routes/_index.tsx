@@ -7,7 +7,8 @@ import { getTelegramUserInfo } from "~/api/users";
 export { loader }
 
 export default function Index() {
-  let { userCategoriesObject, currentUserCategories } = useLoaderData<typeof loader>();
+  const { userCategoriesObject, currentUserCategories } = useLoaderData<typeof loader>();
+  const [userPermissions, setUserPermissions] = useState([""])
   const [userInfo, setUserInfo] = useState<UserData | null>({} as UserData)
 
   useEffect(() => {
@@ -28,7 +29,7 @@ export default function Index() {
 
   useEffect(() => {
     if (userInfo?.id && userCategoriesObject[userInfo.id]) {
-      currentUserCategories = [userCategoriesObject[userInfo.id] as any];
+      setUserPermissions([userCategoriesObject[userInfo.id] as any]);
     }
   }, [userInfo])
 
@@ -37,7 +38,7 @@ export default function Index() {
       <h1 className="text-3xl font-bold text-teal-600 text-center">
         Ameciclobot Miniapp
       </h1>
-      <span>{JSON.stringify(currentUserCategories)}</span>
+      <span>{JSON.stringify(userPermissions)}</span>
       <span>{JSON.stringify(userInfo)}</span>
       <span>{JSON.stringify(userCategoriesObject)}</span>
       <div className="mt-6">
