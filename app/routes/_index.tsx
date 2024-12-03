@@ -1,12 +1,14 @@
 import { Link, useLoaderData } from "@remix-run/react";
-import { UserCategory } from "~/api/types";
-import { useEffect } from "react";
+import { UserCategory, UserData } from "~/api/types";
+import { useEffect, useState } from "react";
 import { loader } from "~/loaders/solicitar-pagamento-loader";
 import { isAuth } from "~/hooks/isAuthorized";
+import { getTelegramUserInfo } from "~/api/users";
 export { loader }
 
 export default function Index() {
-  const { currentUserCategories, userInfo, userCategoriesObject } = useLoaderData<typeof loader>();
+  let { userCategoriesObject, currentUserCategories } = useLoaderData<typeof loader>();
+  const [userInfo, setUserInfo] = useState<UserData | null>({} as UserData)
 
   useEffect(() => {
     // Verifica se o WebApp do Telegram está disponível
@@ -19,6 +21,12 @@ export default function Index() {
       console.log("Dados do usuário:", window.Telegram.WebApp.initDataUnsafe);
     } else {
       console.warn("Telegram WebApp SDK não está disponível.");
+    }
+
+    setUserInfo(() => getTelegramUserInfo());
+
+    if (userInfo?.id && userCategoriesObject[userInfo.id]) {
+      currentUserCategories = [userCategoriesObject[userInfo.id] as any];
     }
   }, []);
 

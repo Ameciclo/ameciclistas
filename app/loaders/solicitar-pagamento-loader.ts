@@ -2,12 +2,11 @@
 import { json } from "@remix-run/node";
 import { getProjects, getSuppliers, getCategories } from "~/api/firebaseConnection.server";
 import { UserCategory } from "~/api/types";
-import { getTelegramUserInfo } from "~/api/users";
 
 export async function loader() {
   let projects = await getProjects();
   let suppliers = await getSuppliers();
-  let userCategoriesObject = await getCategories();;
+  let userCategoriesObject = await getCategories();
   let currentUserCategories: UserCategory[] = [process.env.NODE_ENV === "development" ? UserCategory.DEVELOPMENT : UserCategory.ANY_USER];
 
   suppliers = Object.values(suppliers).map((supplier: any) => {
@@ -31,12 +30,6 @@ export async function loader() {
   });
 
   projects = Object.values(projects);
-  
-  const userInfo = getTelegramUserInfo();
 
-  if (userInfo?.id && userCategoriesObject[userInfo.id]) {
-    currentUserCategories = [userCategoriesObject[userInfo.id] as any];
-  }
-
-  return json({ projects, suppliers, currentUserCategories, userCategoriesObject, userInfo });
+  return json({ projects, suppliers, currentUserCategories, userCategoriesObject });
 }
