@@ -24,7 +24,7 @@ export const action: ActionFunction = async ({ request }) => {
     from_chat_id: "",
     group_message_id: "",
     invoice_url: "",
-    from: formData.get("telegramUserInfo"),
+    from: JSON.parse(formData.get("telegramUserInfo") as string),
     recipient_information: JSON.parse(formData.get("fornecedores") as string).find((s: any) => s.nome === formData.get("fornecedor")),
   };
 
