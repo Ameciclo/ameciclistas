@@ -9,21 +9,21 @@ import RubricaSelect from "~/components/SolicitarPagamento/RubricaSelect";
 import FornecedorInput from "~/components/SolicitarPagamento/FornecedorInput";
 import DescricaoInput from "~/components/SolicitarPagamento/DescricaoInput";
 import ValorInput from "~/components/ValorInput";
-import Unauthorized from "~/components/Unauthorized";
 
 // Group utilities and types
-import { UserData } from "../api/types";
+import { UserCategory, UserData } from "../api/types";
 import { Project } from "~/api/types";
 
-import { useAuthorization } from "~/hooks/useAuthorization";
 import { loader } from "~/loaders/solicitar-pagamento-loader";
 import { action } from "~/loaders/solicitar-pagamento-action";
 import { getTelegramGeneralDataInfo, getTelegramUserInfo } from "~/api/users";
+import { isAuth } from "~/hooks/isAuthorized";
+import Unauthorized from "~/components/Unauthorized";
 
 export { loader, action };
 
 export default function SolicitarPagamento() {
-  const { projects, suppliers } = useLoaderData<typeof loader>();
+  const { projects, suppliers, currentUserCategories } = useLoaderData<typeof loader>();
   const navigate = useNavigate();
 
   const [projetoSelecionado, setProjetoSelecionado] = useState<Project | null>(
@@ -65,13 +65,8 @@ export default function SolicitarPagamento() {
     : "";
   const userJSONStringfyed = userData ? JSON.stringify(userData) : "";
 
-  return (
+  return isAuth(currentUserCategories, UserCategory.PROJECT_COORDINATORS) ? (
     <Form method="post" className="container">
-      <h2 className="text-xl font-semibold">
-        Bem-vindo, {userData?.first_name}! Estamos no ambiente de{" "}
-        {process.env.NODE_ENV === "production" ? "PRODUÇÃO" : "DESENVOLVIMENTO"}
-      </h2>
-
       <h2 className="text-primary">💰 Solicitar Pagamento</h2>
 
       <ProjectSelect
@@ -118,5 +113,5 @@ export default function SolicitarPagamento() {
         ⬅️ Voltar
       </button>
     </Form>
-  );
+  ): <Unauthorized pageName="Solicitar Pagamentos" requiredPermission="Coordenador de Projeto"/>
 }

@@ -39,6 +39,7 @@ export enum UserCategory {
   AMECICLISTAS = "AMECICLISTAS",
   PROJECT_COORDINATORS = "PROJECT_COORDINATORS",
   AMECICLO_COORDINATORS = "AMECICLO_COORDINATORS",
+  DEVELOPMENT = "DEVELOPMENT",
 }
 
 export interface TelegramUser {
@@ -72,3 +73,9 @@ declare global {
     };
   }
 }
+
+type LoaderData = {
+  userCategoriesObject: Record<string, TelegramUser>; // Tipo mais específico
+  projects: any;
+  suppliers: any;
+};
