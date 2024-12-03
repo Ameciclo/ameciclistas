@@ -53,3 +53,27 @@ export const getCategories = async () => {
     return null;
   }
 };
+
+export async function saveRecipient(recipientInfo) {
+
+  return new Promise((resolve, reject) => {
+    const ref = db.ref("recipients");
+    const key = ref.push().key;
+
+    if (!key) {
+      return reject(new Error("Falha ao gerar chave para a solicitação."));
+    }
+
+    recipientInfo.id = key;
+
+    ref
+      .child(key)
+      .update(recipientInfo)
+      .then((snapshot) => {
+        resolve(snapshot);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
