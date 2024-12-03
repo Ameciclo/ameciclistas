@@ -1,10 +1,18 @@
-import { useNavigate } from "@remix-run/react";
+import { useLoaderData, useNavigate } from "@remix-run/react";
 import { useState, useEffect } from "react";
-import { getUserCategories } from "../api/users";
-import { UserCategory } from "~/api/types";
+import { getTelegramUserInfo, getUserCategories } from "../api/users";
+import { UserCategory, UserData } from "~/api/types";
 import { Agenda } from "../api/types"; // Importe a interface Agenda
+import { loader } from "./_index";
+import { isAuth } from "~/hooks/isAuthorized";
+import Unauthorized from "~/components/Unauthorized";
+export { loader }
 
 export default function CriarEvento() {
+  const { userCategoriesObject, currentUserCategories } = useLoaderData<typeof loader>();
+  const [userPermissions, setUserPermissions] = useState(currentUserCategories)
+  const [userInfo, setUserInfo] = useState<UserData | null>({} as UserData)
+
   const navigate = useNavigate();
   const [titulo, setTitulo] = useState("");
   const [data, setData] = useState<string>("");
@@ -14,6 +22,14 @@ export default function CriarEvento() {
   const [agenda, setAgenda] = useState("");
   const [agendas, setAgendas] = useState<Agenda[]>([]);
   const [isAuthorized, setIsAuthorized] = useState(false);
+
+  useEffect(() => setUserInfo(() => getTelegramUserInfo()), []);
+
+  useEffect(() => {
+    if (userInfo?.id && userCategoriesObject[userInfo.id]) {
+      setUserPermissions([userCategoriesObject[userInfo.id] as any]);
+    }
+  }, [userInfo])
 
   useEffect(() => {
     let userId;
@@ -73,7 +89,7 @@ export default function CriarEvento() {
     }
   };
 
-  return (
+  return isAuth(userPermissions, UserCategory.AMECICLISTAS) ? (
     <div className="container">
       <h2 className="text-primary">📅 Criar Evento</h2>
       {isAuthorized ? (
@@ -160,5 +176,5 @@ export default function CriarEvento() {
         ⬅️ Voltar
       </button>
     </div>
-  );
+  ) : <Unauthorized pageName="Solicitar Pagamentos" requiredPermission="Coordenador de Projeto"/>
 }
