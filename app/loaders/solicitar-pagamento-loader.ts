@@ -31,8 +31,6 @@ export async function loader() {
   });
 
   projects = Object.values(projects);
-
-  userCategoriesObject = Object.values(userCategoriesObject);
   
   const userInfo = getTelegramUserInfo();
 
