@@ -10,22 +10,15 @@ export async function loader() {
   let currentUserCategories: UserCategory[] = [process.env.NODE_ENV === "development" ? UserCategory.DEVELOPMENT : UserCategory.ANY_USER];
 
   suppliers = Object.values(suppliers).map((supplier: any) => {
-    let tipoChavePix: string;
-    if (supplier.id.startsWith("CPF")) {
-      tipoChavePix = "cpf/cnpj";
-    } else if (supplier.bank_code === "PIX") {
-      tipoChavePix = "pix";
-    } else {
-      tipoChavePix = "outro";
-    }
     return {
-      id: supplier.id,
-      nome: supplier.name,
-      cpfCnpj: supplier.id,
-      email: "",
-      telefone: "",
-      chavePix: supplier.id,
-      tipoChavePix: tipoChavePix,
+      id: supplier.id || "",
+      nome: supplier.name || "",
+      razaoSocial: supplier.razaoSocial || "",
+      cpfCnpj: supplier.cpfCnpj || "",
+      email: supplier.email || "",
+      telefone: supplier.telefone || "",
+      chavePix: supplier.chavePix || "",
+      tipoChavePix: supplier.tipoChavePix || "",
     };
   });
 
