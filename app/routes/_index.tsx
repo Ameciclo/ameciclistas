@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { loader } from "~/loaders/solicitar-pagamento-loader";
 import { isAuth } from "~/hooks/isAuthorized";
 import { getTelegramUserInfo } from "~/api/users";
+import telegramInit from "~/hooks/telegramInit";
 export { loader }
 
 export default function Index() {
@@ -12,18 +13,7 @@ export default function Index() {
   const [userInfo, setUserInfo] = useState<UserData | null>({} as UserData)
 
   useEffect(() => {
-    // Verifica se o WebApp do Telegram está disponível
-    if (window.Telegram?.WebApp) {
-      // Inicializa o Telegram Web App
-      window.Telegram.WebApp.ready();
-
-      // Exemplo: Configurações iniciais opcionais
-      console.log("Plataforma:", window.Telegram.WebApp.platform);
-      console.log("Dados do usuário:", window.Telegram.WebApp.initDataUnsafe);
-    } else {
-      console.warn("Telegram WebApp SDK não está disponível.");
-    }
-
+    telegramInit();
     setUserInfo(() => getTelegramUserInfo());
   }, []);
 
@@ -38,6 +28,8 @@ export default function Index() {
       <h1 className="text-3xl font-bold text-teal-600 text-center">
         Ameciclobot Miniapp
       </h1>
+      {process.env.NODE_ENV === "development" && <p className="text-xs text-center">Você está no ambiente de DESENVOLVIMENTO</p>}
+      {process.env.NODE_ENV === "development" && <p className="text-xs text-center">Permissões de {userPermissions}</p>}
       <div className="mt-6">
         <Link to="/criar-evento">
           <button
