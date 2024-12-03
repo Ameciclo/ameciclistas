@@ -1,4 +1,11 @@
-import { Link } from "@remix-run/react";
+import { Link, useLoaderData } from "@remix-run/react";
+import { useEffect, useState } from "react";
+import { UserCategory, UserData } from "~/api/types";
+import Unauthorized from "~/components/Unauthorized";
+import { isAuth } from "~/hooks/isAuthorized";
+import { getTelegramUserInfo } from "~/api/users";
+import { loader } from "../loaders/solicitar-pagamento-loader";
+export { loader }
 
 interface GrupoTrabalho {
   id: number;
@@ -41,9 +48,21 @@ const grupos: GrupoTrabalho[] = [
 ];
 
 export default function GruposTrabalho() {
+  const { userCategoriesObject, currentUserCategories } = useLoaderData<typeof loader>();
+  const [userPermissions, setUserPermissions] = useState(currentUserCategories)
+  const [userInfo, setUserInfo] = useState<UserData | null>({} as UserData)
+
+  useEffect(() => setUserInfo(() => getTelegramUserInfo()), []);
+
+  useEffect(() => {
+    if (userInfo?.id && userCategoriesObject[userInfo.id]) {
+      setUserPermissions([userCategoriesObject[userInfo.id] as any]);
+    }
+  }, [userInfo])
+
   const categorias = Array.from(new Set(grupos.map(grupo => grupo.categoria)));
 
-  return (
+  return isAuth(userPermissions, UserCategory.AMECICLISTAS) ? (
     <div className="container mx-auto p-4">
       <h2 className="text-2xl font-bold text-teal-600">👥 Grupos de Trabalho da Ameciclo</h2>
 
@@ -66,5 +85,5 @@ export default function GruposTrabalho() {
         ⬅️ Voltar
       </Link>
     </div>
-  );
+  ) : <Unauthorized pageName="Grupos de Trabalho" requiredPermission="Ameciclistas" />
 }

@@ -126,5 +126,5 @@ export default function CriarEvento() {
         Criar Evento
       </button>
     </div>
-  ) : <Unauthorized pageName="Calendario" requiredPermission="Ameciclista" />
+  ) : <Unauthorized pageName="Criar Evento" requiredPermission="Ameciclista" />
 }

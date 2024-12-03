@@ -1,10 +1,25 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "@remix-run/react";
-import Unauthorized from "~/components/Unauthorized"; // Importar o componente Unauthorized
-import { getUserCategories } from "../api/users";
-import { UserCategory } from "~/api/types";
+import { useLoaderData, useNavigate } from "@remix-run/react";
+import { isAuth } from "~/hooks/isAuthorized";
+import { loader } from "../loaders/solicitar-pagamento-loader";
+import { getTelegramUserInfo } from "~/api/users";
+import { UserCategory, UserData } from "~/api/types";
+import Unauthorized from "~/components/Unauthorized";
+export { loader }
 
 export default function AdicionarFornecedor() {
+  const { userCategoriesObject, currentUserCategories } = useLoaderData<typeof loader>();
+  const [userPermissions, setUserPermissions] = useState(currentUserCategories)
+  const [userInfo, setUserInfo] = useState<UserData | null>({} as UserData)
+
+  useEffect(() => setUserInfo(() => getTelegramUserInfo()), []);
+
+  useEffect(() => {
+    if (userInfo?.id && userCategoriesObject[userInfo.id]) {
+      setUserPermissions([userCategoriesObject[userInfo.id] as any]);
+    }
+  }, [userInfo])
+
   const navigate = useNavigate();
   const [nomeFantasia, setNomeFantasia] = useState("");
   const [razaoSocial, setRazaoSocial] = useState("");
@@ -16,40 +31,6 @@ export default function AdicionarFornecedor() {
   const [banco, setBanco] = useState("");
   const [agencia, setAgencia] = useState("");
   const [conta, setConta] = useState("");
-  const [isAuthorized, setIsAuthorized] = useState(false);
-
-  useEffect(() => {
-    let userId;
-    const isDevelopment = process.env.NODE_ENV === "development";
-
-    if (isDevelopment) {
-      // Carregar o ID do usuário a partir do arquivo JSON em desenvolvimento
-      fetch("/devUserId.json")
-        .then((response) => response.json())
-        .then((data) => {
-          userId = data.userId;
-          checkPermissions(userId);
-        })
-        .catch((error) => {
-          console.error("Error loading the user ID from devUserId.json:", error);
-        });
-    } else {
-      const telegram = (window as any)?.Telegram?.WebApp;
-      userId = telegram?.initDataUnsafe?.user?.id;
-
-      if (!userId) {
-        console.error("User ID is undefined. Closing the app.");
-        telegram?.close();
-        return;
-      }
-      checkPermissions(userId);
-    }
-  }, []);
-
-  const checkPermissions = (userId: number) => {
-    const userCategories = getUserCategories(userId);
-    setIsAuthorized(userCategories.includes(UserCategory.PROJECT_COORDINATORS));
-  };
 
   const handleCpfCnpjChange = (value: string) => {
     const onlyDigits = value.replace(/\D/g, ""); // Remove all non-digit characters
@@ -131,12 +112,7 @@ export default function AdicionarFornecedor() {
     console.log(fornecedorData); // Aqui você pode enviar os dados para a API ou fazer o que for necessário
   };
 
-  // Se não autorizado, renderizar o componente Unauthorized
-  if (!isAuthorized) {
-    return <Unauthorized pageName="Adicionar Fornecedor" requiredPermission="PROJECT_COORDINATORS" />;
-  }
-
-  return (
+  return isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS) ? (
     <div className="container mx-auto p-4">
       <h2 className="text-2xl font-bold text-teal-600">📦 Adicionar Fornecedor</h2>
 
@@ -262,5 +238,5 @@ export default function AdicionarFornecedor() {
         ⬅️ Voltar
       </button>
     </div>
-  );
+  ) : <Unauthorized pageName="Adicionar Fornecedor" requiredPermission="Coordednador de Projeto" />
 }
