@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { useLoaderData, useNavigate } from "@remix-run/react";
+import { Form, useLoaderData, useNavigate } from "@remix-run/react";
 import { isAuth } from "~/hooks/isAuthorized";
 import { loader } from "../loaders/loader";
+import { action } from "../loaders/action";
 import { getTelegramUserInfo } from "~/api/users";
 import { UserCategory, UserData } from "~/api/types";
 import Unauthorized from "~/components/Unauthorized";
-export { loader }
+export { loader, action }
 
 export default function AdicionarFornecedor() {
   const { userCategoriesObject, currentUserCategories } = useLoaderData<typeof loader>();
@@ -28,9 +29,15 @@ export default function AdicionarFornecedor() {
   const [telefone, setTelefone] = useState("");
   const [tipoChavePix, setTipoChavePix] = useState("email");
   const [chavePix, setChavePix] = useState("");
-  const [banco, setBanco] = useState("");
-  const [agencia, setAgencia] = useState("");
-  const [conta, setConta] = useState("");
+
+  const isFormValid =
+    nomeFantasia !== "" &&
+    razaoSocial !== "" &&
+    cpfCnpj !== "" &&
+    email !== "" &&
+    telefone !== "" &&
+    tipoChavePix !== "" &&
+    chavePix !== ""
 
   const handleCpfCnpjChange = (value: string) => {
     const onlyDigits = value.replace(/\D/g, ""); // Remove all non-digit characters
@@ -95,25 +102,8 @@ export default function AdicionarFornecedor() {
     }
   };
 
-  const handleSubmit = () => {
-    const fornecedorData = {
-      nomeFantasia,
-      razaoSocial,
-      cpfCnpj,
-      email,
-      telefone,
-      tipoChavePix,
-      chavePix,
-      banco,
-      agencia,
-      conta,
-    };
-
-    console.log(fornecedorData); // Aqui você pode enviar os dados para a API ou fazer o que for necessário
-  };
-
   return isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS) ? (
-    <div className="container mx-auto p-4">
+    <Form className="container mx-auto p-4" method="post">
       <h2 className="text-2xl font-bold text-teal-600">📦 Adicionar Fornecedor</h2>
 
       <div className="form-group mb-4">
@@ -194,49 +184,21 @@ export default function AdicionarFornecedor() {
         />
       </div>
 
-      {tipoChavePix === "outro" && (
-        <>
-          <div className="form-group mb-4">
-            <label className="font-bold">Banco:</label>
-            <input
-              className="w-full p-2 border border-gray-300 rounded-md"
-              type="text"
-              value={banco}
-              onChange={(e) => setBanco(e.target.value)}
-              placeholder="Digite o nome do banco"
-            />
-          </div>
+      <input type="hidden" name="actionType" value="adicionarFornecedor" />
+      <input type="hidden" name="nomeFantasia" value={nomeFantasia} />
+      <input type="hidden" name="razaoSocial" value={razaoSocial} />
+      <input type="hidden" name="cpfCnpj" value={cpfCnpj} />
+      <input type="hidden" name="email" value={email} />
+      <input type="hidden" name="telefone" value={telefone} />
+      <input type="hidden" name="tipoChavePix" value={tipoChavePix} />
+      <input type="hidden" name="chavePix" value={chavePix} />
 
-          <div className="form-group mb-4">
-            <label className="font-bold">Agência:</label>
-            <input
-              className="w-full p-2 border border-gray-300 rounded-md"
-              type="text"
-              value={agencia}
-              onChange={(e) => setAgencia(e.target.value.replace(/\D/g, ""))} // Permitir apenas números
-              placeholder="Apenas números"
-            />
-          </div>
-
-          <div className="form-group mb-4">
-            <label className="font-bold">Conta:</label>
-            <input
-              className="w-full p-2 border border-gray-300 rounded-md"
-              type="text"
-              value={conta}
-              onChange={(e) => setConta(e.target.value.replace(/\D/g, ""))} // Permitir apenas números
-              placeholder="Apenas números ou 'X'"
-            />
-          </div>
-        </>
-      )}
-
-      <button className="button-full" onClick={handleSubmit}>
-        Enviar Solicitação
+      <button type="submit" className={isFormValid ? "button-full" : "button-full button-disabled"} disabled={!isFormValid} >
+        Adicionar Fornecedor
       </button>
       <button className="button-secondary-full" onClick={() => navigate(-1)}>
         ⬅️ Voltar
       </button>
-    </div>
+    </Form>
   ) : <Unauthorized pageName="Adicionar Fornecedor" requiredPermission="Coordednador de Projeto" />
 }
