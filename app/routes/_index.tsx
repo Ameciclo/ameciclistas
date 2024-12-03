@@ -30,7 +30,7 @@ export default function Index() {
       </h1>
       {process.env.NODE_ENV === "development" && <p className="text-xs text-center">Você está no ambiente de DESENVOLVIMENTO</p>}
       {process.env.NODE_ENV === "development" && <p className="text-xs text-center">Permissões de {userPermissions}</p>}
-      {process.env.NODE_ENV === "production" && <p className="text-xs text-center">Olá {userInfo?.first_name}</p>}
+      {process.env.NODE_ENV === "production" && <p className="text-xs text-center">Olá, {userInfo?.first_name}!</p>}
       <div className="mt-6">
         <Link to="/criar-evento">
           <button
