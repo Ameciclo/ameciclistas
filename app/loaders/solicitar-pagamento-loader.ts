@@ -9,7 +9,6 @@ export async function loader() {
   let suppliers = await getSuppliers();
   let userCategoriesObject = await getCategories();;
   let currentUserCategories: UserCategory[] = [process.env.NODE_ENV === "development" ? UserCategory.DEVELOPMENT : UserCategory.ANY_USER];
-  const userInfo = getTelegramUserInfo();
 
   suppliers = Object.values(suppliers).map((supplier: any) => {
     let tipoChavePix: string;
@@ -34,10 +33,12 @@ export async function loader() {
   projects = Object.values(projects);
 
   userCategoriesObject = Object.values(userCategoriesObject);
+  
+  const userInfo = getTelegramUserInfo();
 
   if (userInfo?.id && userCategoriesObject[userInfo.id]) {
     currentUserCategories = [userCategoriesObject[userInfo.id] as any];
   }
 
-  return json({ projects, suppliers, currentUserCategories });
+  return json({ projects, suppliers, currentUserCategories, userCategoriesObject, userInfo });
 }

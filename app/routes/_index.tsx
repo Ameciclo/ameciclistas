@@ -6,7 +6,7 @@ import { isAuth } from "~/hooks/isAuthorized";
 export { loader }
 
 export default function Index() {
-  const { currentUserCategories } = useLoaderData<typeof loader>();
+  const { currentUserCategories, userInfo, userCategoriesObject } = useLoaderData<typeof loader>();
 
   useEffect(() => {
     // Verifica se o WebApp do Telegram está disponível
@@ -27,6 +27,8 @@ export default function Index() {
       <h1 className="text-3xl font-bold text-teal-600 text-center">
         Ameciclobot Miniapp
       </h1>
+      <span>{JSON.stringify(userInfo)}</span>
+      <span>{JSON.stringify(userCategoriesObject)}</span>
       <div className="mt-6">
         <Link to="/criar-evento">
           <button
