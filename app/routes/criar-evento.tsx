@@ -41,6 +41,15 @@ export default function CriarEvento() {
       });
   }, []);
 
+  const isFormValid =
+  titulo !== "" &&
+  data !== "" &&
+  hora !== "" &&
+  duracao !== "" &&
+  descricao !== "" &&
+  agenda !== "" &&
+  agendas[0]
+
   const handleSubmit = () => {
     try {
       const eventoData = {
@@ -124,7 +133,7 @@ export default function CriarEvento() {
           ))}
         </select>
       </div>
-      <button className="button-full" onClick={handleSubmit}>
+      <button className={isFormValid ? "button-full" : "button-full button-disabled"} disabled={!isFormValid} onClick={handleSubmit}>
         Criar Evento
       </button>
       <button className="button-secondary-full" onClick={() => navigate(-1)}>
