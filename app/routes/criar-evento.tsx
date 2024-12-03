@@ -1,4 +1,4 @@
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData, useNavigate } from "@remix-run/react";
 import { useState, useEffect } from "react";
 import { getTelegramUserInfo } from "../api/users";
 import { UserCategory, UserData } from "~/api/types";
@@ -12,6 +12,8 @@ export default function CriarEvento() {
   const { userCategoriesObject, currentUserCategories } = useLoaderData<typeof loader>();
   const [userPermissions, setUserPermissions] = useState(currentUserCategories)
   const [userInfo, setUserInfo] = useState<UserData | null>({} as UserData)
+  const navigate = useNavigate();
+
 
   const [titulo, setTitulo] = useState("");
   const [data, setData] = useState<string>("");
@@ -124,6 +126,9 @@ export default function CriarEvento() {
       </div>
       <button className="button-full" onClick={handleSubmit}>
         Criar Evento
+      </button>
+      <button className="button-secondary-full" onClick={() => navigate(-1)}>
+        ⬅️ Voltar
       </button>
     </div>
   ) : <Unauthorized pageName="Criar Evento" requiredPermission="Ameciclista" />
