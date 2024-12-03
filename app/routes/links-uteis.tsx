@@ -8,14 +8,14 @@ export default function LinksUteis() {
   ];
 
   return (
-    <div className="container mx-auto p-4">
-      <h2 className="text-2xl font-bold text-teal-600">🔗 Links Úteis</h2>
-      <div className="mt-4">
+    <div className="container mx-auto p-4 flex flex-col">
+      <h2 className="text-2xl font-bold text-teal-600 text-center">🔗 Links Úteis</h2>
+      <div className="mt-4 flex flex-col">
         {links.map((link) => (
           <a
             key={link.id}
             href={link.url}
-            className="button-full"
+            className="button-full text-center"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -23,7 +23,8 @@ export default function LinksUteis() {
           </a>
         ))}
       </div>
-      <Link to="/" className="button-secondary-full">
+      <br />
+      <Link to="/" className="button-secondary-full text-center">
         ⬅️ Voltar
       </Link>
     </div>
