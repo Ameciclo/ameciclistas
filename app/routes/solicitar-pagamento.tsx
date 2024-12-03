@@ -14,8 +14,8 @@ import ValorInput from "~/components/ValorInput";
 import { UserCategory, UserData } from "../api/types";
 import { Project } from "~/api/types";
 
-import { loader } from "~/loaders/solicitar-pagamento-loader";
-import { action } from "~/loaders/solicitar-pagamento-action";
+import { loader } from "~/loaders/loader";
+import { action } from "~/loaders/action";
 import { getTelegramUserInfo } from "~/api/users";
 import { isAuth } from "~/hooks/isAuthorized";
 import Unauthorized from "~/components/Unauthorized";

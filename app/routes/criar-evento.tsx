@@ -5,7 +5,7 @@ import { UserCategory, UserData } from "~/api/types";
 import { Agenda } from "../api/types"; // Importe a interface Agenda
 import { isAuth } from "~/hooks/isAuthorized";
 import Unauthorized from "~/components/Unauthorized";
-import { loader } from "../loaders/solicitar-pagamento-loader";
+import { loader } from "../loaders/loader";
 export { loader }
 
 export default function CriarEvento() {

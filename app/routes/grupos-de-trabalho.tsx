@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import { UserCategory, UserData } from "~/api/types";
 import Unauthorized from "~/components/Unauthorized";
 import { isAuth } from "~/hooks/isAuthorized";
+import { loader } from "../loaders/loader";
 import { getTelegramUserInfo } from "~/api/users";
-import { loader } from "../loaders/solicitar-pagamento-loader";
 export { loader }
 
 interface GrupoTrabalho {

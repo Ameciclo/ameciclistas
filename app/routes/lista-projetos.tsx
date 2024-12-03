@@ -3,8 +3,8 @@ import { isAuth } from "~/hooks/isAuthorized";
 import Unauthorized from "~/components/Unauthorized";
 import { UserCategory, UserData } from "~/api/types";
 import { useEffect, useState } from "react";
+import { loader } from "../loaders/loader";
 import { getTelegramUserInfo } from "~/api/users";
-import { loader } from "../loaders/solicitar-pagamento-loader";
 export { loader }
 
 export default function ProjetosEmAndamento() {

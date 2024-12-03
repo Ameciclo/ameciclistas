@@ -1,7 +1,7 @@
 import { Link, useLoaderData } from "@remix-run/react";
 import { UserCategory, UserData } from "~/api/types";
 import { useEffect, useState } from "react";
-import { loader } from "~/loaders/solicitar-pagamento-loader";
+import { loader } from "~/loaders/loader";
 import { isAuth } from "~/hooks/isAuthorized";
 import { getTelegramUserInfo } from "~/api/users";
 import telegramInit from "~/hooks/telegramInit";

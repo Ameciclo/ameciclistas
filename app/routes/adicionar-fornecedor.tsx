@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLoaderData, useNavigate } from "@remix-run/react";
 import { isAuth } from "~/hooks/isAuthorized";
-import { loader } from "../loaders/solicitar-pagamento-loader";
+import { loader } from "../loaders/loader";
 import { getTelegramUserInfo } from "~/api/users";
 import { UserCategory, UserData } from "~/api/types";
 import Unauthorized from "~/components/Unauthorized";
