@@ -1,4 +1,4 @@
-import { useLoaderData, useNavigate } from "@remix-run/react";
+import { Form, useLoaderData, useNavigate } from "@remix-run/react";
 import { useState, useEffect } from "react";
 import { getTelegramUserInfo } from "../api/users";
 import { UserCategory, UserData } from "~/api/types";
@@ -6,7 +6,8 @@ import { Agenda } from "../api/types"; // Importe a interface Agenda
 import { isAuth } from "~/hooks/isAuthorized";
 import Unauthorized from "~/components/Unauthorized";
 import { loader } from "../loaders/loader";
-export { loader }
+import { action } from "../loaders/action";
+export { loader, action }
 
 export default function CriarEvento() {
   const { userCategoriesObject, currentUserCategories } = useLoaderData<typeof loader>();
@@ -42,33 +43,16 @@ export default function CriarEvento() {
   }, []);
 
   const isFormValid =
-  titulo !== "" &&
-  data !== "" &&
-  hora !== "" &&
-  duracao !== "" &&
-  descricao !== "" &&
-  agenda !== "" &&
-  agendas[0]
-
-  const handleSubmit = () => {
-    try {
-      const eventoData = {
-        titulo,
-        data,
-        hora,
-        duracao,
-        descricao,
-        agenda,
-      };
-      const telegram = (window as any)?.Telegram?.WebApp;
-      telegram?.sendData(JSON.stringify(eventoData));
-    } catch (error) {
-      console.error("Erro ao enviar dados:", error);
-    }
-  };
+    titulo !== "" &&
+    data !== "" &&
+    hora !== "" &&
+    duracao !== "" &&
+    descricao !== "" &&
+    agenda !== "" &&
+    agendas[0]
 
   return isAuth(userPermissions, UserCategory.AMECICLISTAS) ? (
-    <div className="container">
+    <Form className="container" method="post">
       <h2 className="text-primary">📅 Criar Evento</h2>
       <div className="form-group">
         <label className="form-label">Título do Evento:</label>
@@ -133,12 +117,21 @@ export default function CriarEvento() {
           ))}
         </select>
       </div>
-      <button className={isFormValid ? "button-full" : "button-full button-disabled"} disabled={!isFormValid} onClick={handleSubmit}>
+      <input type="hidden" name="actionType" value={"criarEvento"} />
+      <input type="hidden" name="titulo" value={titulo} />
+      <input type="hidden" name="data" value={data} />
+      <input type="hidden" name="hora" value={hora} />
+      <input type="hidden" name="duracao" value={duracao} />
+      <input type="hidden" name="descricao" value={descricao} />
+      <input type="hidden" name="agenda" value={agenda} />
+      <input type="hidden" name="from" value={JSON.stringify(userInfo)} />
+
+      <button type="submit" className={isFormValid ? "button-full" : "button-full button-disabled"} disabled={!isFormValid}>
         Criar Evento
       </button>
       <button className="button-secondary-full" onClick={() => navigate(-1)}>
         ⬅️ Voltar
       </button>
-    </div>
+    </Form>
   ) : <Unauthorized pageName="Criar Evento" requiredPermission="Ameciclista" />
 }

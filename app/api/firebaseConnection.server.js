@@ -77,3 +77,27 @@ export async function saveRecipient(recipientInfo) {
       });
   });
 }
+
+export async function saveCalendarEvent(eventInfo) {
+
+  return new Promise((resolve, reject) => {
+    const ref = db.ref("calendar");
+    const key = ref.push().key;
+
+    if (!key) {
+      return reject(new Error("Falha ao gerar chave para a solicitação."));
+    }
+
+    eventInfo.id = key;
+
+    ref
+      .child(key)
+      .update(eventInfo)
+      .then((snapshot) => {
+        resolve(snapshot);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}

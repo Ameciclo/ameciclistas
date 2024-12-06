@@ -1,9 +1,7 @@
-// actions/universalAction.ts
 import { redirect, json, ActionFunction } from "@remix-run/node";
-import { savePaymentRequest, saveRecipient } from "~/api/firebaseConnection.server";
+import { saveCalendarEvent, savePaymentRequest, saveRecipient } from "~/api/firebaseConnection.server";
 
 
-// Função para criar o pagamento
 const createPaymentRequest = (formData: FormData) => {
   const date = new Date();
   const formatter = new Intl.DateTimeFormat("pt-BR", {
@@ -29,7 +27,6 @@ const createPaymentRequest = (formData: FormData) => {
   };
 };
 
-// Função para criar o fornecedor
 const createFornecedorData = (formData: FormData) => ({
   id: formData.get("cpfCnpj"),
   name: formData.get("nomeFantasia"),
@@ -40,6 +37,16 @@ const createFornecedorData = (formData: FormData) => ({
   tipoChavePix: formData.get("tipoChavePix"),
   chavePix: formData.get("chavePix"),
 });
+
+const createCalendarEventData = (formData: FormData) => ({
+  titulo: formData.get("titulo"),
+  data: formData.get("data"),
+  hora: formData.get("hora"),
+  duracao: formData.get("duracao"),
+  descricao: formData.get(""),
+  agenda: formData.get("agenda"),
+  from: formData.get("from"),
+})
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
@@ -58,6 +65,12 @@ export const action: ActionFunction = async ({ request }) => {
         await saveRecipient(fornecedorData);
         console.log(fornecedorData)
         return redirect("/adicionar-fornecedor-sucesso");
+        
+      case "criarEvento":
+        const calendarEventData = createCalendarEventData(formData);
+        await saveCalendarEvent(calendarEventData);
+        console.log(calendarEventData);
+        return redirect("/criar-evento-sucesso");
 
       default:
         throw new Error(`Ação não reconhecida: ${actionType}`);
