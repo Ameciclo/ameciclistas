@@ -17,12 +17,12 @@ export interface Budget {
 }
 
 export interface Project {
-    account: string;
-    balance: number;
-    budget_items: string[],
-    name: string,
-    responsible: string,
-    spreadsheet_id: string
+  account: string;
+  balance: number;
+  budget_items: string[],
+  name: string,
+  responsible: string,
+  spreadsheet_id: string
 }
 
 export interface UserData {
@@ -48,7 +48,7 @@ export interface TelegramUser {
   categories: UserCategory[];
 }
 
-export {};
+export { };
 
 declare global {
   interface Window {
@@ -74,8 +74,146 @@ declare global {
   }
 }
 
-type LoaderData = {
+export type LoaderData = {
   userCategoriesObject: Record<string, TelegramUser>; // Tipo mais específico
   projects: any;
   suppliers: any;
 };
+
+
+export type Workgroup = {
+  id: number;
+  name: string;
+  telegram_id: string;
+  telegram_url: string;
+  description: string;
+  folder_url: string;
+  published_at: string;
+  created_at: string;
+  updated_at: string;
+  directive: string;
+  Links: Array<{
+    id: number;
+    title: string;
+    link: string;
+  }>;
+  icon: {
+    id: number;
+    name: string;
+    alternativeText: string | null;
+    caption: string | null;
+    width: number;
+    height: number;
+    formats: {
+      small: {
+        ext: string;
+        url: string;
+        hash: string;
+        mime: string;
+        name: string;
+        path: string | null;
+        size: number;
+        width: number;
+        height: number;
+        provider_metadata: {
+          public_id: string;
+          resource_type: string;
+        };
+      };
+      thumbnail: {
+        ext: string;
+        url: string;
+        hash: string;
+        mime: string;
+        name: string;
+        path: string | null;
+        size: number;
+        width: number;
+        height: number;
+        provider_metadata: {
+          public_id: string;
+          resource_type: string;
+        };
+      };
+    };
+    hash: string;
+    ext: string;
+    mime: string;
+    size: number;
+    url: string;
+    previewUrl: string | null;
+    provider: string;
+    provider_metadata: {
+      public_id: string;
+      resource_type: string;
+    };
+    created_at: string;
+    updated_at: string;
+  };
+  projects: Array<{
+    id: number;
+    name: string;
+    goal: string;
+    endDate: string | null;
+    description: string;
+    startDate: string;
+    status: string;
+    bikeCulture: string;
+    instArticulation: string;
+    politicIncidence: string;
+    slug: string;
+    isHighlighted: boolean;
+    created_at: string;
+    updated_at: string;
+    workgroup: number;
+    coordinator: string | null;
+    long_description: string;
+    showTitle: boolean;
+    Links: Array<{
+      id: number;
+      title: string;
+      link: string;
+    }>;
+    steps: Array<{
+      id: number;
+      title: string;
+      description: string;
+      link: string;
+      image: {
+        id: number;
+        name: string;
+        alternativeText: string | null;
+        caption: string | null;
+        width: number;
+        height: number;
+        formats: {
+          small: {
+            ext: string;
+            url: string;
+            hash: string;
+            mime: string;
+            name: string;
+            path: string | null;
+            size: number;
+            width: number;
+            height: number;
+            provider_metadata: {
+              public_id: string;
+              resource_type: string;
+            };
+          };
+        };
+      };
+    }>;
+  }>;
+};
+
+export interface GrupoTrabalho {
+  id: number;
+  nome: string;
+  coordenacao: string | { id: number; name: string }[]; // Permite string ou array
+  descricao: string;
+  imagem: string;
+  link: string;
+  categoria: string;
+}
