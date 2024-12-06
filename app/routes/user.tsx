@@ -1,7 +1,7 @@
 // app/routes/user.tsx
 
 import { useEffect, useState } from 'react';
-import { Form, Link } from '@remix-run/react';
+import { Form, Link, useLoaderData } from '@remix-run/react';
 import { UserData } from '~/api/types';
 import { getTelegramUserInfo } from '~/api/users';
 import { loader } from "../loaders/loader";
@@ -10,8 +10,11 @@ export { loader, action }
 
 export default function User() {
   const [userData, setUserData] = useState<UserData | null>(null);
+  const { userCategoriesObject } = useLoaderData<typeof loader>();
 
   useEffect(() => setUserData(() => getTelegramUserInfo()), []);
+  useEffect(() => setUserData(() => getTelegramUserInfo()), []);
+
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -43,7 +46,7 @@ export default function User() {
       <Form method='post' className='container'>
         <input type="hidden" name="actionType" value="createUser" />
         <input type="hidden" name="user" value={JSON.stringify(userData)} />
-        <button className="button-full">SOU AMECICLISTA</button>
+        {userCategoriesObject[userData?.id as unknown as string] && <button className="button-full">SOU AMECICLISTA</button>}
         <Link to="/" className="mt-4">
           <button className="button-secondary-full">
           ⬅️ Voltar

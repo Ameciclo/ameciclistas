@@ -39,7 +39,7 @@ export async function savePaymentRequest(paymentRequest) {
 // Função para buscar a categoria de um usuário no Firebase Realtime Database
 export const getCategories = async () => {
   try {
-    const userRef = db.ref(`telegram_users`);
+    const userRef = db.ref("telegram_users");
     const snapshot = await userRef.once("value");
 
     if (snapshot.exists()) {
@@ -106,7 +106,7 @@ export async function saveCalendarEvent(eventInfo) {
 export async function createUser(userInfo, typeUser) {
   return new Promise((resolve, reject) => {
     const ref = db.ref("telegram_users");
-    
+
     ref
       .update({[userInfo?.id]: typeUser})
       .then((snapshot) => {
