@@ -22,7 +22,6 @@ export default function CriarEvento() {
   const [duracao, setDuracao] = useState("");
   const [descricao, setDescricao] = useState("");
   const [agenda, setAgenda] = useState("");
-  const [agendas, setAgendas] = useState<Agenda[]>([]);
 
   useEffect(() => setUserInfo(() => getTelegramUserInfo()), []);
 
@@ -31,16 +30,6 @@ export default function CriarEvento() {
       setUserPermissions([userCategoriesObject[userInfo.id] as any]);
     }
   }, [userInfo])
-
-  useEffect(() => {
-    // Carregar as agendas do calendars.json
-    fetch("/app/mockup/calendars.json")
-      .then((response) => response.json())
-      .then((data) => setAgendas(data)) // Ajustado para a nova estrutura
-      .catch((error) => {
-        console.error("Error loading calendars:", error);
-      });
-  }, []);
 
   const isFormValid =
     titulo !== "" &&
