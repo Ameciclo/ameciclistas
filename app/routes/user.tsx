@@ -1,10 +1,12 @@
 // app/routes/user.tsx
 
 import { useEffect, useState } from 'react';
-import { Link } from '@remix-run/react';
+import { Form, Link } from '@remix-run/react';
 import { UserData } from '~/api/types';
 import { getTelegramUserInfo } from '~/api/users';
-
+import { loader } from "../loaders/loader";
+import { action } from "../loaders/action";
+export { loader, action }
 
 export default function User() {
   const [userData, setUserData] = useState<UserData | null>(null);
@@ -36,11 +38,17 @@ export default function User() {
         </div>
       )}
 
-      <Link to="/" className="mt-4">
-        <button className="button-secondary-full">
-          Voltar
-        </button>
-      </Link>
+      <Form method='post' className='container'>
+        <input type="hidden" name="actionType" value="createUser" />
+        <input type="hidden" name="user" value={JSON.stringify(userData)} />
+        <button className="button-full">SOU AMECICLISTA</button>
+        <Link to="/" className="mt-4">
+          <button className="button-secondary-full">
+          ⬅️ Voltar
+          </button>
+        </Link>
+      </Form>
+
     </div>
   );
 }

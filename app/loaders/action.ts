@@ -1,5 +1,5 @@
 import { redirect, json, ActionFunction } from "@remix-run/node";
-import { saveCalendarEvent, savePaymentRequest, saveRecipient } from "~/api/firebaseConnection.server";
+import { createUser, saveCalendarEvent, savePaymentRequest, saveRecipient } from "~/api/firebaseConnection.server";
 
 
 const createPaymentRequest = (formData: FormData) => {
@@ -65,12 +65,20 @@ export const action: ActionFunction = async ({ request }) => {
         await saveRecipient(fornecedorData);
         console.log(fornecedorData)
         return redirect("/adicionar-fornecedor-sucesso");
-        
+
       case "criarEvento":
         const calendarEventData = createCalendarEventData(formData);
         await saveCalendarEvent(calendarEventData);
         console.log(calendarEventData);
         return redirect("/criar-evento-sucesso");
+
+      case "createUser":
+        try {
+          await createUser("123124123125", "AMECICLISTAS");
+        } catch (error) {
+          console.log(error);
+        }
+        return null
 
       default:
         throw new Error(`Ação não reconhecida: ${actionType}`);

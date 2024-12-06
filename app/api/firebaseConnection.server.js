@@ -64,6 +64,7 @@ export async function saveRecipient(recipientInfo) {
       return reject(new Error("Falha ao gerar chave para a solicitação."));
     }
 
+    if (!recipientInfo?.id) throw new Error("Você não está no telegram");
     recipientInfo.id = key;
 
     ref
@@ -93,6 +94,21 @@ export async function saveCalendarEvent(eventInfo) {
     ref
       .child(key)
       .update(eventInfo)
+      .then((snapshot) => {
+        resolve(snapshot);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export async function createUser(userInfo, typeUser) {
+  return new Promise((resolve, reject) => {
+    const ref = db.ref("telegram_users");
+    
+    ref
+      .update({[userInfo?.id]: typeUser})
       .then((snapshot) => {
         resolve(snapshot);
       })
