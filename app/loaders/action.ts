@@ -74,7 +74,7 @@ export const action: ActionFunction = async ({ request }) => {
 
       case "createUser":
         try {
-          await createUser("123124123125", "AMECICLISTAS");
+          await createUser(JSON.parse(formData.get("user") as string), "AMECICLISTAS");
         } catch (error) {
           console.log(error);
         }
