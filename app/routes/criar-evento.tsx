@@ -110,11 +110,10 @@ export default function CriarEvento() {
           onChange={(e) => setAgenda(e.target.value)}
         >
           <option value="">Selecione uma agenda</option>
-          {agendas.map((ag, index) => (
-            <option key={index} value={ag.name}>
-              {ag.name}
-            </option>
-          ))}
+          <option value="Eventos Internos">Eventos Internos</option>
+          <option value="Eventos Externos">Eventos Externos</option>
+          <option value="Divulgação de eventos externos">Divulgação de eventos externos</option>
+          <option value="Organizacional">Organizacional</option>
         </select>
       </div>
       <input type="hidden" name="actionType" value={"criarEvento"} />
