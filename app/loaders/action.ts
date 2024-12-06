@@ -45,7 +45,7 @@ const createCalendarEventData = (formData: FormData) => ({
   duracao: formData.get("duracao"),
   descricao: formData.get("descricao"),
   agenda: formData.get("agenda"),
-  from: formData.get("from"),
+  from: JSON.parse(formData.get("from") as string),
 })
 
 export const action: ActionFunction = async ({ request }) => {
