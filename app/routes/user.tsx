@@ -46,7 +46,7 @@ export default function User() {
       <Form method='post' className='container'>
         <input type="hidden" name="actionType" value="createUser" />
         <input type="hidden" name="user" value={JSON.stringify(userData)} />
-        {userCategoriesObject[userData?.id as unknown as string] && <button className="button-full">SOU AMECICLISTA</button>}
+        {!userCategoriesObject[userData?.id as unknown as string] && <button className="button-full">SOU AMECICLISTA</button>}
         <Link to="/" className="mt-4">
           <button className="button-secondary-full">
           ⬅️ Voltar
