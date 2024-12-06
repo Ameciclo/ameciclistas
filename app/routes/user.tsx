@@ -13,8 +13,6 @@ export default function User() {
   const { userCategoriesObject } = useLoaderData<typeof loader>();
 
   useEffect(() => setUserData(() => getTelegramUserInfo()), []);
-  useEffect(() => setUserData(() => getTelegramUserInfo()), []);
-
 
   return (
     <div className="container mx-auto py-8 px-4">
