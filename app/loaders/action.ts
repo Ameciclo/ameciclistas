@@ -78,7 +78,7 @@ export const action: ActionFunction = async ({ request }) => {
         } catch (error) {
           console.log(error);
         }
-        return null
+        return redirect("/user-sucess");
 
       default:
         throw new Error(`Ação não reconhecida: ${actionType}`);

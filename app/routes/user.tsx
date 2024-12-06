@@ -27,6 +27,8 @@ export default function User() {
             <li>Código do Idioma: {userData.language_code}</li>
             <li>Premium: {userData.is_premium ? 'Sim' : 'Não'}</li>
           </ul>
+          <br />
+          <br />
         </div>
       ) : (
         <div className="mt-6 text-center">
