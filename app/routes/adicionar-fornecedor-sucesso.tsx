@@ -1,5 +1,5 @@
 // routes/sucesso.tsx
-import { useNavigate } from "@remix-run/react";
+import { Link, useNavigate } from "@remix-run/react";
 
 export default function Sucesso() {
   const navigate = useNavigate();
@@ -7,7 +7,7 @@ export default function Sucesso() {
   return (
     <div className="container">
       <h2 className="text-primary ">✅ Fornecedor adicionado com sucesso!</h2>
-      
+
       <div className="button-group">
         <br />
         <br />
@@ -17,12 +17,11 @@ export default function Sucesso() {
         >
           Adicionar Novo Fornecedor
         </button>
-        <button
-          className="button-secondary-full"
-          onClick={() => navigate(-1)} // Voltar à página anterior
-        >
-         ⬅️ Voltar
-        </button>
+        <Link to="/" className="mt-4">
+          <button className="button-secondary-full">
+            ⬅️ Voltar
+          </button>
+        </Link>
       </div>
     </div>
   );

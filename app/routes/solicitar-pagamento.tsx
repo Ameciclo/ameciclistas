@@ -1,7 +1,7 @@
 // routes/solicitar-pagamento.tsx
 // Group external libraries
 import { useEffect, useState } from "react";
-import { useLoaderData, useNavigate, Form } from "@remix-run/react";
+import { useLoaderData, useNavigate, Form, Link } from "@remix-run/react";
 
 // Group internal components
 import ProjectSelect from "~/components/SolicitarPagamento/ProjectSelect";
@@ -66,7 +66,7 @@ export default function SolicitarPagamento() {
   const supplierJSONStringfyed = fornecedorSelecionado
     ? JSON.stringify(fornecedorSelecionado)
     : "";
-  const userJSONStringfyed = userInfo ? JSON.stringify(userInfo) : JSON.stringify({err: "Informações de usuário do telegram nao encontrado"});
+  const userJSONStringfyed = userInfo ? JSON.stringify(userInfo) : JSON.stringify({ err: "Informações de usuário do telegram nao encontrado" });
 
   return isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS) ? (
     <Form method="post" className="container">
@@ -109,13 +109,11 @@ export default function SolicitarPagamento() {
       <button type="submit" className={isFormValid ? "button-full" : "button-full button-disabled"} disabled={!isFormValid}>
         Enviar Solicitação
       </button>
-      <button
-        type="button"
-        className="button-secondary-full"
-        onClick={() => navigate(-1)}
-      >
-        ⬅️ Voltar
-      </button>
+      <Link to="/" className="mt-4">
+        <button className="button-secondary-full">
+          ⬅️ Voltar
+        </button>
+      </Link>
     </Form>
-  ): <Unauthorized pageName="Solicitar Pagamentos" requiredPermission="Coordenador de Projeto"/>
+  ) : <Unauthorized pageName="Solicitar Pagamentos" requiredPermission="Coordenador de Projeto" />
 }

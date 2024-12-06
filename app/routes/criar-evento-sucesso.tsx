@@ -1,5 +1,5 @@
 // routes/sucesso.tsx
-import { useNavigate } from "@remix-run/react";
+import { Link, useNavigate } from "@remix-run/react";
 
 export default function Sucesso() {
   const navigate = useNavigate();
@@ -17,12 +17,11 @@ export default function Sucesso() {
         >
           Criar Novo Evento
         </button>
-        <button
-          className="button-secondary-full"
-          onClick={() => navigate("/")}
-        >
-          ⬅️ Voltar
-        </button>
+        <Link to="/" className="mt-4">
+          <button className="button-secondary-full">
+            ⬅️ Voltar
+          </button>
+        </Link>
       </div>
     </div>
   );

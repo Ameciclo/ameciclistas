@@ -1,4 +1,4 @@
-import { Form, useLoaderData, useNavigate } from "@remix-run/react";
+import { Form, Link, useLoaderData, useNavigate } from "@remix-run/react";
 import { useState, useEffect } from "react";
 import { getTelegramUserInfo } from "../api/users";
 import { UserCategory, UserData } from "~/api/types";
@@ -110,14 +110,16 @@ export default function CriarEvento() {
       <input type="hidden" name="duracao" value={duracao} />
       <input type="hidden" name="descricao" value={descricao} />
       <input type="hidden" name="agenda" value={agenda} />
-      <input type="hidden" name="from" value={JSON.stringify(userInfo)} />               
+      <input type="hidden" name="from" value={JSON.stringify(userInfo)} />
 
       <button type="submit" className={isFormValid ? "button-full" : "button-full button-disabled"} disabled={!isFormValid}>
         Criar Evento
       </button>
-      <button className="button-secondary-full" onClick={() => navigate(-1)}>
-        ⬅️ Voltar
-      </button>
+      <Link to="/" className="mt-4">
+        <button className="button-secondary-full">
+          ⬅️ Voltar
+        </button>
+      </Link>
     </Form>
   ) : <Unauthorized pageName="Criar Evento" requiredPermission="Ameciclista" />
 }

@@ -1,5 +1,5 @@
 // routes/sucesso.tsx
-import { useNavigate } from "@remix-run/react";
+import { Link, useNavigate } from "@remix-run/react";
 
 export default function Sucesso() {
   const navigate = useNavigate();
@@ -18,12 +18,11 @@ export default function Sucesso() {
         >
           Solicitar Novo Pagamento
         </button>
-        <button
-          className="button-secondary-full"
-          onClick={() => navigate(-1)} // Voltar à página anterior
-        >
+        <Link to="/" className="mt-4">
+          <button className="button-secondary-full">
           ⬅️ Voltar
-        </button>
+          </button>
+        </Link>
       </div>
     </div>
   );

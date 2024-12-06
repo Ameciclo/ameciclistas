@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Form, useLoaderData, useNavigate } from "@remix-run/react";
+import { Form, Link, useLoaderData, useNavigate } from "@remix-run/react";
 import { isAuth } from "~/hooks/isAuthorized";
 import { loader } from "../loaders/loader";
 import { action } from "../loaders/action";
@@ -196,9 +196,11 @@ export default function AdicionarFornecedor() {
       <button type="submit" className={isFormValid ? "button-full" : "button-full button-disabled"} disabled={!isFormValid} >
         Adicionar Fornecedor
       </button>
-      <button className="button-secondary-full" onClick={() => navigate(-1)}>
-        ⬅️ Voltar
-      </button>
+      <Link to="/" className="mt-4">
+        <button className="button-secondary-full">
+          ⬅️ Voltar
+        </button>
+      </Link>
     </Form>
   ) : <Unauthorized pageName="Adicionar Fornecedor" requiredPermission="Coordednador de Projeto" />
 }
