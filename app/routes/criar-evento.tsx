@@ -47,9 +47,7 @@ export default function CriarEvento() {
     data !== "" &&
     hora !== "" &&
     duracao !== "" &&
-    descricao !== "" &&
-    agenda !== "" &&
-    agendas[0]
+    descricao !== ""
 
   return isAuth(userPermissions, UserCategory.AMECICLISTAS) ? (
     <Form className="container" method="post">
@@ -123,7 +121,7 @@ export default function CriarEvento() {
       <input type="hidden" name="duracao" value={duracao} />
       <input type="hidden" name="descricao" value={descricao} />
       <input type="hidden" name="agenda" value={agenda} />
-      <input type="hidden" name="from" value={JSON.stringify(userInfo)} />
+      <input type="hidden" name="from" value={JSON.stringify(userInfo)} />               
 
       <button type="submit" className={isFormValid ? "button-full" : "button-full button-disabled"} disabled={!isFormValid}>
         Criar Evento

@@ -43,7 +43,7 @@ const createCalendarEventData = (formData: FormData) => ({
   data: formData.get("data"),
   hora: formData.get("hora"),
   duracao: formData.get("duracao"),
-  descricao: formData.get(""),
+  descricao: formData.get("descricao"),
   agenda: formData.get("agenda"),
   from: formData.get("from"),
 })
