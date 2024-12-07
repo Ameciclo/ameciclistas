@@ -5,10 +5,11 @@ import { UserCategory, UserData } from "~/api/types";
 import { useEffect, useState } from "react";
 import { loader } from "../loaders/loader";
 import { getTelegramUserInfo } from "~/api/users";
+import { projectManagement } from "firebase-admin";
 export { loader }
 
 export default function ProjetosEmAndamento() {
-  const { userCategoriesObject, currentUserCategories } = useLoaderData<typeof loader>();
+  const { userCategoriesObject, currentUserCategories, strapiProjects } = useLoaderData<typeof loader>();
   const [userPermissions, setUserPermissions] = useState(currentUserCategories)
   const [userInfo, setUserInfo] = useState<UserData | null>({} as UserData)
 
@@ -20,19 +21,15 @@ export default function ProjetosEmAndamento() {
     }
   }, [userInfo])
 
-  const projetos = [
-    { id: 1, nome: "Projeto Ciclovias Recife" },
-    { id: 2, nome: "Projeto Educação para o Trânsito" },
-    { id: 3, nome: "Projeto de Integração de Modais" },
-  ];
+  const projetos = strapiProjects;
 
   return isAuth(userPermissions, UserCategory.AMECICLISTAS) ? (
     <div className="container mx-auto p-4">
       <h2 className="text-2xl font-bold text-teal-600">🚧 Projetos em Andamento</h2>
       <div className="mt-4">
-        {projetos.map((projeto) => (
+        {projetos.map((projeto: any) => (
           <button key={projeto.id} className="button-full">
-            {projeto.nome}
+            {projeto.name}
           </button>
         ))}
       </div>

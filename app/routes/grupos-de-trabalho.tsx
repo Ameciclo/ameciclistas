@@ -49,6 +49,7 @@ export default function GruposTrabalho() {
               <img src={grupo.imagem} alt={`${grupo.nome} - Capa`} className="w-full h-40 object-cover rounded" />
               <h4 className="text-lg font-bold">{grupo.nome}</h4>
               <p className="mt-2">{grupo.descricao}</p>
+              <br />
               <Link to={grupo.link} target="_blank" className="button-full mt-2">Entrar no Grupo</Link>
             </div>
           ))}

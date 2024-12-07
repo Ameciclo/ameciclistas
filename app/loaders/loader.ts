@@ -1,7 +1,7 @@
 // loaders/solicitarPagamentoLoader.ts
 import { json } from "@remix-run/node";
 import { getProjects, getSuppliers, getCategories } from "~/api/firebaseConnection.server";
-import { getWorkgroups } from "~/api/strapiData";
+import { getWorkgroups, getStrapiProjects } from "~/api/strapiData";
 import { UserCategory, Workgroup } from "~/api/types";
 
 export async function loader() {
@@ -27,5 +27,7 @@ export async function loader() {
 
   let workgroups: Workgroup[] = await getWorkgroups();
 
-  return json({ projects, suppliers, currentUserCategories, userCategoriesObject, workgroups });
+  const strapiProjects = await getStrapiProjects();
+
+  return json({ projects, suppliers, currentUserCategories, userCategoriesObject, workgroups, strapiProjects });
 }
