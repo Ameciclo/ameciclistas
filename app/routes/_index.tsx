@@ -85,7 +85,7 @@ export default function Index() {
             className={`button-full ${!isAuth(userPermissions, UserCategory.ANY_USER) ? "button-disabled" : ""}`}
             disabled={!isAuth(userPermissions, UserCategory.ANY_USER)}
           >
-            ⚙️ Suas configurações
+            ⚙️ Suas informações
           </button>
         </Link>
       </div>
