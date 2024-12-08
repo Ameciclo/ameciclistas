@@ -12,5 +12,9 @@ export default defineConfig({
       },
     }),
     tsconfigPaths(),
+
   ],
+  server: {
+    port: 8002, // Porta do servidor Vite
+  },
 });

@@ -9,7 +9,7 @@ const Unauthorized: React.FC<UnauthorizedProps> = ({ pageName, requiredPermissio
   return (
     <div className="container">
       <p>Você não tem permissão para acessar a página {pageName}.</p>
-      <p>Tipo de permissão necessária: {requiredPermission}</p>
+      <p>O tipo de permissão mínima necessária é de {requiredPermission}</p>
       <button
         className="button-full"
         onClick={() => (window.location.href = "https://www.ameciclo.org")}

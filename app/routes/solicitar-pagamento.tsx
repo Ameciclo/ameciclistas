@@ -1,180 +1,119 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "@remix-run/react";
+// routes/solicitar-pagamento.tsx
+// Group external libraries
+import { useEffect, useState } from "react";
+import { useLoaderData, useNavigate, Form, Link } from "@remix-run/react";
+
+// Group internal components
+import ProjectSelect from "~/components/SolicitarPagamento/ProjectSelect";
+import RubricaSelect from "~/components/SolicitarPagamento/RubricaSelect";
+import FornecedorInput from "~/components/SolicitarPagamento/FornecedorInput";
+import DescricaoInput from "~/components/SolicitarPagamento/DescricaoInput";
 import ValorInput from "~/components/ValorInput";
-import FornecedorAutocomplete from "~/components/FornecedorAutocomplete";
-import { getUserCategories, UserCategory } from "../api/users";
+
+// Group utilities and types
+import { UserCategory, UserData } from "../api/types";
+import { Project } from "~/api/types";
+
+import { loader } from "~/loaders/loader";
+import { action } from "~/loaders/action";
+import { getTelegramUserInfo } from "~/api/users";
+import { isAuth } from "~/hooks/isAuthorized";
 import Unauthorized from "~/components/Unauthorized";
-import { Project, Budget } from "~/api/types";
+
+export { loader, action };
 
 export default function SolicitarPagamento() {
+  const { projects, suppliers, currentUserCategories, userCategoriesObject } = useLoaderData<typeof loader>();
+  const [userPermissions, setUserPermissions] = useState(currentUserCategories)
   const navigate = useNavigate();
   const [projetoSelecionado, setProjetoSelecionado] = useState<Project | null>(
     null
   );
-  const [rubricaSelecionada, setRubricaSelecionada] = useState<Budget | null>(
+  const [rubricaSelecionada, setRubricaSelecionada] = useState<string | null>(
     null
   );
   const [descricao, setDescricao] = useState("");
-  const [valor, setValor] = useState("");
+  const [valor, setValor] = useState("0");
   const [fornecedor, setFornecedor] = useState("");
-  const [projetos, setProjetos] = useState<Project[]>([]);
-  const [fornecedores, setFornecedores] = useState<any[]>([]);
-  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [userInfo, setUserInfo] = useState<UserData | null>(null);
 
   useEffect(() => {
-    let userId;
-    const isDevelopment = process.env.NODE_ENV === "development";
-
-    if (isDevelopment) {
-      // Carregar o ID do usuário a partir do arquivo JSON em desenvolvimento
-      fetch("/devUserId.json")
-        .then((response) => response.json())
-        .then((data) => {
-          userId = data.userId;
-          checkPermissions(userId);
-        })
-        .catch((error) => {
-          console.error(
-            "Error loading the user ID from devUserId.json:",
-            error
-          );
-        });
-    } else {
-      const telegram = (window as any)?.Telegram?.WebApp;
-      userId = telegram?.initDataUnsafe?.user?.id;
-
-      if (!userId) {
-        console.error("User ID is undefined. Closing the app.");
-        telegram?.close();
-        return;
-      }
-      checkPermissions(userId);
-    }
-
-    // Carregar projetos e fornecedores
-    fetch("/app/mockup/projects.json")
-      .then((response) => response.json())
-      .then((data) => setProjetos(data))
-      .catch((error) => console.error("Failed to load projects:", error));
-
-    fetch("/app/mockup/suppliers.json")
-      .then((response) => response.json())
-      .then((data) => setFornecedores(data))
-      .catch((error) => console.error("Failed to load suppliers:", error));
+    setUserInfo(() => getTelegramUserInfo());
   }, []);
 
-  const checkPermissions = (userId: number) => {
-    const userCategories = getUserCategories(userId);
-    setIsAuthorized(userCategories.includes(UserCategory.AMECICLISTAS));
-  };
-
-  const handleSubmit = () => {
-    try {
-      const data = {
-        projeto: projetoSelecionado?.nome,
-        rubrica: rubricaSelecionada?.nome,
-        fornecedor,
-        descricao,
-        valor,
-      };
-
-      const telegram = (window as any)?.Telegram?.WebApp;
-      telegram?.sendData(JSON.stringify(data));
-    } catch (error) {
-      console.error("Erro ao enviar dados:", error);
+  useEffect(() => {
+    if (userInfo?.id && userCategoriesObject[userInfo.id]) {
+      setUserPermissions([userCategoriesObject[userInfo.id] as any]);
     }
-  };
+  }, [userInfo])
 
-  if (!isAuthorized) {
-    return (
-      <Unauthorized
-        pageName="Solicitar Pagamento"
-        requiredPermission="AMECICLISTAS"
-      />
-    );
-  }
+  // Verifica se todos os campos obrigatórios estão preenchidos
+  const isFormValid =
+    projetoSelecionado !== null &&
+    rubricaSelecionada !== null &&
+    descricao.trim() !== "" &&
+    valor !== "0" &&
+    fornecedor.trim() !== "";
 
-  return (
-    <div className="container">
+  // Filtra o fornecedor selecionado, se necessário
+  const fornecedorSelecionado = suppliers.find((s: any) => s.id === fornecedor);
+
+  // Prepara os dados do projeto e fornecedor como JSON
+  const projectJSONStringfyed = projetoSelecionado
+    ? JSON.stringify(projetoSelecionado)
+    : "";
+  const suppliersJSONStringfyed = JSON.stringify(suppliers)
+  const supplierJSONStringfyed = fornecedorSelecionado
+    ? JSON.stringify(fornecedorSelecionado)
+    : "";
+  const userJSONStringfyed = userInfo ? JSON.stringify(userInfo) : JSON.stringify({ err: "Informações de usuário do telegram nao encontrado" });
+
+  return isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS) ? (
+    <Form method="post" className="container">
       <h2 className="text-primary">💰 Solicitar Pagamento</h2>
 
-      <div className="form-group">
-        <label className="form-label">Projeto:</label>
-        <select
-          className="form-input"
-          value={projetoSelecionado?.id || ""}
-          onChange={(e) => {
-            const projeto = projetos.find(
-              (p) => p.id === Number(e.target.value)
-            );
-            setProjetoSelecionado(projeto || null);
-            setRubricaSelecionada(null);
-          }}
-        >
-          <option value="">Selecione um projeto</option>
-          {projetos
-            .filter((p) => p.status === "em andamento")
-            .map((projeto) => (
-              <option key={projeto.id} value={projeto.id}>
-                {projeto.nome}
-              </option>
-            ))}
-        </select>
-      </div>
+      <ProjectSelect
+        projetos={projects}
+        projetoSelecionado={projetoSelecionado}
+        setProjetoSelecionado={setProjetoSelecionado}
+        setRubricaSelecionada={setRubricaSelecionada}
+      />
 
       {projetoSelecionado && (
-        <div className="form-group">
-          <label className="form-label">Rubrica:</label>
-          <select
-            className="form-input"
-            value={rubricaSelecionada?.id || ""}
-            onChange={(e) => {
-              const rubrica = projetoSelecionado.rubricas.find(
-                (r) => r.id === Number(e.target.value)
-              );
-              setRubricaSelecionada(rubrica || null);
-            }}
-          >
-            <option value="">Selecione uma rubrica</option>
-            {projetoSelecionado.rubricas.map((rubrica) => (
-              <option key={rubrica.id} value={rubrica.id}>
-                {rubrica.nome}
-              </option>
-            ))}
-          </select>
-        </div>
+        <RubricaSelect
+          projetoSelecionado={projetoSelecionado}
+          rubricaSelecionada={rubricaSelecionada}
+          setRubricaSelecionada={setRubricaSelecionada}
+        />
       )}
 
-      <div className="form-group">
-        <label className="form-label">Fornecedor:</label>
-        <FornecedorAutocomplete
-          fornecedores={fornecedores}
-          value={fornecedor}
-          onChange={setFornecedor}
-        />
-      </div>
+      <FornecedorInput
+        fornecedores={suppliers}
+        fornecedor={fornecedor}
+        setFornecedor={setFornecedor}
+      />
 
-      <div className="form-group">
-        <label className="form-label">Descrição:</label>
-        <textarea
-          className="form-input"
-          value={descricao}
-          onChange={(e) => setDescricao(e.target.value)}
-          rows={4}
-        ></textarea>
-      </div>
+      <DescricaoInput descricao={descricao} setDescricao={setDescricao} />
 
       <div className="form-group">
         <label className="form-label">Valor:</label>
-        <ValorInput valor={valor} setValor={setValor} />
+        <ValorInput name="valor" valor={valor} setValor={setValor} />
       </div>
 
-      <button className="button-full" onClick={handleSubmit}>
+      <input type="hidden" name="actionType" value="solicitarPagamento" />
+      <input type="hidden" name="telegramUserInfo" value={userJSONStringfyed} />
+      <input type="hidden" name="project" value={projectJSONStringfyed} />
+      <input type="hidden" name="fornecedor" value={supplierJSONStringfyed} />
+      <input type="hidden" name="fornecedores" value={suppliersJSONStringfyed} />
+
+      <button type="submit" className={isFormValid ? "button-full" : "button-full button-disabled"} disabled={!isFormValid}>
         Enviar Solicitação
       </button>
-      <button className="button-secondary-full" onClick={() => navigate(-1)}>
-        ⬅️ Voltar
-      </button>
-    </div>
-  );
+      <Link to="/" className="mt-4">
+        <button className="button-secondary-full">
+          ⬅️ Voltar
+        </button>
+      </Link>
+    </Form>
+  ) : <Unauthorized pageName="Solicitar Pagamentos" requiredPermission="Coordenador de Projeto" />
 }

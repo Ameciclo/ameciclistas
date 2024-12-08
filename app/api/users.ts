@@ -1,17 +1,5 @@
 // userRoles.ts
-
-export enum UserCategory {
-  ANY_USER = "ANY_USER", // Mudar para "ANY_USER" para refletir o nome
-  AMECICLISTAS = "AMECICLISTAS",
-  PROJECT_COORDINATORS = "PROJECT_COORDINATORS",
-  AMECICLO_COORDINATORS = "AMECICLO_COORDINATORS",
-}
-
-interface User {
-  id: number; // Telegram user ID
-  name: string;
-  categories: UserCategory[];
-}
+import { TelegramUser, UserCategory, UserData } from "./types";
 
 const categoryHierarchy: Record<UserCategory, UserCategory[]> = {
   [UserCategory.ANY_USER]: [],
@@ -43,10 +31,14 @@ export const getUserCategories = (userId: number): UserCategory[] => {
 };
 
 // Define your users and their categories
-export const users: User[] = [
+export const users: TelegramUser[] = [
   {
     id: 157783985, // Replace with actual Telegram user IDs
     name: "Daniel Valença",
+    categories: [UserCategory.AMECICLO_COORDINATORS], // Apenas a categoria mais alta
+  }, {
+    id: 934430631, // Replace with actual Telegram user IDs
+    name: "Ned Ludd",
     categories: [UserCategory.AMECICLO_COORDINATORS], // Apenas a categoria mais alta
   },
   {
@@ -64,5 +56,39 @@ export const users: User[] = [
     name: "Igor Matos",
     categories: [UserCategory.AMECICLISTAS], // Apenas a categoria mais alta
   },
+  {
+    id: 816212630,
+    name: "Italo Chaves",
+    categories: [UserCategory.PROJECT_COORDINATORS],
+  },
   // Add more users as needed
 ];
+
+export const getTelegramUserInfo = (): UserData | null => {
+  // Verifica se estamos no navegador
+  if (typeof window !== 'undefined') {
+    const telegram = (window as any).Telegram.WebApp;
+
+    // Verifica se o usuário está disponível
+    if (telegram) {
+      return telegram.initDataUnsafe.user as UserData;
+    }
+  }
+
+  return null
+}
+
+
+export const getTelegramGeneralDataInfo = (): any => {
+  // Verifica se estamos no navegador
+  if (typeof window !== 'undefined') {
+    const telegram = (window as any)?.Telegram.WebApp;
+
+    // Verifica se o dado está disponível
+    if (telegram && telegram.initDataUnsafe) {
+      return telegram.initDataUnsafe as UserData;
+    }
+  }
+
+  return null;
+}

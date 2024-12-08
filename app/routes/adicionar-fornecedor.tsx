@@ -1,9 +1,26 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "@remix-run/react";
-import Unauthorized from "~/components/Unauthorized"; // Importar o componente Unauthorized
-import { getUserCategories, UserCategory } from "../api/users";
+import { Form, Link, useLoaderData, useNavigate } from "@remix-run/react";
+import { isAuth } from "~/hooks/isAuthorized";
+import { loader } from "../loaders/loader";
+import { action } from "../loaders/action";
+import { getTelegramUserInfo } from "~/api/users";
+import { UserCategory, UserData } from "~/api/types";
+import Unauthorized from "~/components/Unauthorized";
+export { loader, action }
 
 export default function AdicionarFornecedor() {
+  const { userCategoriesObject, currentUserCategories } = useLoaderData<typeof loader>();
+  const [userPermissions, setUserPermissions] = useState(currentUserCategories)
+  const [userInfo, setUserInfo] = useState<UserData | null>({} as UserData)
+
+  useEffect(() => setUserInfo(() => getTelegramUserInfo()), []);
+
+  useEffect(() => {
+    if (userInfo?.id && userCategoriesObject[userInfo.id]) {
+      setUserPermissions([userCategoriesObject[userInfo.id] as any]);
+    }
+  }, [userInfo])
+
   const navigate = useNavigate();
   const [nomeFantasia, setNomeFantasia] = useState("");
   const [razaoSocial, setRazaoSocial] = useState("");
@@ -12,43 +29,15 @@ export default function AdicionarFornecedor() {
   const [telefone, setTelefone] = useState("");
   const [tipoChavePix, setTipoChavePix] = useState("email");
   const [chavePix, setChavePix] = useState("");
-  const [banco, setBanco] = useState("");
-  const [agencia, setAgencia] = useState("");
-  const [conta, setConta] = useState("");
-  const [isAuthorized, setIsAuthorized] = useState(false);
 
-  useEffect(() => {
-    let userId;
-    const isDevelopment = process.env.NODE_ENV === "development";
-
-    if (isDevelopment) {
-      // Carregar o ID do usuário a partir do arquivo JSON em desenvolvimento
-      fetch("/devUserId.json")
-        .then((response) => response.json())
-        .then((data) => {
-          userId = data.userId;
-          checkPermissions(userId);
-        })
-        .catch((error) => {
-          console.error("Error loading the user ID from devUserId.json:", error);
-        });
-    } else {
-      const telegram = (window as any)?.Telegram?.WebApp;
-      userId = telegram?.initDataUnsafe?.user?.id;
-
-      if (!userId) {
-        console.error("User ID is undefined. Closing the app.");
-        telegram?.close();
-        return;
-      }
-      checkPermissions(userId);
-    }
-  }, []);
-
-  const checkPermissions = (userId: number) => {
-    const userCategories = getUserCategories(userId);
-    setIsAuthorized(userCategories.includes(UserCategory.PROJECT_COORDINATORS));
-  };
+  const isFormValid =
+    nomeFantasia !== "" &&
+    razaoSocial !== "" &&
+    cpfCnpj !== "" &&
+    email !== "" &&
+    telefone !== "" &&
+    tipoChavePix !== "" &&
+    chavePix !== ""
 
   const handleCpfCnpjChange = (value: string) => {
     const onlyDigits = value.replace(/\D/g, ""); // Remove all non-digit characters
@@ -113,30 +102,8 @@ export default function AdicionarFornecedor() {
     }
   };
 
-  const handleSubmit = () => {
-    const fornecedorData = {
-      nomeFantasia,
-      razaoSocial,
-      cpfCnpj,
-      email,
-      telefone,
-      tipoChavePix,
-      chavePix,
-      banco,
-      agencia,
-      conta,
-    };
-
-    console.log(fornecedorData); // Aqui você pode enviar os dados para a API ou fazer o que for necessário
-  };
-
-  // Se não autorizado, renderizar o componente Unauthorized
-  if (!isAuthorized) {
-    return <Unauthorized pageName="Adicionar Fornecedor" requiredPermission="PROJECT_COORDINATORS" />;
-  }
-
-  return (
-    <div className="container mx-auto p-4">
+  return isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS) ? (
+    <Form className="container mx-auto p-4" method="post">
       <h2 className="text-2xl font-bold text-teal-600">📦 Adicionar Fornecedor</h2>
 
       <div className="form-group mb-4">
@@ -177,7 +144,7 @@ export default function AdicionarFornecedor() {
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="exemplo@dominio.com"
+          placeholder="contato@ameciclo.org"
         />
       </div>
 
@@ -217,49 +184,23 @@ export default function AdicionarFornecedor() {
         />
       </div>
 
-      {tipoChavePix === "outro" && (
-        <>
-          <div className="form-group mb-4">
-            <label className="font-bold">Banco:</label>
-            <input
-              className="w-full p-2 border border-gray-300 rounded-md"
-              type="text"
-              value={banco}
-              onChange={(e) => setBanco(e.target.value)}
-              placeholder="Digite o nome do banco"
-            />
-          </div>
+      <input type="hidden" name="actionType" value="adicionarFornecedor" />
+      <input type="hidden" name="nomeFantasia" value={nomeFantasia} />
+      <input type="hidden" name="razaoSocial" value={razaoSocial} />
+      <input type="hidden" name="cpfCnpj" value={cpfCnpj} />
+      <input type="hidden" name="email" value={email} />
+      <input type="hidden" name="telefone" value={telefone} />
+      <input type="hidden" name="tipoChavePix" value={tipoChavePix} />
+      <input type="hidden" name="chavePix" value={chavePix} />
 
-          <div className="form-group mb-4">
-            <label className="font-bold">Agência:</label>
-            <input
-              className="w-full p-2 border border-gray-300 rounded-md"
-              type="text"
-              value={agencia}
-              onChange={(e) => setAgencia(e.target.value.replace(/\D/g, ""))} // Permitir apenas números
-              placeholder="Apenas números"
-            />
-          </div>
-
-          <div className="form-group mb-4">
-            <label className="font-bold">Conta:</label>
-            <input
-              className="w-full p-2 border border-gray-300 rounded-md"
-              type="text"
-              value={conta}
-              onChange={(e) => setConta(e.target.value.replace(/\D/g, ""))} // Permitir apenas números
-              placeholder="Apenas números ou 'X'"
-            />
-          </div>
-        </>
-      )}
-
-      <button className="button-full" onClick={handleSubmit}>
-        Enviar Solicitação
+      <button type="submit" className={isFormValid ? "button-full" : "button-full button-disabled"} disabled={!isFormValid} >
+        Adicionar Fornecedor
       </button>
-      <button className="button-secondary-full" onClick={() => navigate(-1)}>
-        ⬅️ Voltar
-      </button>
-    </div>
-  );
+      <Link to="/" className="mt-4">
+        <button className="button-secondary-full">
+          ⬅️ Voltar
+        </button>
+      </Link>
+    </Form>
+  ) : <Unauthorized pageName="Adicionar Fornecedor" requiredPermission="Coordednador de Projeto" />
 }
