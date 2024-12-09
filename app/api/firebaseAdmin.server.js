@@ -3,8 +3,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-serviceAccount.private_key = process.env.FIREBASE_PRIVATE_KEY;
-console.log(serviceAccount);
+serviceAccount.private_key = (process.env.FIREBASE_PRIVATE_KEY).replace(/\\n/g, "\n");
 
 if (!admin.apps.length) {
   admin.initializeApp({
