@@ -11,7 +11,7 @@ const createPaymentRequest = (formData: FormData) => {
     timeStyle: "medium",
   });
   let project = JSON.parse(formData.get("project") as string);
-  project.id = project.spreasheet_id;
+  project.id = project.spreadsheet_id;
 
   return {
     date: unixMilliseconds,
