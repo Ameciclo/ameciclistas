@@ -48,14 +48,6 @@ export default function Index() {
             💰 Solicitar Pagamento
           </button>
         </Link>
-        <Link to="/adicionar-fornecedor">
-          <button
-            className={`button-full ${!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS) ? "button-disabled" : ""}`}
-            disabled={!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)}
-          >
-            📦 Adicionar Fornecedor
-          </button>
-        </Link>
         <Link to="/links-uteis">
           <button
             className={`button-full ${!isAuth(userPermissions, UserCategory.ANY_USER) ? "button-disabled" : ""}`}

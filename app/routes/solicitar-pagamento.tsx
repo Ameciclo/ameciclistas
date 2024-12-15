@@ -23,8 +23,9 @@ import Unauthorized from "~/components/Unauthorized";
 export { loader, action };
 
 export default function SolicitarPagamento() {
-  const { projects, suppliers, currentUserCategories, userCategoriesObject } = useLoaderData<typeof loader>();
-  const [userPermissions, setUserPermissions] = useState(currentUserCategories)
+  const { projects, suppliers, currentUserCategories, userCategoriesObject } =
+    useLoaderData<typeof loader>();
+  const [userPermissions, setUserPermissions] = useState(currentUserCategories);
   const navigate = useNavigate();
   const [projetoSelecionado, setProjetoSelecionado] = useState<Project | null>(
     null
@@ -45,7 +46,7 @@ export default function SolicitarPagamento() {
     if (userInfo?.id && userCategoriesObject[userInfo.id]) {
       setUserPermissions([userCategoriesObject[userInfo.id] as any]);
     }
-  }, [userInfo])
+  }, [userInfo]);
 
   // Verifica se todos os campos obrigatórios estão preenchidos
   const isFormValid =
@@ -62,11 +63,15 @@ export default function SolicitarPagamento() {
   const projectJSONStringfyed = projetoSelecionado
     ? JSON.stringify(projetoSelecionado)
     : "";
-  const suppliersJSONStringfyed = JSON.stringify(suppliers)
+  const suppliersJSONStringfyed = JSON.stringify(suppliers);
   const supplierJSONStringfyed = fornecedorSelecionado
     ? JSON.stringify(fornecedorSelecionado)
     : "";
-  const userJSONStringfyed = userInfo ? JSON.stringify(userInfo) : JSON.stringify({ err: "Informações de usuário do telegram nao encontrado" });
+  const userJSONStringfyed = userInfo
+    ? JSON.stringify(userInfo)
+    : JSON.stringify({
+        err: "Informações de usuário do telegram nao encontrado",
+      });
 
   return isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS) ? (
     <Form method="post" className="container">
@@ -104,16 +109,39 @@ export default function SolicitarPagamento() {
       <input type="hidden" name="telegramUserInfo" value={userJSONStringfyed} />
       <input type="hidden" name="project" value={projectJSONStringfyed} />
       <input type="hidden" name="fornecedor" value={supplierJSONStringfyed} />
-      <input type="hidden" name="fornecedores" value={suppliersJSONStringfyed} />
+      <input
+        type="hidden"
+        name="fornecedores"
+        value={suppliersJSONStringfyed}
+      />
 
-      <button type="submit" className={isFormValid ? "button-full" : "button-full button-disabled"} disabled={!isFormValid}>
+      <button
+        type="submit"
+        className={isFormValid ? "button-full" : "button-full button-disabled"}
+        disabled={!isFormValid}
+      >
         Enviar Solicitação
       </button>
-      <Link to="/" className="mt-4">
-        <button className="button-secondary-full">
-          ⬅️ Voltar
+      <Link to="/adicionar-fornecedor">
+        <button
+          className={`button-full ${
+            !isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)
+              ? "button-disabled"
+              : ""
+          }`}
+          disabled={!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)}
+        >
+          📦 Adicionar Fornecedor
         </button>
       </Link>
+      <Link to="/" className="mt-4">
+        <button className="button-secondary-full">⬅️ Voltar</button>
+      </Link>
     </Form>
-  ) : <Unauthorized pageName="Solicitar Pagamentos" requiredPermission="Coordenador de Projeto" />
+  ) : (
+    <Unauthorized
+      pageName="Solicitar Pagamentos"
+      requiredPermission="Coordenador de Projeto"
+    />
+  );
 }

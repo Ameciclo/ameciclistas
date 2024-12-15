@@ -6,12 +6,13 @@ import { action } from "../loaders/action";
 import { getTelegramUserInfo } from "~/api/users";
 import { UserCategory, UserData } from "~/api/types";
 import Unauthorized from "~/components/Unauthorized";
-export { loader, action }
+export { loader, action };
 
 export default function AdicionarFornecedor() {
-  const { userCategoriesObject, currentUserCategories } = useLoaderData<typeof loader>();
-  const [userPermissions, setUserPermissions] = useState(currentUserCategories)
-  const [userInfo, setUserInfo] = useState<UserData | null>({} as UserData)
+  const { userCategoriesObject, currentUserCategories } =
+    useLoaderData<typeof loader>();
+  const [userPermissions, setUserPermissions] = useState(currentUserCategories);
+  const [userInfo, setUserInfo] = useState<UserData | null>({} as UserData);
 
   useEffect(() => setUserInfo(() => getTelegramUserInfo()), []);
 
@@ -19,7 +20,7 @@ export default function AdicionarFornecedor() {
     if (userInfo?.id && userCategoriesObject[userInfo.id]) {
       setUserPermissions([userCategoriesObject[userInfo.id] as any]);
     }
-  }, [userInfo])
+  }, [userInfo]);
 
   const navigate = useNavigate();
   const [nomeFantasia, setNomeFantasia] = useState("");
@@ -37,7 +38,7 @@ export default function AdicionarFornecedor() {
     email !== "" &&
     telefone !== "" &&
     tipoChavePix !== "" &&
-    chavePix !== ""
+    chavePix !== "";
 
   const handleCpfCnpjChange = (value: string) => {
     const onlyDigits = value.replace(/\D/g, ""); // Remove all non-digit characters
@@ -104,7 +105,9 @@ export default function AdicionarFornecedor() {
 
   return isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS) ? (
     <Form className="container mx-auto p-4" method="post">
-      <h2 className="text-2xl font-bold text-teal-600">📦 Adicionar Fornecedor</h2>
+      <h2 className="text-2xl font-bold text-teal-600">
+        📦 Adicionar Fornecedor
+      </h2>
 
       <div className="form-group mb-4">
         <label className="font-bold">Nome Fantasia:</label>
@@ -193,14 +196,33 @@ export default function AdicionarFornecedor() {
       <input type="hidden" name="tipoChavePix" value={tipoChavePix} />
       <input type="hidden" name="chavePix" value={chavePix} />
 
-      <button type="submit" className={isFormValid ? "button-full" : "button-full button-disabled"} disabled={!isFormValid} >
+      <button
+        type="submit"
+        className={isFormValid ? "button-full" : "button-full button-disabled"}
+        disabled={!isFormValid}
+      >
         Adicionar Fornecedor
       </button>
-      <Link to="/" className="mt-4">
-        <button className="button-secondary-full">
-          ⬅️ Voltar
+      <Link to="/solicitar-pagamento">
+        <button
+          className={`button-full ${
+            !isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)
+              ? "button-disabled"
+              : ""
+          }`}
+          disabled={!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)}
+        >
+          💰 Solicitar Pagamento
         </button>
       </Link>
+      <Link to="/" className="mt-4">
+        <button className="button-secondary-full">⬅️ Voltar</button>
+      </Link>
     </Form>
-  ) : <Unauthorized pageName="Adicionar Fornecedor" requiredPermission="Coordednador de Projeto" />
+  ) : (
+    <Unauthorized
+      pageName="Adicionar Fornecedor"
+      requiredPermission="Coordednador de Projeto"
+    />
+  );
 }
