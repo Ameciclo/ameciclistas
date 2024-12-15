@@ -14,8 +14,8 @@ import ValorInput from "~/components/ValorInput";
 import { UserCategory, UserData } from "../api/types";
 import { Project } from "~/api/types";
 
-import { loader } from "~/loaders/loader";
-import { action } from "~/loaders/action";
+import { loader } from "~/loaders/solicitar-pagamento-loader";
+import { action } from "~/loaders/solicitar-pagamento-action";
 import { getTelegramUserInfo } from "~/api/users";
 import { isAuth } from "~/hooks/isAuthorized";
 import Unauthorized from "~/components/Unauthorized";
@@ -120,7 +120,7 @@ export default function SolicitarPagamento() {
         className={isFormValid ? "button-full" : "button-full button-disabled"}
         disabled={!isFormValid}
       >
-        Enviar Solicitação
+        🤞 Enviar Solicitação
       </button>
       <Link to="/adicionar-fornecedor">
         <button
