@@ -33,12 +33,6 @@ const links = [
     requiredPermission: UserCategory.AMECICLISTAS,
   },
   {
-    to: "/lista-projetos",
-    label: "Projetos em Andamento",
-    icon: "📊",
-    requiredPermission: UserCategory.AMECICLISTAS,
-  },
-  {
     to: "/user",
     label: "Suas informações",
     icon: "⚙️",
