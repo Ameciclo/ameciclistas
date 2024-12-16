@@ -123,5 +123,5 @@ export const action: ActionFunction = async ({ request }) => {
   // Salva no Firebase (adapte sua função saveRecipient conforme necessário)
   await saveRecipient(finalData);
 
-  return redirect("/adicionar-fornecedor-sucesso");
+  return redirect("/sucesso/adicionar-fornecedor");
 };
