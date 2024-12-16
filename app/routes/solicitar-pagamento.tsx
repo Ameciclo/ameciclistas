@@ -14,13 +14,13 @@ import ValorInput from "~/components/Forms/ValorInput";
 import { UserCategory, UserData } from "../utils/types";
 import { Project } from "~/utils/types";
 
-import { loader } from "~/handlers/loaders/solicitar-pagamento";
-import { action } from "~/handlers/actions/solicitar-pagamento";
 import { getTelegramUserInfo } from "~/utils/users";
 import { isAuth } from "~/utils/isAuthorized";
 import Unauthorized from "~/components/Unauthorized";
 import { BackButton } from "~/components/CommonButtons";
 
+import { action } from "~/handlers/actions/solicitar-pagamento";
+import { loader } from "~/handlers/loaders/solicitar-pagamento";
 export { loader, action };
 
 export default function SolicitarPagamento() {

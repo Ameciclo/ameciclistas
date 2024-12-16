@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 import { Form, useLoaderData } from "@remix-run/react";
 import { UserData } from "~/utils/types";
 import { getTelegramUserInfo } from "~/utils/users";
-import { loader } from "../handlers/loaders/solicitar-pagamento";
-import { action } from "../handlers/actions/solicitar-pagamento";
 import { BackButton } from "~/components/CommonButtons";
+
+import { action } from "~/handlers/actions/user-action";
+import { loader } from "~/handlers/loaders/user";
 export { loader, action };
 
 export default function User() {
