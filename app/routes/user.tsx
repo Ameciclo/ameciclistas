@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 import { Form, Link, useLoaderData } from '@remix-run/react';
 import { UserData } from '~/utils/types';
 import { getTelegramUserInfo } from '~/utils/users';
-import { loader } from "../loaders/solicitar-pagamento-loader";
-import { action } from "../loaders/solicitar-pagamento-action";
+import { loader } from "../handlers/solicitar-pagamento-loader";
+import { action } from "../handlers/solicitar-pagamento-action";
 export { loader, action }
 
 export default function User() {

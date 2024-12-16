@@ -49,7 +49,7 @@ export default function LinksUteis() {
     },
     {
       to: "http://equipamento.ameciclo.org/",
-      label: "🎥 Requisitar equipamento",
+      label: "Requisitar equipamento",
       icon: "🎥",
       requiredPermission: UserCategory.AMECICLISTAS, // Coordenadores de projeto
     },

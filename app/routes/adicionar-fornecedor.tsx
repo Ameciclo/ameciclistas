@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { Form, Link, useLoaderData } from "@remix-run/react";
 import { isAuth } from "~/hooks/isAuthorized";
-import { action } from "../loaders/adicionar-fornecedor-action";
+import { action } from "../handlers/adicionar-fornecedor-action";
 import { getTelegramUserInfo } from "~/utils/users";
 import { UserCategory, UserData } from "~/utils/types";
 import Unauthorized from "~/components/Unauthorized";
-import { loader } from "~/loaders/solicitar-pagamento-loader";
+import { loader } from "~/handlers/solicitar-pagamento-loader";
 import { formatEmail, formatIdNumber, formatPhone } from "~/utils/format";
 import { validateIdNumber } from "~/utils/idNumber";
 

@@ -3,7 +3,7 @@ import { isAuth } from "~/hooks/isAuthorized";
 import Unauthorized from "~/components/Unauthorized";
 import { UserCategory, UserData } from "~/utils/types";
 import { useEffect, useState } from "react";
-import { loader } from "../loaders/solicitar-pagamento-loader";
+import { loader } from "../handlers/solicitar-pagamento-loader";
 import { getTelegramUserInfo } from "~/utils/users";
 export { loader };
 
