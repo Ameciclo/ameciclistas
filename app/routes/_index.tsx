@@ -1,7 +1,7 @@
 import { Link, useLoaderData } from "@remix-run/react";
 import { UserCategory, UserData } from "~/api/types";
 import { useEffect, useState } from "react";
-import { loader } from "~/loaders/loader";
+import { loader } from "~/loaders/solicitar-pagamento-loader";
 import { isAuth } from "~/hooks/isAuthorized";
 import { getTelegramUserInfo } from "~/api/users";
 import telegramInit from "~/hooks/telegramInit";
@@ -46,14 +46,6 @@ export default function Index() {
             disabled={!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)}
           >
             💰 Solicitar Pagamento
-          </button>
-        </Link>
-        <Link to="/adicionar-fornecedor">
-          <button
-            className={`button-full ${!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS) ? "button-disabled" : ""}`}
-            disabled={!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)}
-          >
-            📦 Adicionar Fornecedor
           </button>
         </Link>
         <Link to="/links-uteis">
