@@ -1,10 +1,11 @@
-import { Link, useLoaderData } from "@remix-run/react";
+import { useLoaderData } from "@remix-run/react";
 import { isAuth } from "~/utils/isAuthorized";
 import Unauthorized from "~/components/Unauthorized";
 import { UserCategory, UserData } from "~/utils/types";
 import { useEffect, useState } from "react";
-import { loader } from "../handlers/solicitar-pagamento-loader";
 import { getTelegramUserInfo } from "~/utils/users";
+import { loader } from "~/handlers/lista-projetos-loader";
+import { BackButton } from "~/components/CommonButtons";
 export { loader };
 
 export default function ProjetosEmAndamento() {
@@ -41,9 +42,7 @@ export default function ProjetosEmAndamento() {
           </a>
         ))}
       </div>
-      <Link to="/" className="button-secondary-full">
-        ⬅️ Voltar
-      </Link>
+      <BackButton />
     </div>
   ) : (
     <Unauthorized

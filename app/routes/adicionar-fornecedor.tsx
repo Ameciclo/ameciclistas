@@ -8,6 +8,7 @@ import Unauthorized from "~/components/Unauthorized";
 import { loader } from "~/handlers/solicitar-pagamento-loader";
 import { formatEmail, formatIdNumber, formatPhone } from "~/utils/format";
 import { validateIdNumber } from "~/utils/idNumber";
+import { BackButton } from "~/components/CommonButtons";
 
 export { loader, action };
 
@@ -404,9 +405,7 @@ export default function AdicionarFornecedor() {
         <button className="button-full">💰 Solicitar Pagamento</button>
       </Link>
 
-      <Link to="/" className="mt-4">
-        <button className="button-secondary-full">⬅️ Back</button>
-      </Link>
+      <BackButton />
     </Form>
   ) : (
     <Unauthorized

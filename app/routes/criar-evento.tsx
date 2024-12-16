@@ -7,14 +7,15 @@ import { isAuth } from "~/utils/isAuthorized";
 import Unauthorized from "~/components/Unauthorized";
 import { loader } from "../handlers/solicitar-pagamento-loader";
 import { action } from "../handlers/solicitar-pagamento-action";
-export { loader, action }
+import { BackButton } from "~/components/CommonButtons";
+export { loader, action };
 
 export default function CriarEvento() {
-  const { userCategoriesObject, currentUserCategories } = useLoaderData<typeof loader>();
-  const [userPermissions, setUserPermissions] = useState(currentUserCategories)
-  const [userInfo, setUserInfo] = useState<UserData | null>({} as UserData)
+  const { userCategoriesObject, currentUserCategories } =
+    useLoaderData<typeof loader>();
+  const [userPermissions, setUserPermissions] = useState(currentUserCategories);
+  const [userInfo, setUserInfo] = useState<UserData | null>({} as UserData);
   const navigate = useNavigate();
-
 
   const [titulo, setTitulo] = useState("");
   const [data, setData] = useState<string>("");
@@ -29,14 +30,14 @@ export default function CriarEvento() {
     if (userInfo?.id && userCategoriesObject[userInfo.id]) {
       setUserPermissions([userCategoriesObject[userInfo.id] as any]);
     }
-  }, [userInfo])
+  }, [userInfo]);
 
   const isFormValid =
     titulo !== "" &&
     data !== "" &&
     hora !== "" &&
     duracao !== "" &&
-    descricao !== ""
+    descricao !== "";
 
   return isAuth(userPermissions, UserCategory.AMECICLISTAS) ? (
     <Form className="container" method="post">
@@ -99,7 +100,9 @@ export default function CriarEvento() {
           <option value="">Selecione uma agenda</option>
           <option value="Eventos Internos">Eventos Internos</option>
           <option value="Eventos Externos">Eventos Externos</option>
-          <option value="Divulgação de eventos externos">Divulgação de eventos externos</option>
+          <option value="Divulgação de eventos externos">
+            Divulgação de eventos externos
+          </option>
           <option value="Organizacional">Organizacional</option>
         </select>
       </div>
@@ -112,14 +115,17 @@ export default function CriarEvento() {
       <input type="hidden" name="agenda" value={agenda} />
       <input type="hidden" name="from" value={JSON.stringify(userInfo)} />
 
-      <button type="submit" className={isFormValid ? "button-full" : "button-full button-disabled"} disabled={!isFormValid}>
+      <button
+        type="submit"
+        className={isFormValid ? "button-full" : "button-full button-disabled"}
+        disabled={!isFormValid}
+      >
         Criar Evento
       </button>
-      <Link to="/" className="mt-4">
-        <button className="button-secondary-full">
-          ⬅️ Voltar
-        </button>
-      </Link>
+
+      <BackButton />
     </Form>
-  ) : <Unauthorized pageName="Criar Evento" requiredPermission="Ameciclista" />
+  ) : (
+    <Unauthorized pageName="Criar Evento" requiredPermission="Ameciclista" />
+  );
 }

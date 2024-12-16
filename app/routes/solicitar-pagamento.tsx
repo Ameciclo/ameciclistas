@@ -19,6 +19,7 @@ import { action } from "~/handlers/solicitar-pagamento-action";
 import { getTelegramUserInfo } from "~/utils/users";
 import { isAuth } from "~/utils/isAuthorized";
 import Unauthorized from "~/components/Unauthorized";
+import { BackButton } from "~/components/CommonButtons";
 
 export { loader, action };
 
@@ -133,9 +134,7 @@ export default function SolicitarPagamento() {
           📦 Adicionar Fornecedor
         </button>
       </Link>
-      <Link to="/" className="mt-4">
-        <button className="button-secondary-full">⬅️ Voltar</button>
-      </Link>
+      <BackButton />
     </Form>
   ) : (
     <Unauthorized
