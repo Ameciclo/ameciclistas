@@ -53,7 +53,7 @@ export const getCategories = async () => {
   }
 };
 
-export async function saveRecipient(recipientInfo) {
+export async function saveSupplier(recipientInfo) {
   return new Promise((resolve, reject) => {
     const ref = db.ref("recipients");
     const key = ref.push().key;
