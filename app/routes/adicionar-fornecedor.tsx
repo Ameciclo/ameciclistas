@@ -6,15 +6,140 @@ import { getTelegramUserInfo } from "~/api/users";
 import { UserCategory, UserData } from "~/api/types";
 import Unauthorized from "~/components/Unauthorized";
 import { loader } from "~/loaders/solicitar-pagamento-loader";
+
+const validateIdNumber = (personType: string, idNumber: string): boolean => {
+  if (personType === "fisica") {
+    return validateCPF(idNumber);
+  } else if (personType === "juridica") {
+    return validateCNPJ(idNumber);
+  } else {
+    return false;
+  }
+};
+
+// Validação de CPF
+const validateCPF = (cpf: string): boolean => {
+  cpf = cpf.replace(/[^\d]+/g, "");
+  if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
+
+  let sum = 0;
+  for (let i = 0; i < 9; i++) sum += parseInt(cpf.charAt(i)) * (10 - i);
+  let rev = 11 - (sum % 11);
+  if (rev === 10 || rev === 11) rev = 0;
+  if (rev !== parseInt(cpf.charAt(9))) return false;
+
+  sum = 0;
+  for (let i = 0; i < 10; i++) sum += parseInt(cpf.charAt(i)) * (11 - i);
+  rev = 11 - (sum % 11);
+  if (rev === 10 || rev === 11) rev = 0;
+  if (rev !== parseInt(cpf.charAt(10))) return false;
+
+  return true;
+};
+
+// Validação de CNPJ
+const validateCNPJ = (cnpj: string): boolean => {
+  cnpj = cnpj.replace(/[^\d]+/g, "");
+  if (cnpj.length !== 14) return false;
+
+  // Elimina CNPJs invalidos conhecidos
+  if (/^(.)\1+$/.test(cnpj)) return false;
+
+  // Valida DVs
+  let length = cnpj.length - 2;
+  let numbers = cnpj.substring(0, length);
+  const digits = cnpj.substring(length);
+  let sum = 0;
+  let pos = length - 7;
+  for (let i = length; i >= 1; i--) {
+    sum += parseInt(numbers.charAt(length - i)) * pos--;
+    if (pos < 2) pos = 9;
+  }
+  let result = sum % 11 < 2 ? 0 : 11 - (sum % 11);
+  if (result !== parseInt(digits.charAt(0))) return false;
+
+  length += 1;
+  numbers = cnpj.substring(0, length);
+  sum = 0;
+  let pos2 = length - 7;
+  for (let i = length; i >= 1; i--) {
+    sum += parseInt(numbers.charAt(length - i)) * pos2--;
+    if (pos2 < 2) pos2 = 9;
+  }
+  result = sum % 11 < 2 ? 0 : 11 - (sum % 11);
+  if (result !== parseInt(digits.charAt(1))) return false;
+
+  return true;
+};
+
+const formatIdNumber = (personType: string, value: string): string => {
+  if (personType === "fisica") {
+    return formatCPF(value.toString());
+  } else if (personType === "juridica") {
+    return formatCNPJ(value.toString());
+  } else {
+    return "";
+  }
+};
+
+// Formatação de CPF
+const formatCPF = (cpf: string): string => {
+  const onlyDigits = cpf.replace(/\D/g, "");
+  return onlyDigits
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d{2})$/, "$1-$2");
+};
+
+// Formatação de CNPJ
+const formatCNPJ = (cnpj: string): string => {
+  const onlyDigits = cnpj.replace(/\D/g, "");
+  return onlyDigits
+    .replace(/(\d{2})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d)/, "$1/$2")
+    .replace(/(\d{4})(\d)/, "$1-$2");
+};
+
+// Formatação de Telefone
+const formatPhone = (phone: string): string => {
+  const onlyDigits = phone.replace(/\D/g, "");
+  if (onlyDigits.length <= 8) {
+    return onlyDigits.replace(/(\d{4})(\d)/, "$1-$2");
+  } else if (onlyDigits.length === 9) {
+    return `(${onlyDigits.slice(0, 2)}) ${onlyDigits.slice(
+      2,
+      7
+    )}-${onlyDigits.slice(7)}`;
+  } else if (onlyDigits.length === 10) {
+    return `(${onlyDigits.slice(0, 2)}) ${onlyDigits.slice(
+      2,
+      6
+    )}-${onlyDigits.slice(6)}`;
+  } else {
+    return `+${onlyDigits.slice(0, -10)} (${onlyDigits.slice(
+      -10,
+      -8
+    )}) ${onlyDigits.slice(-8, -4)}-${onlyDigits.slice(-4)}`;
+  }
+};
+
+// Formatação de Email (simplificada)
+const formatEmail = (email: string): string => {
+  return email.trim().toLowerCase();
+};
+
 export { loader, action };
 
-export default function AdicionarFornecedor() {
+export default function AddSupplier() {
   const { userCategoriesObject, currentUserCategories } =
     useLoaderData<typeof loader>();
   const [userPermissions, setUserPermissions] = useState(currentUserCategories);
   const [userInfo, setUserInfo] = useState<UserData | null>({} as UserData);
 
-  useEffect(() => setUserInfo(() => getTelegramUserInfo()), []);
+  useEffect(() => {
+    setUserInfo(getTelegramUserInfo());
+  }, []);
 
   useEffect(() => {
     if (userInfo?.id && userCategoriesObject[userInfo.id]) {
@@ -22,97 +147,98 @@ export default function AdicionarFornecedor() {
     }
   }, [userInfo]);
 
-  // Tipo de Pessoa
-  const [tipoPessoa, setTipoPessoa] = useState<"fisica" | "juridica">(
+  // Person Type
+  const [personType, setPersonType] = useState<"fisica" | "juridica">(
     "juridica"
   );
 
-  // Campos Pessoa Jurídica
-  const [nomeFantasia, setNomeFantasia] = useState("");
-  const [razaoSocial, setRazaoSocial] = useState("");
-  const [cnpj, setCnpj] = useState("");
+  const [name, setName] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [idNumber, setIdNumber] = useState("");
+  const [fullAddress, setFullAddress] = useState("");
 
-  // Campos Pessoa Física
-  const [nomeCompleto, setNomeCompleto] = useState("");
-  const [cpf, setCpf] = useState("");
-  const [enderecoCompleto, setEnderecoCompleto] = useState("");
-
-  // Contatos (Comum aos dois tipos)
-  const [contatos, setContatos] = useState<
+  // Contacts (Common to both types)
+  const [contacts, setContacts] = useState<
     Array<{ type: string; value: string }>
   >([{ type: "E-mail", value: "" }]);
 
-  // Forma de pagamento
-  const [formaPagamento, setFormaPagamento] = useState("PIX");
-  const [chavePix, setChavePix] = useState("");
+  // Payment Methods
+  const [paymentMethods, setPaymentMethods] = useState<
+    Array<{ type: string; value: string }>
+  >([{ type: "PIX", value: "" }]);
 
-  // Campos para conta bancária (somente se formaPagamento === 'Conta Bancária')
-  const [banco, setBanco] = useState("");
-  const [agencia, setAgencia] = useState("");
-  const [conta, setConta] = useState("");
-  const [tipoConta, setTipoConta] = useState("Corrente"); // Corrente ou Poupança
-
-  // Caso CNPJ ou CPF, formatação pode ser adicionada, mas deixei básico
-  const handleCnpjChange = (val: string) => {
-    const onlyDigits = val.replace(/\D/g, "");
-    // Aqui você pode formatar o CNPJ, se desejar
-    setCnpj(onlyDigits);
+  const handleIdNumberChange = (personType: string, value: string) => {
+    const formatted = formatIdNumber(personType, value);
+    setIdNumber(formatted);
   };
 
-  const handleCpfChange = (val: string) => {
-    const onlyDigits = val.replace(/\D/g, "");
-    // Aqui você pode formatar o CPF, se desejar
-    setCpf(onlyDigits);
+  // Handling Phone changes with formatting
+  const handlePhoneChange = (index: number, value: string) => {
+    const formatted = formatPhone(value);
+    const newContacts = [...contacts];
+    newContacts[index].value = formatted;
+    setContacts(newContacts);
   };
 
-  const handleAddContato = () => {
-    setContatos([...contatos, { type: "E-mail", value: "" }]);
+  // Handling Email changes with formatting
+  const handleEmailChange = (index: number, value: string) => {
+    const formatted = formatEmail(value);
+    const newContacts = [...contacts];
+    newContacts[index].value = formatted;
+    setContacts(newContacts);
   };
 
-  const handleRemoveContato = (index: number) => {
-    setContatos(contatos.filter((_, i) => i !== index));
+  const handleAddContact = () => {
+    setContacts([...contacts, { type: "E-mail", value: "" }]);
   };
 
-  const handleContatoChange = (
+  const handleRemoveContact = (index: number) => {
+    setContacts(contacts.filter((_, i) => i !== index));
+  };
+
+  const handleContactChange = (
     index: number,
     field: "type" | "value",
     newValue: string
   ) => {
-    const newContatos = [...contatos];
-    newContatos[index][field] = newValue;
-    setContatos(newContatos);
+    const updatedContacts = [...contacts];
+    updatedContacts[index][field] = newValue;
+    setContacts(updatedContacts);
   };
 
-  // Validação de formulário
-  const isJuridicaValid =
-    tipoPessoa === "juridica" &&
-    nomeFantasia !== "" &&
-    razaoSocial !== "" &&
-    cnpj !== "" &&
-    contatos.every((c) => c.value !== "");
-
-  const isFisicaValid =
-    tipoPessoa === "fisica" &&
-    nomeCompleto !== "" &&
-    cpf !== "" &&
-    enderecoCompleto !== "" &&
-    contatos.every((c) => c.value !== "");
-
-  const isPagtoValido = () => {
-    if (formaPagamento === "PIX") {
-      return chavePix !== "";
-    } else if (formaPagamento === "Conta Bancária") {
-      return banco !== "" && agencia !== "" && conta !== "";
-    } else if (formaPagamento === "Boleto" || formaPagamento === "Dinheiro") {
-      return true; // Não exigindo campos extras por enquanto
-    }
-    return false;
+  // Handling Payment Methods
+  const handleAddPaymentMethod = () => {
+    setPaymentMethods([...paymentMethods, { type: "PIX", value: "" }]);
   };
 
+  const handleRemovePaymentMethod = (index: number) => {
+    setPaymentMethods(paymentMethods.filter((_, i) => i !== index));
+  };
+
+  const handlePaymentMethodChange = (
+    index: number,
+    field: "type" | "value",
+    newValue: string
+  ) => {
+    const updatedPaymentMethods = [...paymentMethods];
+    updatedPaymentMethods[index][field] = newValue;
+    setPaymentMethods(updatedPaymentMethods);
+  };
+
+  // Form Validation
   const isFormValid =
-    ((tipoPessoa === "juridica" && isJuridicaValid) ||
-      (tipoPessoa === "fisica" && isFisicaValid)) &&
-    isPagtoValido();
+    name !== "" &&
+    fullName !== "" &&
+    idNumber !== "" &&
+    validateIdNumber(personType, idNumber) &&
+    contacts.every((c) => c.value !== "") &&
+    paymentMethods.every((pm) => {
+      if (pm.type === "PIX") return pm.value !== "";
+      if (pm.type === "Conta Bancária") return pm.value !== "";
+      if (pm.type === "Boleto") return pm.value !== "";
+      if (pm.type === "Dinheiro") return true;
+      return false;
+    });
 
   return isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS) ? (
     <Form className="container mx-auto p-4" method="post">
@@ -121,12 +247,12 @@ export default function AdicionarFornecedor() {
       </h2>
 
       <div className="form-group mb-4">
-        <label className="font-bold">Tipo de Pessoa:</label>
+        <label className="font-bold">Tipo de pessoa:</label>
         <select
           className="w-full p-2 border border-gray-300 rounded-md"
-          value={tipoPessoa}
+          value={personType}
           onChange={(e) =>
-            setTipoPessoa(e.target.value as "fisica" | "juridica")
+            setPersonType(e.target.value as "fisica" | "juridica")
           }
         >
           <option value="juridica">Pessoa Jurídica</option>
@@ -134,94 +260,87 @@ export default function AdicionarFornecedor() {
         </select>
       </div>
 
-      {tipoPessoa === "juridica" && (
-        <>
-          <div className="form-group mb-4">
-            <label className="font-bold">Nome Fantasia:</label>
-            <input
-              className="w-full p-2 border border-gray-300 rounded-md"
-              type="text"
-              value={nomeFantasia}
-              onChange={(e) => setNomeFantasia(e.target.value)}
-            />
-          </div>
+      <div className="form-group mb-4">
+        <label className="font-bold">
+          {personType === "juridica" ? "Nome Fantasia:" : "Nome / Apelido:"}
+        </label>
+        <input
+          className="w-full p-2 border border-gray-300 rounded-md"
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder={
+            personType === "juridica"
+              ? "Digite o nome fantasia"
+              : "Digite o nome ou apelido"
+          }
+        />
+      </div>
 
-          <div className="form-group mb-4">
-            <label className="font-bold flex items-center gap-2">
-              Razão Social:
-              <button
-                type="button"
-                className="text-sm text-blue-600 underline"
-                onClick={() => setRazaoSocial(nomeFantasia)}
-              >
-                Copiar Nome Fantasia
-              </button>
-            </label>
-            <input
-              className="w-full p-2 border border-gray-300 rounded-md"
-              type="text"
-              value={razaoSocial}
-              onChange={(e) => setRazaoSocial(e.target.value)}
-            />
-          </div>
+      <div className="form-group mb-4">
+        <label className="font-bold">
+          {personType === "juridica" ? "Razão Social:" : "Nome Completo:"}
+          <button
+            type="button"
+            className="text-sm text-blue-600 underline ml-2"
+            onClick={() => setFullName(name)}
+          >
+            Copiar{" "}
+            {personType === "juridica" ? "Nome Fantasia" : "Nome / Apelido"}
+          </button>
+        </label>
+        <input
+          className="w-full p-2 border border-gray-300 rounded-md"
+          type="text"
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
+          placeholder={
+            personType === "juridica"
+              ? "Digite a razão social"
+              : "Digite o nome completo"
+          }
+        />
+      </div>
 
-          <div className="form-group mb-4">
-            <label className="font-bold">CNPJ:</label>
-            <input
-              className="w-full p-2 border border-gray-300 rounded-md"
-              type="text"
-              value={cnpj}
-              onChange={(e) => handleCnpjChange(e.target.value)}
-              placeholder="Digite o CNPJ"
-            />
-          </div>
-        </>
-      )}
+      <div className="form-group mb-4">
+        <label className="font-bold">
+          {personType === "juridica" ? "CNPJ" : "CPF"}:
+        </label>
+        <input
+          className="w-full p-2 border border-gray-300 rounded-md"
+          type="text"
+          value={idNumber}
+          onChange={(e) => handleIdNumberChange(personType, e.target.value)}
+          placeholder={
+            personType === "juridica" ? "00.000.000/0000-00" : "000.000.000-00"
+          }
+        />
+        {!validateIdNumber(personType, idNumber) && idNumber.length > 0 && (
+          <span className="text-red-500 text-sm">
+            {personType === "juridica" ? "CNPJ inválido" : "CPF inválido"}
+          </span>
+        )}
+      </div>
 
-      {tipoPessoa === "fisica" && (
-        <>
-          <div className="form-group mb-4">
-            <label className="font-bold">Nome Completo:</label>
-            <input
-              className="w-full p-2 border border-gray-300 rounded-md"
-              type="text"
-              value={nomeCompleto}
-              onChange={(e) => setNomeCompleto(e.target.value)}
-            />
-          </div>
-
-          <div className="form-group mb-4">
-            <label className="font-bold">CPF:</label>
-            <input
-              className="w-full p-2 border border-gray-300 rounded-md"
-              type="text"
-              value={cpf}
-              onChange={(e) => handleCpfChange(e.target.value)}
-              placeholder="Digite o CPF"
-            />
-          </div>
-
-          <div className="form-group mb-4">
-            <label className="font-bold">Endereço Completo:</label>
-            <textarea
-              className="w-full p-2 border border-gray-300 rounded-md"
-              value={enderecoCompleto}
-              onChange={(e) => setEnderecoCompleto(e.target.value)}
-              placeholder="Rua, Número, Bairro, Cidade, Estado, CEP"
-            />
-          </div>
-        </>
-      )}
+      <div className="form-group mb-4">
+        <label className="font-bold">Endereço completo (opcional):</label>
+        <textarea
+          className="w-full p-2 border border-gray-300 rounded-md"
+          value={fullAddress}
+          onChange={(e) => setFullAddress(e.target.value)}
+          placeholder="Rua, endereço, número, complemento, bairro, cidade, estado"
+        />
+      </div>
 
       <div className="form-group mb-4">
         <label className="font-bold">Contatos:</label>
-        {contatos.map((contato, index) => (
+        {contacts.map((contact, index) => (
           <div key={index} className="flex items-center gap-2 mb-2">
             <select
               className="p-2 border border-gray-300 rounded-md"
-              value={contato.type}
+              value={contact.type}
               onChange={(e) =>
-                handleContatoChange(index, "type", e.target.value)
+                handleContactChange(index, "type", e.target.value)
               }
             >
               <option value="E-mail">E-mail</option>
@@ -232,18 +351,20 @@ export default function AdicionarFornecedor() {
             </select>
             <input
               className="p-2 border border-gray-300 rounded-md flex-grow"
-              type="text"
-              value={contato.value}
+              type={contact.type === "E-mail" ? "email" : "text"}
+              value={contact.value}
               onChange={(e) =>
-                handleContatoChange(index, "value", e.target.value)
+                contact.type === "E-mail"
+                  ? handleEmailChange(index, e.target.value)
+                  : handlePhoneChange(index, e.target.value)
               }
-              placeholder="Valor do contato"
+              placeholder="Contato..."
             />
-            {contatos.length > 1 && (
+            {contacts.length > 1 && (
               <button
                 type="button"
                 className="text-red-500"
-                onClick={() => handleRemoveContato(index)}
+                onClick={() => handleRemoveContact(index)}
               >
                 Remover
               </button>
@@ -253,103 +374,97 @@ export default function AdicionarFornecedor() {
         <button
           type="button"
           className="text-blue-600 underline mt-2"
-          onClick={handleAddContato}
+          onClick={handleAddContact}
         >
-          + Adicionar Contato
+          + Adicionar outro contato
         </button>
       </div>
 
       <div className="form-group mb-4">
-        <label className="font-bold">Forma de Pagamento:</label>
-        <select
-          className="w-full p-2 border border-gray-300 rounded-md"
-          value={formaPagamento}
-          onChange={(e) => setFormaPagamento(e.target.value)}
+        <label className="font-bold">Método de pagamento:</label>
+        {paymentMethods.map((method, index) => (
+          <div key={index} className="flex items-center gap-2 mb-2">
+            <select
+              className="p-2 border border-gray-300 rounded-md"
+              value={method.type}
+              onChange={(e) =>
+                handlePaymentMethodChange(index, "type", e.target.value)
+              }
+            >
+              <option value="PIX">PIX</option>
+              <option value="account">Conta Bancária</option>
+              <option value="bill">Boleto</option>
+              <option value="cash">Dinheiro</option>
+            </select>
+            {method.type === "PIX" && (
+              <input
+                className="p-2 border border-gray-300 rounded-md flex-grow"
+                type="text"
+                value={method.value}
+                onChange={(e) =>
+                  handlePaymentMethodChange(index, "value", e.target.value)
+                }
+                placeholder="Entre a chave PIX"
+              />
+            )}
+            {method.type === "Conta Bancária" && (
+              <input
+                className="p-2 border border-gray-300 rounded-md flex-grow"
+                type="text"
+                value={method.value}
+                onChange={(e) =>
+                  handlePaymentMethodChange(index, "value", e.target.value)
+                }
+                placeholder="Detalhes da conta bancária"
+              />
+            )}
+            {method.type === "Boleto" && (
+              <input
+                className="p-2 border border-gray-300 rounded-md flex-grow"
+                type="text"
+                value={method.value}
+                onChange={(e) =>
+                  handlePaymentMethodChange(index, "value", e.target.value)
+                }
+                placeholder="Boleto number"
+              />
+            )}
+            {method.type === "Dinheiro" && (
+              <span className="flex-grow">Cash</span>
+            )}
+            {paymentMethods.length > 1 && (
+              <button
+                type="button"
+                className="text-red-500"
+                onClick={() => handleRemovePaymentMethod(index)}
+              >
+                Remover
+              </button>
+            )}
+          </div>
+        ))}
+        <button
+          type="button"
+          className="text-blue-600 underline mt-2"
+          onClick={handleAddPaymentMethod}
         >
-          <option value="PIX">PIX</option>
-          <option value="Conta Bancária">Conta Bancária</option>
-          <option value="Boleto">Boleto</option>
-          <option value="Dinheiro">Dinheiro</option>
-        </select>
+          + Adicionar outro método de pagamento
+        </button>
       </div>
 
-      {formaPagamento === "PIX" && (
-        <div className="form-group mb-4">
-          <label className="font-bold">Chave PIX:</label>
-          <input
-            className="w-full p-2 border border-gray-300 rounded-md"
-            type="text"
-            value={chavePix}
-            onChange={(e) => setChavePix(e.target.value)}
-            placeholder="Digite a chave PIX"
-          />
-        </div>
-      )}
-
-      {formaPagamento === "Conta Bancária" && (
-        <>
-          <div className="form-group mb-4">
-            <label className="font-bold">Banco:</label>
-            <input
-              className="w-full p-2 border border-gray-300 rounded-md"
-              type="text"
-              value={banco}
-              onChange={(e) => setBanco(e.target.value)}
-              placeholder="Nome do Banco"
-            />
-          </div>
-
-          <div className="form-group mb-4">
-            <label className="font-bold">Agência:</label>
-            <input
-              className="w-full p-2 border border-gray-300 rounded-md"
-              type="text"
-              value={agencia}
-              onChange={(e) => setAgencia(e.target.value)}
-              placeholder="Agência"
-            />
-          </div>
-
-          <div className="form-group mb-4">
-            <label className="font-bold">Conta:</label>
-            <input
-              className="w-full p-2 border border-gray-300 rounded-md"
-              type="text"
-              value={conta}
-              onChange={(e) => setConta(e.target.value)}
-              placeholder="Conta"
-            />
-          </div>
-
-          <div className="form-group mb-4">
-            <label className="font-bold">Tipo de Conta:</label>
-            <select
-              className="w-full p-2 border border-gray-300 rounded-md"
-              value={tipoConta}
-              onChange={(e) => setTipoConta(e.target.value)}
-            >
-              <option value="Corrente">Corrente</option>
-              <option value="Poupança">Poupança</option>
-            </select>
-          </div>
-        </>
-      )}
-
-      <input type="hidden" name="actionType" value="adicionarFornecedor" />
-      <input type="hidden" name="tipoPessoa" value={tipoPessoa} />
-      <input type="hidden" name="nomeFantasia" value={nomeFantasia} />
-      <input type="hidden" name="razaoSocial" value={razaoSocial} />
-      <input type="hidden" name="cnpj" value={cnpj} />
-      <input type="hidden" name="nomeCompleto" value={nomeCompleto} />
-      <input type="hidden" name="cpf" value={cpf} />
-      <input type="hidden" name="enderecoCompleto" value={enderecoCompleto} />
-      <input type="hidden" name="contatos" value={JSON.stringify(contatos)} />
-      <input type="hidden" name="formaPagamento" value={formaPagamento} />
-      <input type="hidden" name="chavePix" value={chavePix} />
-      <input type="hidden" name="banco" value={banco} />
-      <input type="hidden" name="agencia" value={agencia} />
-      <input type="hidden" name="conta" value={conta} />
-      <input type="hidden" name="tipoConta" value={tipoConta} />
+      {/* Hidden Inputs */}
+      <input type="hidden" name="actionType" value="addSupplier" />
+      <input type="hidden" name="personType" value={personType} />
+      <input type="hidden" name="name" value={name} />
+      <input type="hidden" name="fullName" value={fullName} />
+      <input type="hidden" name="idNumber" value={idNumber} />
+      <input type="hidden" name="fullAddress" value={fullAddress} />
+      <input type="hidden" name="contacts" value={JSON.stringify(contacts)} />
+      <input
+        type="hidden"
+        name="paymentMethods"
+        value={JSON.stringify(paymentMethods)}
+      />
 
       <button
         type="submit"
@@ -364,7 +479,7 @@ export default function AdicionarFornecedor() {
       </Link>
 
       <Link to="/" className="mt-4">
-        <button className="button-secondary-full">⬅️ Voltar</button>
+        <button className="button-secondary-full">⬅️ Back</button>
       </Link>
     </Form>
   ) : (

@@ -4,92 +4,74 @@ export async function action({ request }: { request: Request }) {
   const formData = await request.formData();
 
   const actionType = formData.get("actionType")?.toString();
-  if (actionType !== "adicionarFornecedor") {
+  if (actionType !== "addSupplier") {
     return redirect("/");
   }
 
   // Coleta campos do formulário
-  const tipoPessoa = formData.get("tipoPessoa")?.toString();
-  const nomeFantasia = formData.get("nomeFantasia")?.toString();
-  const razaoSocial = formData.get("razaoSocial")?.toString();
-  const cnpj = formData.get("cnpj")?.toString();
-  const nomeCompleto = formData.get("nomeCompleto")?.toString();
-  const cpf = formData.get("cpf")?.toString();
-  const enderecoCompleto = formData.get("enderecoCompleto")?.toString();
-  const contatosJson = formData.get("contatos")?.toString();
-  const formaPagamento = formData.get("formaPagamento")?.toString();
-  const chavePix = formData.get("chavePix")?.toString();
-  const banco = formData.get("banco")?.toString();
-  const agencia = formData.get("agencia")?.toString();
-  const conta = formData.get("conta")?.toString();
-  const tipoConta = formData.get("tipoConta")?.toString();
+  const personType = formData.get("personType")?.toString(); // fisica ou juridica
+  const name = formData.get("name")?.toString(); // Nome Fantasia ou Nome/Apelido
+  const fullName = formData.get("fullName")?.toString(); // Razão Social ou Nome Completo
+  const idNumber = formData.get("idNumber")?.toString(); // CPF ou CNPJ
+  const fullAddress = formData.get("fullAddress")?.toString() || ""; // Endereço (opcional)
+  const contactsJson = formData.get("contacts")?.toString(); // Contatos em JSON
+  const paymentMethodsJson = formData.get("paymentMethods")?.toString(); // Métodos de pagamento em JSON
 
-  let contatos: Array<{ type: string; value: string }> = [];
+  // Conversão de contatos e métodos de pagamento para objetos
+  let contacts: Array<{ type: string; value: string }> = [];
+  let paymentMethods: Array<{ type: string; value: string }> = [];
   try {
-    if (contatosJson) {
-      contatos = JSON.parse(contatosJson);
+    if (contactsJson) {
+      contacts = JSON.parse(contactsJson);
+    }
+    if (paymentMethodsJson) {
+      paymentMethods = JSON.parse(paymentMethodsJson);
     }
   } catch (e) {
-    console.error("Erro ao converter contatos JSON:", e);
+    console.error("Erro ao converter JSON:", e);
     return redirect("/");
   }
 
-  // Validação básica
-  if (!tipoPessoa || !formaPagamento) {
-    console.error("Tipo de pessoa ou forma de pagamento ausente");
+  // Validação básica (apenas para campos obrigatórios)
+  if (!personType || !name || !fullName || !idNumber) {
+    console.error("Campos obrigatórios ausentes");
     return redirect("/");
   }
 
-  // Validações específicas
-  if (tipoPessoa === "juridica") {
-    if (!nomeFantasia || !razaoSocial || !cnpj) {
-      console.error("Campos obrigatórios para Pessoa Jurídica ausentes");
-      return redirect("/");
-    }
-  } else if (tipoPessoa === "fisica") {
-    if (!nomeCompleto || !cpf || !enderecoCompleto) {
-      console.error("Campos obrigatórios para Pessoa Física ausentes");
-      return redirect("/");
-    }
-  }
-
-  // Dependendo da forma de pagamento, verifique os campos necessários
-  if (formaPagamento === "PIX" && !chavePix) {
-    console.error("Chave PIX ausente");
-    return redirect("/");
-  }
-  if (formaPagamento === "Conta Bancária" && (!banco || !agencia || !conta)) {
-    console.error("Dados da conta bancária incompletos");
+  // Validação de contatos e métodos de pagamento
+  if (contacts.some((contact) => !contact.value)) {
+    console.error("Contatos inválidos");
     return redirect("/");
   }
 
-  // Montando objeto para salvar no banco de dados
-  const fornecedorData = {
-    tipoPessoa,
-    nomeFantasia: nomeFantasia || null,
-    razaoSocial: razaoSocial || null,
-    cnpj: cnpj || null,
-    nomeCompleto: nomeCompleto || null,
-    cpf: cpf || null,
-    enderecoCompleto: enderecoCompleto || null,
-    contatos,
-    formaPagamento,
-    pix: formaPagamento === "PIX" ? chavePix : null,
-    contaBancaria:
-      formaPagamento === "Conta Bancária"
-        ? { banco, agencia, conta, tipo: tipoConta }
-        : null,
-    boleto: formaPagamento === "Boleto",
-    dinheiro: formaPagamento === "Dinheiro",
+  if (
+    paymentMethods.some((method) => {
+      if (method.type === "PIX" || method.type === "Conta Bancária") {
+        return !method.value;
+      }
+      return false;
+    })
+  ) {
+    console.error("Métodos de pagamento inválidos");
+    return redirect("/");
+  }
+
+  // Montando objeto final para salvar no banco
+  const supplierData = {
+    type: personType === "fisica" ? "Pessoa Física" : "Pessoa Jurídica",
+    name: fullName, // Nome completo ou razão social
+    nickname: name, // Nome fantasia ou apelido
+    id_number: idNumber, // CPF ou CNPJ
+    address: fullAddress || null, // Endereço opcional
+    contacts,
+    payment_methods: paymentMethods,
   };
 
   // Log dos dados coletados para validação
-  console.log("Dados do fornecedor a serem salvos:", fornecedorData);
+  console.log("Dados do fornecedor a serem salvos:", supplierData);
 
-  // Aqui entra a lógica de persistência:
-  // Por exemplo, se você usa Prisma, poderia fazer algo como:
-  // await db.fornecedor.create({ data: fornecedorData });
+  // await saveSupplierToDatabase(supplierData);
 
-  // Após salvar, redireciona para alguma página de confirmação ou listagem
+  // Redireciona após salvar
   return redirect("/adicionar-fornecedor-sucesso");
 }
