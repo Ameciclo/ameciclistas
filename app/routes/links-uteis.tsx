@@ -4,6 +4,7 @@ import { BackButton, ButtonsListWithPermissions } from "~/components/CommonButto
 import { UserCategory, UserData } from "~/utils/types";
 import { loader } from "./_index";
 import { getTelegramUserInfo } from "~/utils/users";
+export { loader };
 
 export default function LinksUteis() {
   const { currentUserCategories, userCategoriesObject } = useLoaderData<typeof loader>();
