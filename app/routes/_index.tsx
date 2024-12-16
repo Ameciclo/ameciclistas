@@ -1,10 +1,11 @@
 import { useLoaderData } from "@remix-run/react";
 import { UserCategory, UserData } from "~/utils/types";
 import { useEffect, useState } from "react";
-import { loader } from "~/handlers/solicitar-pagamento-loader";
 import { getTelegramUserInfo } from "~/utils/users";
 import telegramInit from "~/utils/telegramInit";
 import { ButtonsListWithPermissions } from "~/components/CommonButtons";
+import { loader } from "~/handlers/loaders/_index";
+
 export { loader };
 
 const links = [

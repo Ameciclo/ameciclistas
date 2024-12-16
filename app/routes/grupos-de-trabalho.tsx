@@ -3,11 +3,11 @@ import { useEffect, useState } from "react";
 import { UserCategory, UserData } from "~/utils/types";
 import Unauthorized from "~/components/Unauthorized";
 import { isAuth } from "~/utils/isAuthorized";
-import { loader, LoaderData } from "../handlers/grupos-de-trabalho-loader";
 import { getTelegramUserInfo } from "~/utils/users";
 import { CardList } from "~/components/CardsList";
 import { BackButton } from "~/components/CommonButtons";
 
+import { loader, LoaderData } from "../handlers/loaders/grupos-de-trabalho";
 export { loader };
 
 export default function GruposTrabalho() {

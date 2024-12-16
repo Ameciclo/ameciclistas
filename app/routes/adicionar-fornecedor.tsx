@@ -1,15 +1,15 @@
 import { useState, useEffect } from "react";
 import { Form, Link, useLoaderData } from "@remix-run/react";
 import { isAuth } from "~/utils/isAuthorized";
-import { action } from "../handlers/adicionar-fornecedor-action";
 import { getTelegramUserInfo } from "~/utils/users";
 import { UserCategory, UserData } from "~/utils/types";
 import Unauthorized from "~/components/Unauthorized";
-import { loader } from "~/handlers/solicitar-pagamento-loader";
 import { formatEmail, formatIdNumber, formatPhone } from "~/utils/format";
 import { validateIdNumber } from "~/utils/idNumber";
 import { BackButton } from "~/components/CommonButtons";
 
+import { action } from "../handlers/actions/adicionar-fornecedor";
+import { loader } from "~/handlers/loaders/adicionar-fornecedor";
 export { loader, action };
 
 export default function AdicionarFornecedor() {

@@ -1,13 +1,13 @@
-import { Form, Link, useLoaderData, useNavigate } from "@remix-run/react";
+import { Form, useLoaderData } from "@remix-run/react";
 import { useState, useEffect } from "react";
 import { getTelegramUserInfo } from "../utils/users";
 import { UserCategory, UserData } from "~/utils/types";
-import { Agenda } from "../utils/types"; // Importe a interface Agenda
 import { isAuth } from "~/utils/isAuthorized";
 import Unauthorized from "~/components/Unauthorized";
-import { loader } from "../handlers/solicitar-pagamento-loader";
-import { action } from "../handlers/solicitar-pagamento-action";
 import { BackButton } from "~/components/CommonButtons";
+
+import { action } from "~/handlers/actions/criar-evento";
+import { loader } from "~/handlers/loaders/criar-evento";
 export { loader, action };
 
 export default function CriarEvento() {
@@ -15,8 +15,6 @@ export default function CriarEvento() {
     useLoaderData<typeof loader>();
   const [userPermissions, setUserPermissions] = useState(currentUserCategories);
   const [userInfo, setUserInfo] = useState<UserData | null>({} as UserData);
-  const navigate = useNavigate();
-
   const [titulo, setTitulo] = useState("");
   const [data, setData] = useState<string>("");
   const [hora, setHora] = useState<string>("");
