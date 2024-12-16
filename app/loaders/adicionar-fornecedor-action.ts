@@ -1,4 +1,5 @@
 import { redirect } from "@remix-run/node";
+import { saveSupplierToDatabase } from "~/api/firebaseConnection.server";
 
 export async function action({ request }: { request: Request }) {
   const formData = await request.formData();
@@ -70,7 +71,7 @@ export async function action({ request }: { request: Request }) {
   // Log dos dados coletados para validação
   console.log("Dados do fornecedor a serem salvos:", supplierData);
 
-  // await saveSupplierToDatabase(supplierData);
+  await saveSupplierToDatabase(supplierData);
 
   // Redireciona após salvar
   return redirect("/adicionar-fornecedor-sucesso");

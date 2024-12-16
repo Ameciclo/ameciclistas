@@ -13,7 +13,6 @@ export async function getSuppliers() {
 }
 
 export async function savePaymentRequest(paymentRequest) {
-
   return new Promise((resolve, reject) => {
     const ref = db.ref("requests");
     const key = ref.push().key;
@@ -55,7 +54,6 @@ export const getCategories = async () => {
 };
 
 export async function saveRecipient(recipientInfo) {
-
   return new Promise((resolve, reject) => {
     const ref = db.ref("recipients");
     const key = ref.push().key;
@@ -79,8 +77,37 @@ export async function saveRecipient(recipientInfo) {
   });
 }
 
-export async function saveCalendarEvent(eventInfo) {
+export async function saveSupplierToDatabase(supplierData) {
+  return new Promise((resolve, reject) => {
+    const ref = db.ref("suppliers");
+    const key = ref.push().key;
 
+    if (!key) {
+      return reject(new Error("Falha ao gerar chave para a solicitação."));
+    }
+
+    // Removemos a exigência estrita do ID do Telegram
+    if (!supplierData || (!supplierData.id && !supplierData.name)) {
+      return reject(
+        new Error("Os dados do fornecedor são inválidos ou incompletos.")
+      );
+    }
+
+    supplierData.id = key;
+
+    ref
+      .child(key)
+      .update(supplierData)
+      .then((snapshot) => {
+        resolve(snapshot);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export async function saveCalendarEvent(eventInfo) {
   return new Promise((resolve, reject) => {
     const ref = db.ref("calendar");
     const key = ref.push().key;
@@ -108,7 +135,7 @@ export async function createUser(userInfo, typeUser) {
     const ref = db.ref("telegram_users");
 
     ref
-      .update({[userInfo?.id]: typeUser})
+      .update({ [userInfo?.id]: typeUser })
       .then((snapshot) => {
         resolve(snapshot);
       })
