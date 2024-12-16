@@ -5,7 +5,6 @@ import { UserCategory, UserData } from "~/utils/types";
 import { useEffect, useState } from "react";
 import { loader } from "../loaders/solicitar-pagamento-loader";
 import { getTelegramUserInfo } from "~/utils/users";
-import { projectManagement } from "firebase-admin";
 export { loader };
 
 export default function ProjetosEmAndamento() {

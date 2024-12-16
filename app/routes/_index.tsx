@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { loader } from "~/loaders/solicitar-pagamento-loader";
 import { getTelegramUserInfo } from "~/utils/users";
 import telegramInit from "~/hooks/telegramInit";
-import LinkListWithPermissions from "~/components/LinksListWithPermissions";
+import { ButtonsListWithPermissions } from "~/components/CommonButtons";
 export { loader };
 
 const links = [
@@ -79,7 +79,7 @@ export default function Index() {
       {process.env.NODE_ENV === "production" && (
         <p className="text-xs text-center">Olá, {userInfo?.first_name}!</p>
       )}
-      <LinkListWithPermissions links={links} userPermissions={userPermissions} />
+      <ButtonsListWithPermissions links={links} userPermissions={userPermissions} />
     </div>
   );
 }

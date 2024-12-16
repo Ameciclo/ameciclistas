@@ -1,5 +1,4 @@
-import { BackButton } from "~/components/CommonButtons";
-import LinkListWithPermissions from "~/components/LinksListWithPermissions";
+import { BackButton, ButtonsListWithPermissions } from "~/components/CommonButtons";
 import { UserCategory } from "~/utils/types";
 
 export default function LinksUteis() {
@@ -62,8 +61,7 @@ export default function LinksUteis() {
         🔗 Links Úteis
       </h2>
 
-      {/* Usando LinkListWithPermissions */}
-      <LinkListWithPermissions
+      <ButtonsListWithPermissions
         links={links}
         userPermissions={userPermissions}
       />
