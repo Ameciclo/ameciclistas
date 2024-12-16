@@ -1,5 +1,5 @@
 import { Link, useLoaderData } from "@remix-run/react";
-import { isAuth } from "~/hooks/isAuthorized";
+import { isAuth } from "~/isAuthorized";
 import Unauthorized from "~/components/Unauthorized";
 import { UserCategory, UserData } from "~/utils/types";
 import { useEffect, useState } from "react";

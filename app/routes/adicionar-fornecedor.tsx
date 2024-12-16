@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Form, Link, useLoaderData } from "@remix-run/react";
-import { isAuth } from "~/hooks/isAuthorized";
+import { isAuth } from "~/isAuthorized";
 import { action } from "../handlers/adicionar-fornecedor-action";
 import { getTelegramUserInfo } from "~/utils/users";
 import { UserCategory, UserData } from "~/utils/types";

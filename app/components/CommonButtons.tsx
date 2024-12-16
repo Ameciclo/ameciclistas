@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "@remix-run/react";
 import { UserCategory } from "~/utils/types";
-import { isAuth } from "~/hooks/isAuthorized";
+import { isAuth } from "~/isAuthorized";
 
 // Interface para cada link
 interface ButtonItem {
