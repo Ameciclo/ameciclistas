@@ -7,8 +7,8 @@ import { isAuth } from "~/hooks/isAuthorized";
 interface LinkItem {
   to: string;
   label: string;
-  icon: string;
-  requiredPermission: UserCategory;
+  icon?: string;
+  requiredPermission?: UserCategory; // Torna o campo opcional
 }
 
 // Interface para os props
@@ -17,16 +17,29 @@ interface LinkListProps {
   userPermissions: UserCategory[];
 }
 
-const LinkListWithPermissions: React.FC<LinkListProps> = ({ links, userPermissions }) => {
+const LinkListWithPermissions: React.FC<LinkListProps> = ({
+  links,
+  userPermissions,
+}) => {
   return (
     <div className="mt-6">
       {links.map(({ to, label, icon, requiredPermission }, index) => (
         <Link key={index} to={to}>
           <button
             className={`button-full ${
-              !isAuth(userPermissions, requiredPermission) ? "button-disabled" : ""
+              !isAuth(
+                userPermissions,
+                requiredPermission || UserCategory.ANY_USER
+              )
+                ? "button-disabled"
+                : ""
             }`}
-            disabled={!isAuth(userPermissions, requiredPermission)}
+            disabled={
+              !isAuth(
+                userPermissions,
+                requiredPermission || UserCategory.ANY_USER
+              )
+            }
           >
             {icon} {label}
           </button>
