@@ -5,10 +5,14 @@ import { UserCategory, UserData } from "~/utils/types";
 import { isAuth } from "~/utils/isAuthorized";
 import Unauthorized from "~/components/Unauthorized";
 import { BackButton } from "~/components/CommonButtons";
-
 import { action } from "~/handlers/actions/criar-evento";
 import { loader } from "~/handlers/loaders/criar-evento";
 export { loader, action };
+
+import FormGroup from "~/components/Forms/FormGroup";
+import SelectInput from "~/components/Forms/Inputs/SelectInput";
+import TextInput from "~/components/Forms/Inputs/TextInput";
+import TextAreaInput from "~/components/Forms/Inputs/TextAreaInput";
 
 export default function CriarEvento() {
   const { userCategoriesObject, currentUserCategories } =
@@ -40,70 +44,60 @@ export default function CriarEvento() {
   return isAuth(userPermissions, UserCategory.AMECICLISTAS) ? (
     <Form className="container" method="post">
       <h2 className="text-primary">📅 Criar Evento</h2>
-      <div className="form-group">
-        <label className="form-label">Título do Evento:</label>
-        <input
-          className="form-input"
-          type="text"
-          value={titulo}
-          onChange={(e) => setTitulo(e.target.value)}
-        />
-      </div>
-      <div className="form-group">
-        <label className="form-label">Data:</label>
-        <input
-          className="form-input"
+
+      <FormGroup label="Título do Evento:">
+        <TextInput value={titulo} onChange={(e: any) => setTitulo(e.target.value)} />
+      </FormGroup>
+
+      <FormGroup label="Data:">
+        <TextInput
           type="date"
           value={data}
-          onChange={(e) => setData(e.target.value)}
+          onChange={(e: any) => setData(e.target.value)}
         />
-      </div>
-      <div className="form-group">
-        <label className="form-label">Hora:</label>
-        <input
-          className="form-input"
+      </FormGroup>
+
+      <FormGroup label="Hora:">
+        <TextInput
           type="time"
           value={hora}
-          onChange={(e) => setHora(e.target.value)}
+          onChange={(e: any) => setHora(e.target.value)}
         />
-      </div>
-      <div className="form-group">
-        <label className="form-label">Duração (em horas):</label>
-        <input
-          className="form-input"
+      </FormGroup>
+
+      <FormGroup label="Duração (em horas):">
+        <TextInput
           type="number"
           value={duracao}
-          onChange={(e) => setDuracao(e.target.value)}
+          onChange={(e: any) => setDuracao(e.target.value)}
           min="0"
           step="0.5"
           placeholder="Ex: 1.5"
         />
-      </div>
-      <div className="form-group">
-        <label className="form-label">Descrição:</label>
-        <textarea
-          className="form-input"
+      </FormGroup>
+
+      <FormGroup label="Descrição:">
+        <TextAreaInput
           value={descricao}
-          onChange={(e) => setDescricao(e.target.value)}
+          onChange={(e: any) => setDescricao(e.target.value)}
           rows={4}
-        ></textarea>
-      </div>
-      <div className="form-group">
-        <label className="form-label">Agenda:</label>
-        <select
-          className="form-input"
+        />
+      </FormGroup>
+
+      <FormGroup label="Agenda:">
+        <SelectInput
           value={agenda}
-          onChange={(e) => setAgenda(e.target.value)}
-        >
-          <option value="">Selecione uma agenda</option>
-          <option value="Eventos Internos">Eventos Internos</option>
-          <option value="Eventos Externos">Eventos Externos</option>
-          <option value="Divulgação de eventos externos">
-            Divulgação de eventos externos
-          </option>
-          <option value="Organizacional">Organizacional</option>
-        </select>
-      </div>
+          onChange={(e: any) => setAgenda(e.target.value)}
+          options={[
+            { value: "", label: "Selecione uma agenda" },
+            { value: "Eventos Internos", label: "Eventos Internos" },
+            { value: "Eventos Externos", label: "Eventos Externos" },
+            { value: "Divulgação de eventos externos", label: "Divulgação de eventos externos" },
+            { value: "Organizacional", label: "Organizacional" },
+          ]}
+        />
+      </FormGroup>
+
       <input type="hidden" name="titulo" value={titulo} />
       <input type="hidden" name="data" value={data} />
       <input type="hidden" name="hora" value={hora} />
