@@ -1,4 +1,5 @@
 // loaders/solicitar-pagamento-loader.ts
+import { json } from "@remix-run/react";
 import { getCategories } from "~/api/firebaseConnection.server";
 import { UserCategory } from "~/utils/types";
 
@@ -10,7 +11,7 @@ export async function commonLoader() {
       : UserCategory.ANY_USER,
   ];
 
-  return Response.json({
+  return json({
     currentUserCategories,
     userCategoriesObject,
   });

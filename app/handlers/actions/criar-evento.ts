@@ -1,4 +1,4 @@
-import { redirect, ActionFunction } from "@remix-run/node";
+import { redirect, ActionFunction, json } from "@remix-run/node";
 import { saveCalendarEvent } from "~/api/firebaseConnection.server";
 
 const createCalendarEventData = (formData: FormData) => ({
@@ -20,6 +20,6 @@ export const action: ActionFunction = async ({ request }) => {
     console.log(calendarEventData);
     return redirect("/sucesso/criar-evento");
   } catch (error: any) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return json({ error: error.message }, { status: 500 });
   }
 };

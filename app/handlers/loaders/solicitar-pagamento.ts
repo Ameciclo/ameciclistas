@@ -1,4 +1,5 @@
 // loaders/solicitar-pagamento-loader.ts
+import { json } from "@remix-run/react";
 import {
   getProjects,
   getSuppliers,
@@ -27,7 +28,7 @@ export async function loader() {
       : UserCategory.ANY_USER,
   ];
 
-  return Response.json({
+  return json({
     projects,
     suppliers,
     currentUserCategories,
