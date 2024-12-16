@@ -1,10 +1,10 @@
 import { Link, useLoaderData } from "@remix-run/react";
 import { isAuth } from "~/hooks/isAuthorized";
 import Unauthorized from "~/components/Unauthorized";
-import { UserCategory, UserData } from "~/api/types";
+import { UserCategory, UserData } from "~/utils/types";
 import { useEffect, useState } from "react";
 import { loader } from "../loaders/solicitar-pagamento-loader";
-import { getTelegramUserInfo } from "~/api/users";
+import { getTelegramUserInfo } from "~/utils/users";
 import { projectManagement } from "firebase-admin";
 export { loader };
 

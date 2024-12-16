@@ -1,10 +1,10 @@
 import { Link, useLoaderData } from "@remix-run/react";
 import { useEffect, useState } from "react";
-import { GrupoTrabalho, UserCategory, UserData } from "~/api/types";
+import { GrupoTrabalho, UserCategory, UserData } from "~/utils/types";
 import Unauthorized from "~/components/Unauthorized";
 import { isAuth } from "~/hooks/isAuthorized";
 import { loader } from "../loaders/solicitar-pagamento-loader";
-import { getTelegramUserInfo } from "~/api/users";
+import { getTelegramUserInfo } from "~/utils/users";
 export { loader }
 
 export default function GruposTrabalho() {

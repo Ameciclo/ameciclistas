@@ -6,7 +6,7 @@ import {
   getCategories,
 } from "~/api/firebaseConnection.server";
 import { getWorkgroups, getStrapiProjects } from "~/api/strapiData";
-import { UserCategory, Workgroup } from "~/api/types";
+import { UserCategory, Workgroup } from "~/utils/types";
 
 export async function loader() {
   let projects = await getProjects();

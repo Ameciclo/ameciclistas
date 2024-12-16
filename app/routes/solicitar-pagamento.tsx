@@ -11,12 +11,12 @@ import DescricaoInput from "~/components/SolicitarPagamento/DescricaoInput";
 import ValorInput from "~/components/ValorInput";
 
 // Group utilities and types
-import { UserCategory, UserData } from "../api/types";
-import { Project } from "~/api/types";
+import { UserCategory, UserData } from "../utils/types";
+import { Project } from "~/utils/types";
 
 import { loader } from "~/loaders/solicitar-pagamento-loader";
 import { action } from "~/loaders/solicitar-pagamento-action";
-import { getTelegramUserInfo } from "~/api/users";
+import { getTelegramUserInfo } from "~/utils/users";
 import { isAuth } from "~/hooks/isAuthorized";
 import Unauthorized from "~/components/Unauthorized";
 

@@ -1,5 +1,5 @@
 // src/utils/isAuthorized.ts
-import { UserCategory } from "~/api/types";
+import { UserCategory } from "~/utils/types";
 
 export const isAuth = (currentUserCategories: string[], category: UserCategory) => {
   const accessHierarchy = {

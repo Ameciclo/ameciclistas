@@ -1,8 +1,8 @@
 import { Form, Link, useLoaderData, useNavigate } from "@remix-run/react";
 import { useState, useEffect } from "react";
-import { getTelegramUserInfo } from "../api/users";
-import { UserCategory, UserData } from "~/api/types";
-import { Agenda } from "../api/types"; // Importe a interface Agenda
+import { getTelegramUserInfo } from "../utils/users";
+import { UserCategory, UserData } from "~/utils/types";
+import { Agenda } from "../utils/types"; // Importe a interface Agenda
 import { isAuth } from "~/hooks/isAuthorized";
 import Unauthorized from "~/components/Unauthorized";
 import { loader } from "../loaders/solicitar-pagamento-loader";
