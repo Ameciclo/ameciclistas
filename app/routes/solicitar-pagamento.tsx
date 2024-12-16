@@ -1,32 +1,32 @@
 // routes/solicitar-pagamento.tsx
 // Group external libraries
 import { useEffect, useState } from "react";
-import { useLoaderData, useNavigate, Form, Link } from "@remix-run/react";
+import { useLoaderData, Form, Link } from "@remix-run/react";
 
 // Group internal components
-import ProjectSelect from "~/components/SolicitarPagamento/ProjectSelect";
-import RubricaSelect from "~/components/SolicitarPagamento/RubricaSelect";
-import FornecedorInput from "~/components/SolicitarPagamento/FornecedorInput";
-import DescricaoInput from "~/components/SolicitarPagamento/DescricaoInput";
-import ValorInput from "~/components/ValorInput";
+import ProjectSelect from "~/components/Forms/ProjectSelect";
+import RubricaSelect from "~/components/Forms/RubricaSelect";
+import FornecedorInput from "~/components/Forms/FornecedorInput";
+import DescricaoInput from "~/components/Forms/DescricaoInput";
+import ValorInput from "~/components/Forms/ValorInput";
 
 // Group utilities and types
-import { UserCategory, UserData } from "../api/types";
-import { Project } from "~/api/types";
+import { UserCategory, UserData } from "../utils/types";
+import { Project } from "~/utils/types";
 
-import { loader } from "~/loaders/solicitar-pagamento-loader";
-import { action } from "~/loaders/solicitar-pagamento-action";
-import { getTelegramUserInfo } from "~/api/users";
-import { isAuth } from "~/hooks/isAuthorized";
+import { getTelegramUserInfo } from "~/utils/users";
+import { isAuth } from "~/utils/isAuthorized";
 import Unauthorized from "~/components/Unauthorized";
+import { BackButton } from "~/components/CommonButtons";
 
+import { action } from "~/handlers/actions/solicitar-pagamento";
+import { loader } from "~/handlers/loaders/solicitar-pagamento";
 export { loader, action };
 
 export default function SolicitarPagamento() {
   const { projects, suppliers, currentUserCategories, userCategoriesObject } =
     useLoaderData<typeof loader>();
   const [userPermissions, setUserPermissions] = useState(currentUserCategories);
-  const navigate = useNavigate();
   const [projetoSelecionado, setProjetoSelecionado] = useState<Project | null>(
     null
   );
@@ -134,9 +134,7 @@ export default function SolicitarPagamento() {
           📦 Adicionar Fornecedor
         </button>
       </Link>
-      <Link to="/" className="mt-4">
-        <button className="button-secondary-full">⬅️ Voltar</button>
-      </Link>
+      <BackButton />
     </Form>
   ) : (
     <Unauthorized

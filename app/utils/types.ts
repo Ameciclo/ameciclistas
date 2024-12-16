@@ -74,13 +74,6 @@ declare global {
   }
 }
 
-export type LoaderData = {
-  userCategoriesObject: Record<string, TelegramUser>; // Tipo mais específico
-  projects: any;
-  suppliers: any;
-};
-
-
 export type Workgroup = {
   id: number;
   name: string;

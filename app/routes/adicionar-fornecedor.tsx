@@ -1,136 +1,18 @@
 import { useState, useEffect } from "react";
 import { Form, Link, useLoaderData } from "@remix-run/react";
-import { isAuth } from "~/hooks/isAuthorized";
-import { action } from "../loaders/adicionar-fornecedor-action";
-import { getTelegramUserInfo } from "~/api/users";
-import { UserCategory, UserData } from "~/api/types";
+import { isAuth } from "~/utils/isAuthorized";
+import { getTelegramUserInfo } from "~/utils/users";
+import { UserCategory, UserData } from "~/utils/types";
 import Unauthorized from "~/components/Unauthorized";
-import { loader } from "~/loaders/solicitar-pagamento-loader";
+import { formatEmail, formatIdNumber, formatPhone } from "~/utils/format";
+import { validateIdNumber } from "~/utils/idNumber";
+import { BackButton } from "~/components/CommonButtons";
 
-const validateIdNumber = (personType: string, idNumber: string): boolean => {
-  if (personType === "fisica") {
-    return validateCPF(idNumber);
-  } else if (personType === "juridica") {
-    return validateCNPJ(idNumber);
-  } else {
-    return false;
-  }
-};
-
-// Validação de CPF
-const validateCPF = (cpf: string): boolean => {
-  cpf = cpf.replace(/[^\d]+/g, "");
-  if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
-
-  let sum = 0;
-  for (let i = 0; i < 9; i++) sum += parseInt(cpf.charAt(i)) * (10 - i);
-  let rev = 11 - (sum % 11);
-  if (rev === 10 || rev === 11) rev = 0;
-  if (rev !== parseInt(cpf.charAt(9))) return false;
-
-  sum = 0;
-  for (let i = 0; i < 10; i++) sum += parseInt(cpf.charAt(i)) * (11 - i);
-  rev = 11 - (sum % 11);
-  if (rev === 10 || rev === 11) rev = 0;
-  if (rev !== parseInt(cpf.charAt(10))) return false;
-
-  return true;
-};
-
-// Validação de CNPJ
-const validateCNPJ = (cnpj: string): boolean => {
-  cnpj = cnpj.replace(/[^\d]+/g, "");
-  if (cnpj.length !== 14) return false;
-
-  // Elimina CNPJs invalidos conhecidos
-  if (/^(.)\1+$/.test(cnpj)) return false;
-
-  // Valida DVs
-  let length = cnpj.length - 2;
-  let numbers = cnpj.substring(0, length);
-  const digits = cnpj.substring(length);
-  let sum = 0;
-  let pos = length - 7;
-  for (let i = length; i >= 1; i--) {
-    sum += parseInt(numbers.charAt(length - i)) * pos--;
-    if (pos < 2) pos = 9;
-  }
-  let result = sum % 11 < 2 ? 0 : 11 - (sum % 11);
-  if (result !== parseInt(digits.charAt(0))) return false;
-
-  length += 1;
-  numbers = cnpj.substring(0, length);
-  sum = 0;
-  let pos2 = length - 7;
-  for (let i = length; i >= 1; i--) {
-    sum += parseInt(numbers.charAt(length - i)) * pos2--;
-    if (pos2 < 2) pos2 = 9;
-  }
-  result = sum % 11 < 2 ? 0 : 11 - (sum % 11);
-  if (result !== parseInt(digits.charAt(1))) return false;
-
-  return true;
-};
-
-const formatIdNumber = (personType: string, value: string): string => {
-  if (personType === "fisica") {
-    return formatCPF(value.toString());
-  } else if (personType === "juridica") {
-    return formatCNPJ(value.toString());
-  } else {
-    return "";
-  }
-};
-
-// Formatação de CPF
-const formatCPF = (cpf: string): string => {
-  const onlyDigits = cpf.replace(/\D/g, "");
-  return onlyDigits
-    .replace(/(\d{3})(\d)/, "$1.$2")
-    .replace(/(\d{3})(\d)/, "$1.$2")
-    .replace(/(\d{3})(\d{2})$/, "$1-$2");
-};
-
-// Formatação de CNPJ
-const formatCNPJ = (cnpj: string): string => {
-  const onlyDigits = cnpj.replace(/\D/g, "");
-  return onlyDigits
-    .replace(/(\d{2})(\d)/, "$1.$2")
-    .replace(/(\d{3})(\d)/, "$1.$2")
-    .replace(/(\d{3})(\d)/, "$1/$2")
-    .replace(/(\d{4})(\d)/, "$1-$2");
-};
-
-// Formatação de Telefone
-const formatPhone = (phone: string): string => {
-  const onlyDigits = phone.replace(/\D/g, "");
-  if (onlyDigits.length <= 8) {
-    return onlyDigits.replace(/(\d{4})(\d)/, "$1-$2");
-  } else if (onlyDigits.length === 9) {
-    return `(${onlyDigits.slice(0, 2)}) ${onlyDigits.slice(
-      2,
-      7
-    )}-${onlyDigits.slice(7)}`;
-  } else if (onlyDigits.length === 10) {
-    return `(${onlyDigits.slice(0, 2)}) ${onlyDigits.slice(
-      2,
-      6
-    )}-${onlyDigits.slice(6)}`;
-  } else {
-    return `+${onlyDigits.slice(0, -10)} (${onlyDigits.slice(
-      -10,
-      -8
-    )}) ${onlyDigits.slice(-8, -4)}-${onlyDigits.slice(-4)}`;
-  }
-};
-// Formatação de Email (simplificada)
-const formatEmail = (email: string): string => {
-  return email.trim().toLowerCase();
-};
-
+import { action } from "../handlers/actions/adicionar-fornecedor";
+import { loader } from "~/handlers/loaders/adicionar-fornecedor";
 export { loader, action };
 
-export default function AddSupplier() {
+export default function AdicionarFornecedor() {
   const { userCategoriesObject, currentUserCategories } =
     useLoaderData<typeof loader>();
   const [userPermissions, setUserPermissions] = useState(currentUserCategories);
@@ -523,9 +405,7 @@ export default function AddSupplier() {
         <button className="button-full">💰 Solicitar Pagamento</button>
       </Link>
 
-      <Link to="/" className="mt-4">
-        <button className="button-secondary-full">⬅️ Back</button>
-      </Link>
+      <BackButton />
     </Form>
   ) : (
     <Unauthorized

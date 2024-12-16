@@ -74,5 +74,5 @@ export async function action({ request }: { request: Request }) {
   await saveSupplierToDatabase(supplierData);
 
   // Redireciona após salvar
-  return redirect("/adicionar-fornecedor-sucesso");
+  return redirect("/sucesso/adicionar-fornecedor");
 }

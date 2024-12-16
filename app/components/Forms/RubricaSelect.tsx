@@ -1,6 +1,6 @@
 // components/SolicitarPagamento/RubricaSelect.tsx
 import React from "react";
-import { Project } from "~/api/types";
+import { Project } from "~/utils/types";
 
 interface RubricaSelectProps {
   projetoSelecionado: Project;
