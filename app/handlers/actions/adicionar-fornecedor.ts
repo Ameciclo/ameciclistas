@@ -4,11 +4,6 @@ import { saveSupplierToDatabase } from "~/api/firebaseConnection.server";
 export async function action({ request }: { request: Request }) {
   const formData = await request.formData();
 
-  const actionType = formData.get("actionType")?.toString();
-  if (actionType !== "addSupplier") {
-    return redirect("/");
-  }
-
   // Coleta campos do formulário
   const personType = formData.get("personType")?.toString(); // fisica ou juridica
   const name = formData.get("name")?.toString(); // Nome Fantasia ou Nome/Apelido

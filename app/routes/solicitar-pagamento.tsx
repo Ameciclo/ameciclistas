@@ -105,7 +105,6 @@ export default function SolicitarPagamento() {
         <ValorInput name="valor" valor={valor} setValor={setValor} />
       </div>
 
-      <input type="hidden" name="actionType" value="solicitarPagamento" />
       <input type="hidden" name="telegramUserInfo" value={userJSONStringfyed} />
       <input type="hidden" name="project" value={projectJSONStringfyed} />
       <input type="hidden" name="fornecedor" value={supplierJSONStringfyed} />

@@ -104,7 +104,6 @@ export default function CriarEvento() {
           <option value="Organizacional">Organizacional</option>
         </select>
       </div>
-      <input type="hidden" name="actionType" value={"criarEvento"} />
       <input type="hidden" name="titulo" value={titulo} />
       <input type="hidden" name="data" value={data} />
       <input type="hidden" name="hora" value={hora} />

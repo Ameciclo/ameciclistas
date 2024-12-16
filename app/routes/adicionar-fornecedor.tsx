@@ -380,7 +380,6 @@ export default function AdicionarFornecedor() {
       </div>
 
       {/* Hidden Inputs */}
-      <input type="hidden" name="actionType" value="addSupplier" />
       <input type="hidden" name="personType" value={personType} />
       <input type="hidden" name="name" value={name} />
       <input type="hidden" name="fullName" value={fullName} />
