@@ -12,7 +12,19 @@ export { loader, action };
 
 export default function User() {
   const [userData, setUserData] = useState<UserData | null>(null);
-  const { userCategoriesObject } = useLoaderData<typeof loader>();
+  const { currentUserCategories, userCategoriesObject } = useLoaderData<typeof loader>();
+  const [userPermissions, setUserPermissions] = useState(currentUserCategories);
+  const [userInfo, setUserInfo] = useState<UserData | null>(null);
+
+  useEffect(() => {
+    setUserInfo(() => getTelegramUserInfo());
+  }, []);
+
+  useEffect(() => {
+    if (userInfo?.id && userCategoriesObject[userInfo.id]) {
+      setUserPermissions([userCategoriesObject[userInfo.id] as any]);
+    }
+  }, [userInfo]);
 
   useEffect(() => setUserData(() => getTelegramUserInfo()), []);
 
@@ -33,6 +45,7 @@ export default function User() {
             <li>Usuário: {userData.username || "N/A"}</li>
             <li>Código do Idioma: {userData.language_code}</li>
             <li>Premium: {userData.is_premium ? "Sim" : "Não"}</li>
+            <li>Permissao: {userPermissions}</li>
           </ul>
           <br />
           <br />
