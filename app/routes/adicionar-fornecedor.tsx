@@ -123,7 +123,6 @@ const formatPhone = (phone: string): string => {
     )}) ${onlyDigits.slice(-8, -4)}-${onlyDigits.slice(-4)}`;
   }
 };
-
 // Formatação de Email (simplificada)
 const formatEmail = (email: string): string => {
   return email.trim().toLowerCase();
@@ -166,6 +165,20 @@ export default function AddSupplier() {
   const [paymentMethods, setPaymentMethods] = useState<
     Array<{ type: string; value: string }>
   >([{ type: "PIX", value: "" }]);
+
+  const getEmailValue = () => {
+    const emailContact = contacts.find((contact) => contact.type === "E-mail");
+    return emailContact ? emailContact.value : "";
+  };
+
+  const getPhoneValue = () => {
+    const phoneContact = contacts.find(
+      (contact) => contact.type === "Telefone"
+    );
+    return phoneContact ? phoneContact.value : "";
+  };
+
+  const getIdNumberValue = () => idNumber || "";
 
   const handleIdNumberChange = (personType: string, value: string) => {
     const formatted = formatIdNumber(personType, value);
@@ -232,13 +245,7 @@ export default function AddSupplier() {
     idNumber !== "" &&
     validateIdNumber(personType, idNumber) &&
     contacts.every((c) => c.value !== "") &&
-    paymentMethods.every((pm) => {
-      if (pm.type === "PIX") return pm.value !== "";
-      if (pm.type === "Conta Bancária") return pm.value !== "";
-      if (pm.type === "Boleto") return pm.value !== "";
-      if (pm.type === "Dinheiro") return true;
-      return false;
-    });
+    paymentMethods.some((pm) => pm.value !== "");
 
   return isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS) ? (
     <Form className="container mx-auto p-4" method="post">
@@ -383,63 +390,101 @@ export default function AddSupplier() {
       <div className="form-group mb-4">
         <label className="font-bold">Método de pagamento:</label>
         {paymentMethods.map((method, index) => (
-          <div key={index} className="flex items-center gap-2 mb-2">
-            <select
-              className="p-2 border border-gray-300 rounded-md"
-              value={method.type}
-              onChange={(e) =>
-                handlePaymentMethodChange(index, "type", e.target.value)
-              }
-            >
-              <option value="PIX">PIX</option>
-              <option value="account">Conta Bancária</option>
-              <option value="bill">Boleto</option>
-              <option value="cash">Dinheiro</option>
-            </select>
-            {method.type === "PIX" && (
-              <input
-                className="p-2 border border-gray-300 rounded-md flex-grow"
-                type="text"
-                value={method.value}
-                onChange={(e) =>
-                  handlePaymentMethodChange(index, "value", e.target.value)
-                }
-                placeholder="Entre a chave PIX"
-              />
-            )}
-            {method.type === "Conta Bancária" && (
-              <input
-                className="p-2 border border-gray-300 rounded-md flex-grow"
-                type="text"
-                value={method.value}
-                onChange={(e) =>
-                  handlePaymentMethodChange(index, "value", e.target.value)
-                }
-                placeholder="Detalhes da conta bancária"
-              />
-            )}
-            {method.type === "Boleto" && (
-              <input
-                className="p-2 border border-gray-300 rounded-md flex-grow"
-                type="text"
-                value={method.value}
-                onChange={(e) =>
-                  handlePaymentMethodChange(index, "value", e.target.value)
-                }
-                placeholder="Boleto number"
-              />
-            )}
-            {method.type === "Dinheiro" && (
-              <span className="flex-grow">Cash</span>
-            )}
-            {paymentMethods.length > 1 && (
-              <button
-                type="button"
-                className="text-red-500"
-                onClick={() => handleRemovePaymentMethod(index)}
+          <div key={index} className="flex flex-col gap-2 mb-4">
+            <div className="flex items-center gap-2">
+              <select
+                className="p-2 border border-gray-300 rounded-md"
+                value={method.type}
+                onChange={(e) => {
+                  const newType = e.target.value;
+                  const newValue =
+                    newType === "bill" || newType === "cash" ? newType : "";
+                  handlePaymentMethodChange(index, "type", newType);
+                  handlePaymentMethodChange(index, "value", newValue);
+                }}
               >
-                Remover
-              </button>
+                <option value="PIX">PIX</option>
+                <option value="account">Conta Bancária</option>
+                <option value="bill">Boleto</option>
+                <option value="cash">Dinheiro</option>
+              </select>
+
+              {method.type === "PIX" && (
+                <input
+                  className="p-2 border border-gray-300 rounded-md flex-grow"
+                  type="text"
+                  value={method.value}
+                  onChange={(e) =>
+                    handlePaymentMethodChange(index, "value", e.target.value)
+                  }
+                  placeholder="Entre a chave PIX"
+                />
+              )}
+
+              {method.type === "account" && (
+                <input
+                  className="p-2 border border-gray-300 rounded-md flex-grow"
+                  type="text"
+                  value={method.value}
+                  onChange={(e) =>
+                    handlePaymentMethodChange(index, "value", e.target.value)
+                  }
+                  placeholder="Banco / Agência / Conta corrente / Poupança?"
+                />
+              )}
+
+              {(method.type === "bill" || method.type === "cash") && (
+                <span className="flex-grow">
+                  {method.type === "bill" ? "Boleto" : "Dinheiro"}
+                </span>
+              )}
+
+              {paymentMethods.length > 1 && (
+                <button
+                  type="button"
+                  className="text-red-500"
+                  onClick={() => handleRemovePaymentMethod(index)}
+                >
+                  Remover
+                </button>
+              )}
+            </div>
+
+            {/* Botões para Copiar Valores ao Selecionar PIX */}
+            {method.type === "PIX" && (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  className="px-2 py-1 bg-blue-500 text-white rounded-md text-sm"
+                  onClick={() =>
+                    handlePaymentMethodChange(index, "value", getEmailValue())
+                  }
+                >
+                  Copiar Email
+                </button>
+                <button
+                  type="button"
+                  className="px-2 py-1 bg-green-500 text-white rounded-md text-sm"
+                  onClick={() =>
+                    handlePaymentMethodChange(index, "value", getPhoneValue())
+                  }
+                >
+                  Copiar Telefone
+                </button>
+                <button
+                  type="button"
+                  className="px-2 py-1 bg-yellow-500 text-white rounded-md text-sm"
+                  onClick={() =>
+                    handlePaymentMethodChange(
+                      index,
+                      "value",
+                      getIdNumberValue()
+                    )
+                  }
+                >
+                  Copiar CPF/CNPJ
+                </button>
+              </div>
             )}
           </div>
         ))}
