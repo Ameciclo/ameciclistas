@@ -17,7 +17,7 @@ import { Project } from "~/utils/types";
 import { loader } from "~/handlers/solicitar-pagamento-loader";
 import { action } from "~/handlers/solicitar-pagamento-action";
 import { getTelegramUserInfo } from "~/utils/users";
-import { isAuth } from "~/isAuthorized";
+import { isAuth } from "~/utils/isAuthorized";
 import Unauthorized from "~/components/Unauthorized";
 
 export { loader, action };

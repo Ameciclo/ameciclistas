@@ -2,7 +2,7 @@ import { Link, useLoaderData } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import { GrupoTrabalho, UserCategory, UserData } from "~/utils/types";
 import Unauthorized from "~/components/Unauthorized";
-import { isAuth } from "~/isAuthorized";
+import { isAuth } from "~/utils/isAuthorized";
 import { loader } from "../handlers/solicitar-pagamento-loader";
 import { getTelegramUserInfo } from "~/utils/users";
 export { loader }

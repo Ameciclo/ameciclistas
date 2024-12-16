@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { getTelegramUserInfo } from "../utils/users";
 import { UserCategory, UserData } from "~/utils/types";
 import { Agenda } from "../utils/types"; // Importe a interface Agenda
-import { isAuth } from "~/isAuthorized";
+import { isAuth } from "~/utils/isAuthorized";
 import Unauthorized from "~/components/Unauthorized";
 import { loader } from "../handlers/solicitar-pagamento-loader";
 import { action } from "../handlers/solicitar-pagamento-action";
