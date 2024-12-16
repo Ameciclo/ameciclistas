@@ -1,64 +1,67 @@
-import { Link, useLoaderData } from "@remix-run/react";
+import { useLoaderData } from "@remix-run/react";
 import { useEffect, useState } from "react";
-import { GrupoTrabalho, UserCategory, UserData } from "~/utils/types";
+import { UserCategory, UserData } from "~/utils/types";
 import Unauthorized from "~/components/Unauthorized";
 import { isAuth } from "~/utils/isAuthorized";
-import { loader } from "../handlers/solicitar-pagamento-loader";
+import { loader, LoaderData } from "../handlers/grupos-de-trabalho-loader";
 import { getTelegramUserInfo } from "~/utils/users";
-export { loader }
+import { CardList } from "~/components/CardsList";
+import { BackButton } from "~/components/CommonButtons";
+
+export { loader };
 
 export default function GruposTrabalho() {
-  const { userCategoriesObject, currentUserCategories, workgroups } = useLoaderData<typeof loader>();
-  const [userPermissions, setUserPermissions] = useState(currentUserCategories);
-  const [userInfo, setUserInfo] = useState<UserData | null>({} as UserData);
-  const [grupos, setGrupos] = useState<GrupoTrabalho[] | null>([]);
+  const { userCategoriesObject, currentUserCategories, workgroups } =
+    useLoaderData<LoaderData>();
+  const [userPermissions, setUserPermissions] = useState<UserCategory[]>(
+    currentUserCategories
+  );
+  const [userInfo, setUserInfo] = useState<UserData | null>(null);
 
-  useEffect(() => setUserInfo(() => getTelegramUserInfo()), []);
-
+  // Obter informações do usuário pelo Telegram
   useEffect(() => {
-    if (userInfo?.id && userCategoriesObject[userInfo.id]) {
-      setUserPermissions([userCategoriesObject[userInfo.id] as any]);
-    }
-  }, [userInfo])
-
-  useEffect(() => {
-    setGrupos(
-      workgroups.map((group) => ({
-        id: group.id,
-        nome: group.name,
-        coordenacao: group.projects.map((project) => project.name).join(", "),
-        descricao: group.description,
-        imagem: group.icon.formats.thumbnail.url,
-        link: group.telegram_url,
-        categoria: group.directive,
-      }))
-    );
+    setUserInfo(() => getTelegramUserInfo());
   }, []);
 
-  const categorias = Array.from(new Set(grupos?.map(grupo => grupo.categoria)));
+  // Atualiza permissões com base no usuário
+  useEffect(() => {
+    if (userInfo?.id && userCategoriesObject[userInfo.id]) {
+      setUserPermissions([
+        userCategoriesObject[userInfo.id] as unknown as UserCategory,
+      ]);
+    }
+  }, [userInfo, userCategoriesObject]);
+
+  // Mapear cores para as categorias
+  const categoryColors: Record<string, string> = {
+    incidir: "#EF4444", // Vermelho
+    cultuar: "#3B82F6", // Azul
+    articular: "#10B981", // Verde
+  };
+
+  // Transformar grupos de trabalho em formato para o CardList
+  const cardItems = workgroups.map((group) => ({
+    title: group.name,
+    description: group.description,
+    imageUrl: group.icon?.url,
+    linkUrl: group.telegram_url,
+    linkText: "Entrar no Grupo",
+    badge: group.directive,
+    badgeColor: categoryColors[group.directive.toLowerCase()] || "gray",
+  }));
 
   return isAuth(userPermissions, UserCategory.AMECICLISTAS) ? (
     <div className="container mx-auto p-4">
-      <h2 className="text-2xl font-bold text-teal-600">👥 Grupos de Trabalho da Ameciclo</h2>
-
-      {categorias.map(categoria => (
-        <div key={categoria} className="mt-6">
-          <h3 className="text-xl font-bold text-teal-500">{categoria}</h3>
-          {grupos?.filter(grupo => grupo.categoria === categoria).map(grupo => (
-            <div key={grupo.id} className="border p-4 rounded-lg mb-4">
-              <img src={grupo.imagem} alt={`${grupo.nome} - Capa`} className="w-full h-40 object-cover rounded" />
-              <h4 className="text-lg font-bold">{grupo.nome}</h4>
-              <p className="mt-2">{grupo.descricao}</p>
-              <br />
-              <Link to={grupo.link} target="_blank" className="button-full mt-2">Entrar no Grupo</Link>
-            </div>
-          ))}
-        </div>
-      ))}
-
-      <Link to="/" className="button-secondary-full">
-        ⬅️ Voltar
-      </Link>
+      <h2 className="text-2xl font-bold text-teal-600">
+        👥 Grupos de Trabalho da Ameciclo
+      </h2>
+      <CardList items={cardItems} />
+      <BackButton />
     </div>
-  ) : <Unauthorized pageName="Grupos de Trabalho" requiredPermission="Ameciclistas" />
+  ) : (
+    <Unauthorized
+      pageName="Grupos de Trabalho"
+      requiredPermission="Ameciclistas"
+    />
+  );
 }

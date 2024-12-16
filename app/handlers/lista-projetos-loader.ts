@@ -1,5 +1,5 @@
 // loaders/lista-projetos-loader.ts
-import { getStrapiProjects } from "~/api/strapiData";
+import { getStrapiProjects } from "~/api/cms.server";
 
 export async function loader() {
   const strapiProjects = await getStrapiProjects();
