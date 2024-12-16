@@ -79,7 +79,7 @@ export default function LinksUteis() {
 
       <ButtonsListWithPermissions
         links={links}
-        userPermissions={userPermissions}
+        userPermissions={userPermissions || UserCategory.ANY_USER}
       />
 
       <br />
