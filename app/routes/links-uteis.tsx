@@ -1,8 +1,24 @@
+import { useLoaderData } from "@remix-run/react";
+import { useEffect, useState } from "react";
 import { BackButton, ButtonsListWithPermissions } from "~/components/CommonButtons";
-import { UserCategory } from "~/utils/types";
+import { UserCategory, UserData } from "~/utils/types";
+import { loader } from "./_index";
+import { getTelegramUserInfo } from "~/utils/users";
 
 export default function LinksUteis() {
-  const userPermissions = [UserCategory.ANY_USER]; // Exemplo: permissões do usuário atual
+  const { currentUserCategories, userCategoriesObject } = useLoaderData<typeof loader>();
+  const [userPermissions, setUserPermissions] = useState(currentUserCategories);
+  const [userInfo, setUserInfo] = useState<UserData | null>(null);
+
+  useEffect(() => {
+    setUserInfo(() => getTelegramUserInfo());
+  }, []);
+
+  useEffect(() => {
+    if (userInfo?.id && userCategoriesObject[userInfo.id]) {
+      setUserPermissions([userCategoriesObject[userInfo.id] as any]);
+    }
+  }, [userInfo]);
 
   const links = [
     {
