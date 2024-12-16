@@ -11,7 +11,7 @@ import { validateIdNumber } from "~/utils/idNumber";
 
 export { loader, action };
 
-export default function AddSupplier() {
+export default function AdicionarFornecedor() {
   const { userCategoriesObject, currentUserCategories } =
     useLoaderData<typeof loader>();
   const [userPermissions, setUserPermissions] = useState(currentUserCategories);

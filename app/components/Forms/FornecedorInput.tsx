@@ -1,6 +1,6 @@
 // components/SolicitarPagamento/FornecedorInput.tsx
 import React from "react";
-import FornecedorAutocomplete from "~/components/FornecedorAutocomplete";
+import FornecedorAutocomplete from "~/components/Forms/FornecedorAutocomplete";
 
 interface FornecedorInputProps {
   fornecedores: any[];

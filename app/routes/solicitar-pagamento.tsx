@@ -1,14 +1,14 @@
 // routes/solicitar-pagamento.tsx
 // Group external libraries
 import { useEffect, useState } from "react";
-import { useLoaderData, useNavigate, Form, Link } from "@remix-run/react";
+import { useLoaderData, Form, Link } from "@remix-run/react";
 
 // Group internal components
-import ProjectSelect from "~/components/SolicitarPagamento/ProjectSelect";
-import RubricaSelect from "~/components/SolicitarPagamento/RubricaSelect";
-import FornecedorInput from "~/components/SolicitarPagamento/FornecedorInput";
-import DescricaoInput from "~/components/SolicitarPagamento/DescricaoInput";
-import ValorInput from "~/components/ValorInput";
+import ProjectSelect from "~/components/Forms/ProjectSelect";
+import RubricaSelect from "~/components/Forms/RubricaSelect";
+import FornecedorInput from "~/components/Forms/FornecedorInput";
+import DescricaoInput from "~/components/Forms/DescricaoInput";
+import ValorInput from "~/components/Forms/ValorInput";
 
 // Group utilities and types
 import { UserCategory, UserData } from "../utils/types";
@@ -26,7 +26,6 @@ export default function SolicitarPagamento() {
   const { projects, suppliers, currentUserCategories, userCategoriesObject } =
     useLoaderData<typeof loader>();
   const [userPermissions, setUserPermissions] = useState(currentUserCategories);
-  const navigate = useNavigate();
   const [projetoSelecionado, setProjetoSelecionado] = useState<Project | null>(
     null
   );
