@@ -15,10 +15,10 @@ export default function LinksUteis() {
   }, []);
 
   useEffect(() => {
-    if (userInfo?.id && userCategoriesObject?.[userInfo?.id]) {
-      setUserPermissions([userCategoriesObject?.[userInfo?.id] as any]);
+    if (userInfo?.id && userCategoriesObject?.[userInfo.id]) {
+      setUserPermissions([userCategoriesObject[userInfo.id] as UserCategory]);
     }
-  }, [userInfo]);
+  }, [userInfo, userCategoriesObject]);
 
   const links = [
     {
