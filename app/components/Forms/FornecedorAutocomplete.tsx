@@ -16,7 +16,7 @@ const FornecedorAutocomplete: React.FC<Props> = ({ fornecedores, value, onChange
     // Limitar a 5 sugestões
     return fornecedores
       .filter(fornecedor =>
-        fornecedor.nome.toLowerCase().includes(lowercasedInput)
+        fornecedor.name.toLowerCase().includes(lowercasedInput)
       )
       .slice(0, 5);
   };
@@ -29,12 +29,12 @@ const FornecedorAutocomplete: React.FC<Props> = ({ fornecedores, value, onChange
     setSuggestions([]);
   };
 
-  const getSuggestionValue = (suggestion: Supplier) => suggestion.nome;
+  const getSuggestionValue = (suggestion: Supplier) => suggestion.name;
 
   const renderSuggestion = (suggestion: Supplier) => (
     <div style={{ cursor: "pointer" }}>
       <span>➕ </span>
-      {suggestion.nome}
+      {suggestion.name}
     </div>
   );
 

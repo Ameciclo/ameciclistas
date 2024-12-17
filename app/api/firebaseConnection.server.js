@@ -7,7 +7,7 @@ export async function getProjects() {
 }
 
 export async function getSuppliers() {
-  const ref = db.ref("recipients");
+  const ref = db.ref("suppliers");
   const snapshot = await ref.once("value");
   return snapshot.val();
 }
@@ -52,30 +52,6 @@ export const getCategories = async () => {
     return null;
   }
 };
-
-export async function saveSupplier(recipientInfo) {
-  return new Promise((resolve, reject) => {
-    const ref = db.ref("recipients");
-    const key = ref.push().key;
-
-    if (!key) {
-      return reject(new Error("Falha ao gerar chave para a solicitação."));
-    }
-
-    if (!recipientInfo?.id) throw new Error("Você não está no telegram");
-    recipientInfo.id = key;
-
-    ref
-      .child(key)
-      .update(recipientInfo)
-      .then((snapshot) => {
-        resolve(snapshot);
-      })
-      .catch((err) => {
-        reject(err);
-      });
-  });
-}
 
 export async function saveSupplierToDatabase(supplierData) {
   return new Promise((resolve, reject) => {
