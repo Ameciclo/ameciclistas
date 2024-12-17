@@ -19,7 +19,7 @@ const createPaymentRequest = (formData: FormData) => {
     from: JSON.parse(formData.get("telegramUserInfo") as string),
     supplier: JSON.parse(
       formData.get("fornecedores") as string
-    ).find((s: any) => s.nome === formData.get("fornecedor")),
+    ).find((s: any) => s.name === formData.get("fornecedor")),
     confirmed_by: [],
   };
 };
