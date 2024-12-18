@@ -39,13 +39,21 @@ const links = [
     icon: "⚙️",
     requiredPermission: UserCategory.ANY_USER,
   },
+  {
+    to: "/users",
+    label: "Gerenciamento de Usuários",
+    icon: "🔧",
+    requiredPermission: UserCategory.AMECICLO_COORDINATORS,
+    hide: true,
+  },
 ];
 
 export default function Index() {
+  const [userInfo, setUserInfo] = useState<UserData | null>({} as UserData);
+
   const { userCategoriesObject, currentUserCategories } =
     useLoaderData<typeof loader>();
   const [userPermissions, setUserPermissions] = useState(currentUserCategories);
-  const [userInfo, setUserInfo] = useState<UserData | null>({} as UserData);
 
   useEffect(() => {
     telegramInit();
