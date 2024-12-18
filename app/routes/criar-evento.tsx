@@ -16,6 +16,7 @@ import SendToAction from "~/components/SendToAction";
 import HourInput from "~/components/Forms/Inputs/HourInput";
 import DateInput from "~/components/Forms/Inputs/DateInput";
 import SubmitButton from "~/components/SubmitButton";
+import FormTitle from "~/components/Forms/FormTitle";
 
 export default function CriarEvento() {
   const { userCategoriesObject, currentUserCategories } =
@@ -47,7 +48,7 @@ export default function CriarEvento() {
 
   return isAuth(userPermissions, UserCategory.AMECICLISTAS) ? (
     <Form className="container" method="post">
-      <h2 className="text-primary">📅 Criar Evento</h2>
+      <FormTitle>📅 Criar Evento</FormTitle>
 
       <NumberInput label="Título do Evento:" value={titulo} onChange={(e: any) => setTitulo(e.target.value)} />
 

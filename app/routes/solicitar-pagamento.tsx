@@ -22,6 +22,7 @@ import { action } from "~/handlers/actions/solicitar-pagamento";
 import { loader } from "~/handlers/loaders/solicitar-pagamento";
 import SendToAction from "~/components/SendToAction";
 import DescriptionInput from "~/components/Forms/Inputs/DescriptionInput";
+import FormTitle from "~/components/Forms/FormTitle";
 export { loader, action };
 
 export default function SolicitarPagamento() {
@@ -76,7 +77,7 @@ export default function SolicitarPagamento() {
 
   return isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS) ? (
     <Form method="post" className="container">
-      <h2 className="text-primary">💰 Solicitar Pagamento</h2>
+      <FormTitle>💰 Solicitar Pagamento</FormTitle>
 
       <ProjectSelect
         projetos={projects}

@@ -8,6 +8,7 @@ import { CardList } from "~/components/CardsList";
 import { BackButton } from "~/components/CommonButtons";
 
 import { loader, LoaderData } from "../handlers/loaders/grupos-de-trabalho";
+import FormTitle from "~/components/Forms/FormTitle";
 export { loader };
 
 export default function GruposTrabalho() {
@@ -52,9 +53,7 @@ export default function GruposTrabalho() {
 
   return isAuth(userPermissions, UserCategory.AMECICLISTAS) ? (
     <div className="container mx-auto p-4">
-      <h2 className="text-2xl font-bold text-teal-600">
-        👥 Grupos de Trabalho da Ameciclo
-      </h2>
+      <FormTitle>👥 Grupos de Trabalho da Ameciclo</FormTitle>
       <CardList items={cardItems} />
       <BackButton />
     </div>
