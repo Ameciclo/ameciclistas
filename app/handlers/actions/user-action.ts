@@ -3,7 +3,6 @@ import { createUser } from "~/api/firebaseConnection.server";
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
-  const actionType = formData.get("actionType"); // Identifica o tipo de ação
 
   try {
     await createUser(

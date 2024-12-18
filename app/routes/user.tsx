@@ -8,11 +8,24 @@ import { BackButton } from "~/components/CommonButtons";
 
 import { action } from "~/handlers/actions/user-action";
 import { loader } from "~/handlers/loaders/user";
+import SendToAction from "~/components/SendToAction";
 export { loader, action };
 
 export default function User() {
   const [userData, setUserData] = useState<UserData | null>(null);
-  const { userCategoriesObject } = useLoaderData<typeof loader>();
+  const { currentUserCategories, userCategoriesObject } = useLoaderData<typeof loader>();
+  const [userPermissions, setUserPermissions] = useState(currentUserCategories);
+  const [userInfo, setUserInfo] = useState<UserData | null>(null);
+
+  useEffect(() => {
+    setUserInfo(() => getTelegramUserInfo());
+  }, []);
+
+  useEffect(() => {
+    if (userInfo?.id && userCategoriesObject[userInfo.id]) {
+      setUserPermissions([userCategoriesObject[userInfo.id] as any]);
+    }
+  }, [userInfo]);
 
   useEffect(() => setUserData(() => getTelegramUserInfo()), []);
 
@@ -33,6 +46,7 @@ export default function User() {
             <li>Usuário: {userData.username || "N/A"}</li>
             <li>Código do Idioma: {userData.language_code}</li>
             <li>Premium: {userData.is_premium ? "Sim" : "Não"}</li>
+            <li>Permissao: {userPermissions}</li>
           </ul>
           <br />
           <br />
@@ -48,11 +62,17 @@ export default function User() {
       )}
 
       <Form method="post" className="container">
-        <input type="hidden" name="actionType" value="createUser" />
-        <input type="hidden" name="user" value={JSON.stringify(userData)} />
-        {!userCategoriesObject[userData?.id as unknown as string] && (
-          <button className="button-full">SOU AMECICLISTA</button>
-        )}
+        <SendToAction
+          fields={[
+            { name: "user", value: JSON.stringify(userData) },
+          ]}
+        />
+        
+        {
+          !userCategoriesObject[userData?.id as unknown as string] && (
+            <button className="button-full">SOU AMECICLISTA</button>
+          )
+        }
         <BackButton />
       </Form>
     </div>
