@@ -1,4 +1,3 @@
-import { UserCategory } from "~/utils/types";
 import db from "./firebaseAdmin.server";
 
 export async function getProjects() {
@@ -127,7 +126,7 @@ export async function createUser2(userInfo) {
     const ref = db.ref("users");
 
     ref
-      .update({ [userInfo?.id]: UserCategory.ANY_USER })
+      .update(userInfo)
       .then((snapshot) => {
         resolve(snapshot);
       })
