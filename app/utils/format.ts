@@ -65,3 +65,14 @@ export const formatDate = new Intl.DateTimeFormat("pt-BR", {
   dateStyle: "short",
   timeStyle: "medium",
 });
+
+export const formatRealValue = (value: string) => {
+    const cleanedValue = value.replace(/\D/g, '');
+
+    const formattedValue = new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(parseFloat(cleanedValue) / 100);
+
+    return formattedValue;
+  };

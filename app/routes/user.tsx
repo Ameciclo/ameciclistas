@@ -8,6 +8,7 @@ import { BackButton } from "~/components/CommonButtons";
 
 import { action } from "~/handlers/actions/user-action";
 import { loader } from "~/handlers/loaders/user";
+import SendToAction from "~/components/SendToAction";
 export { loader, action };
 
 export default function User() {
@@ -61,10 +62,17 @@ export default function User() {
       )}
 
       <Form method="post" className="container">
-        <input type="hidden" name="user" value={JSON.stringify(userData)} />
-        {!userCategoriesObject[userData?.id as unknown as string] && (
-          <button className="button-full">SOU AMECICLISTA</button>
-        )}
+        <SendToAction
+          fields={[
+            { name: "user", value: JSON.stringify(userData) },
+          ]}
+        />
+        
+        {
+          !userCategoriesObject[userData?.id as unknown as string] && (
+            <button className="button-full">SOU AMECICLISTA</button>
+          )
+        }
         <BackButton />
       </Form>
     </div>

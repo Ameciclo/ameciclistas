@@ -9,10 +9,13 @@ import { action } from "~/handlers/actions/criar-evento";
 import { loader } from "~/handlers/loaders/criar-evento";
 export { loader, action };
 
-import FormGroup from "~/components/Forms/FormGroup";
 import SelectInput from "~/components/Forms/Inputs/SelectInput";
-import TextInput from "~/components/Forms/Inputs/TextInput";
-import TextAreaInput from "~/components/Forms/Inputs/TextAreaInput";
+import NumberInput from "~/components/Forms/Inputs/NumberInput";
+import DescriptionInput from "~/components/Forms/Inputs/DescriptionInput";
+import SendToAction from "~/components/SendToAction";
+import HourInput from "~/components/Forms/Inputs/HourInput";
+import DateInput from "~/components/Forms/Inputs/DateInput";
+import SubmitButton from "~/components/SubmitButton";
 
 export default function CriarEvento() {
   const { userCategoriesObject, currentUserCategories } =
@@ -39,83 +42,68 @@ export default function CriarEvento() {
     data !== "" &&
     hora !== "" &&
     duracao !== "" &&
-    descricao !== "";
+    descricao !== "" &&
+    agenda !== "";
 
   return isAuth(userPermissions, UserCategory.AMECICLISTAS) ? (
     <Form className="container" method="post">
       <h2 className="text-primary">📅 Criar Evento</h2>
 
-      <FormGroup label="Título do Evento:">
-        <TextInput value={titulo} onChange={(e: any) => setTitulo(e.target.value)} />
-      </FormGroup>
+      <NumberInput label="Título do Evento:" value={titulo} onChange={(e: any) => setTitulo(e.target.value)} />
 
-      <FormGroup label="Data:">
-        <TextInput
-          type="date"
-          value={data}
-          onChange={(e: any) => setData(e.target.value)}
-        />
-      </FormGroup>
+      <DateInput
+        value={data}
+        onChange={(e: any) => setData(e.target.value)}
+      />
 
-      <FormGroup label="Hora:">
-        <TextInput
-          type="time"
-          value={hora}
-          onChange={(e: any) => setHora(e.target.value)}
-        />
-      </FormGroup>
+      <HourInput
+        value={hora}
+        onChange={(e: any) => setHora(e.target.value)}
+      />
 
-      <FormGroup label="Duração (em horas):">
-        <TextInput
-          type="number"
-          value={duracao}
-          onChange={(e: any) => setDuracao(e.target.value)}
-          min="0"
-          step="0.5"
-          placeholder="Ex: 1.5"
-        />
-      </FormGroup>
+      <NumberInput
+        label="Duração (em horas):"
+        type="number"
+        value={duracao}
+        onChange={(e: any) => setDuracao(e.target.value)}
+        min="0"
+        step="0.5"
+        placeholder="Ex: 1.5"
+      />
+      <DescriptionInput descricao={descricao} setDescricao={setDescricao} />
 
-      <FormGroup label="Descrição:">
-        <TextAreaInput
-          value={descricao}
-          onChange={(e: any) => setDescricao(e.target.value)}
-          rows={4}
-        />
-      </FormGroup>
+      <SelectInput
+        label="Agenda: "
+        value={agenda}
+        onChange={(e: any) => setAgenda(e.target.value)}
+        options={[
+          { value: "", label: "Selecione uma agenda" },
+          { value: "Eventos Internos", label: "Eventos Internos" },
+          { value: "Eventos Externos", label: "Eventos Externos" },
+          { value: "Divulgação de eventos externos", label: "Divulgação de eventos externos" },
+          { value: "Organizacional", label: "Organizacional" },
+        ]}
+      />
 
-      <FormGroup label="Agenda:">
-        <SelectInput
-          value={agenda}
-          onChange={(e: any) => setAgenda(e.target.value)}
-          options={[
-            { value: "", label: "Selecione uma agenda" },
-            { value: "Eventos Internos", label: "Eventos Internos" },
-            { value: "Eventos Externos", label: "Eventos Externos" },
-            { value: "Divulgação de eventos externos", label: "Divulgação de eventos externos" },
-            { value: "Organizacional", label: "Organizacional" },
-          ]}
-        />
-      </FormGroup>
+      <SendToAction
+        fields={[
+          { name: "titulo", value: titulo },
+          { name: "data", value: data },
+          { name: "hora", value: hora },
+          { name: "duracao", value: duracao },
+          { name: "descricao", value: descricao },
+          { name: "agenda", value: agenda },
+          { name: "from", value: JSON.stringify(userInfo) },
+        ]}
+      />
 
-      <input type="hidden" name="titulo" value={titulo} />
-      <input type="hidden" name="data" value={data} />
-      <input type="hidden" name="hora" value={hora} />
-      <input type="hidden" name="duracao" value={duracao} />
-      <input type="hidden" name="descricao" value={descricao} />
-      <input type="hidden" name="agenda" value={agenda} />
-      <input type="hidden" name="from" value={JSON.stringify(userInfo)} />
-
-      <button
-        type="submit"
-        className={isFormValid ? "button-full" : "button-full button-disabled"}
-        disabled={!isFormValid}
-      >
-        Criar Evento
-      </button>
+      <SubmitButton
+        label="Criar Evento"
+        isEnabled={isFormValid}
+      />
 
       <BackButton />
-    </Form>
+    </Form >
   ) : (
     <Unauthorized pageName="Criar Evento" requiredPermission="Ameciclista" />
   );

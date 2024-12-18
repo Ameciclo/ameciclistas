@@ -8,7 +8,7 @@ interface Props {
   onChange: (value: string) => void;
 }
 
-const FornecedorAutocomplete: React.FC<Props> = ({ fornecedores, value, onChange }) => {
+const SupplierAutocomplete: React.FC<Props> = ({ fornecedores, value, onChange }) => {
   const [suggestions, setSuggestions] = useState<Supplier[]>([]);
 
   const getSuggestions = (inputValue: string) => {
@@ -55,4 +55,4 @@ const FornecedorAutocomplete: React.FC<Props> = ({ fornecedores, value, onChange
   );
 };
 
-export default FornecedorAutocomplete;
+export default SupplierAutocomplete;

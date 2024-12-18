@@ -1,22 +1,20 @@
 import React from "react";
 
-interface TextInputProps {
-  label: string;
+interface DateInputProps {
   value: string | number;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const TextInput: React.FC<TextInputProps> = ({
-  label,
+const DateInput: React.FC<DateInputProps> = ({
   value,
   onChange,
 }) => {
   return (
     <div className="form-group">
-      <label className="form-label">{label}</label>
+      <label className="form-label">Hora: </label>
       <input
         className="form-input"
-        type="text"
+        type="date"
         value={value}
         onChange={onChange}
       />
@@ -24,4 +22,4 @@ const TextInput: React.FC<TextInputProps> = ({
   );
 };
 
-export default TextInput;
+export default DateInput;

@@ -1,6 +1,7 @@
 // components/SolicitarPagamento/FornecedorInput.tsx
 import React from "react";
-import FornecedorAutocomplete from "~/components/Forms/FornecedorAutocomplete";
+import SupplierAutocomplete from "~/components/Forms/SupplierAutocomplete";
+import SendToAction from "../SendToAction";
 
 interface FornecedorInputProps {
   fornecedores: any[];
@@ -16,12 +17,12 @@ const FornecedorInput: React.FC<FornecedorInputProps> = ({
   return (
     <div className="form-group">
       <label className="form-label">Fornecedor:</label>
-      <FornecedorAutocomplete
+      <SupplierAutocomplete
         fornecedores={fornecedores}
         value={fornecedor}
         onChange={setFornecedor}
       />
-      <input type="hidden" name="fornecedor" value={fornecedor} />
+      <SendToAction fields={[{ name: "fornecedor", value: fornecedor }]} />
     </div>
   );
 };

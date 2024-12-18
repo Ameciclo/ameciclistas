@@ -10,6 +10,9 @@ import { BackButton } from "~/components/CommonButtons";
 
 import { action } from "../handlers/actions/adicionar-fornecedor";
 import { loader } from "~/handlers/loaders/adicionar-fornecedor";
+import SendToAction from "~/components/SendToAction";
+import SelectInput from "~/components/Forms/Inputs/SelectInput";
+import FormTitle from "~/components/Forms/FormTitle";
 export { loader, action };
 
 export default function AdicionarFornecedor() {
@@ -28,7 +31,6 @@ export default function AdicionarFornecedor() {
     }
   }, [userInfo]);
 
-  // Person Type
   const [personType, setPersonType] = useState<"fisica" | "juridica">(
     "juridica"
   );
@@ -38,12 +40,10 @@ export default function AdicionarFornecedor() {
   const [idNumber, setIdNumber] = useState("");
   const [fullAddress, setFullAddress] = useState("");
 
-  // Contacts (Common to both types)
   const [contacts, setContacts] = useState<
     Array<{ type: string; value: string }>
   >([{ type: "E-mail", value: "" }]);
 
-  // Payment Methods
   const [paymentMethods, setPaymentMethods] = useState<
     Array<{ type: string; value: string }>
   >([{ type: "PIX", value: "" }]);
@@ -67,7 +67,6 @@ export default function AdicionarFornecedor() {
     setIdNumber(formatted);
   };
 
-  // Handling Phone changes with formatting
   const handlePhoneChange = (index: number, value: string) => {
     const formatted = formatPhone(value);
     const newContacts = [...contacts];
@@ -75,7 +74,6 @@ export default function AdicionarFornecedor() {
     setContacts(newContacts);
   };
 
-  // Handling Email changes with formatting
   const handleEmailChange = (index: number, value: string) => {
     const formatted = formatEmail(value);
     const newContacts = [...contacts];
@@ -101,7 +99,6 @@ export default function AdicionarFornecedor() {
     setContacts(updatedContacts);
   };
 
-  // Handling Payment Methods
   const handleAddPaymentMethod = () => {
     setPaymentMethods([...paymentMethods, { type: "PIX", value: "" }]);
   };
@@ -120,7 +117,6 @@ export default function AdicionarFornecedor() {
     setPaymentMethods(updatedPaymentMethods);
   };
 
-  // Form Validation
   const isFormValid =
     name !== "" &&
     fullName !== "" &&
@@ -131,23 +127,17 @@ export default function AdicionarFornecedor() {
 
   return isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS) ? (
     <Form className="container mx-auto p-4" method="post">
-      <h2 className="text-2xl font-bold text-teal-600">
-        📦 Adicionar Fornecedor
-      </h2>
+      <FormTitle> 📦 Adicionar Fornecedor </FormTitle>
 
-      <div className="form-group mb-4">
-        <label className="font-bold">Tipo de pessoa:</label>
-        <select
-          className="w-full p-2 border border-gray-300 rounded-md"
-          value={personType}
-          onChange={(e) =>
-            setPersonType(e.target.value as "fisica" | "juridica")
-          }
-        >
-          <option value="juridica">Pessoa Jurídica</option>
-          <option value="fisica">Pessoa Física</option>
-        </select>
-      </div>
+      <SelectInput
+        label="Tipo de pessoa: "
+        value={personType}
+        onChange={(e) => setPersonType(e.target.value as "fisica" | "juridica")}
+        options={[
+          { value: "juridica", label: "Pessoa Jurídica" },
+          { value: "fisica", label: "Pessoa Física" },
+        ]}
+      />
 
       <div className="form-group mb-4">
         <label className="font-bold">
@@ -379,17 +369,16 @@ export default function AdicionarFornecedor() {
         </button>
       </div>
 
-      {/* Hidden Inputs */}
-      <input type="hidden" name="personType" value={personType} />
-      <input type="hidden" name="name" value={name} />
-      <input type="hidden" name="fullName" value={fullName} />
-      <input type="hidden" name="idNumber" value={idNumber} />
-      <input type="hidden" name="fullAddress" value={fullAddress} />
-      <input type="hidden" name="contacts" value={JSON.stringify(contacts)} />
-      <input
-        type="hidden"
-        name="paymentMethods"
-        value={JSON.stringify(paymentMethods)}
+      <SendToAction
+        fields={[
+          { name: "personType", value: personType },
+          { name: "name", value: name },
+          { name: "fullName", value: fullName },
+          { name: "idNumber", value: idNumber },
+          { name: "fullAddress", value: fullAddress },
+          { name: "contacts", value: JSON.stringify(contacts) },
+          { name: "paymentMethods", value: JSON.stringify(paymentMethods) },
+        ]}
       />
 
       <button

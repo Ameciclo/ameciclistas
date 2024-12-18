@@ -7,8 +7,7 @@ import { useLoaderData, Form, Link } from "@remix-run/react";
 import ProjectSelect from "~/components/Forms/ProjectSelect";
 import RubricaSelect from "~/components/Forms/RubricaSelect";
 import FornecedorInput from "~/components/Forms/FornecedorInput";
-import DescricaoInput from "~/components/Forms/DescricaoInput";
-import ValorInput from "~/components/Forms/ValorInput";
+import RealValueInput from "~/components/Forms/Inputs/RealValueInput";
 
 // Group utilities and types
 import { UserCategory, UserData } from "../utils/types";
@@ -21,6 +20,8 @@ import { BackButton } from "~/components/CommonButtons";
 
 import { action } from "~/handlers/actions/solicitar-pagamento";
 import { loader } from "~/handlers/loaders/solicitar-pagamento";
+import SendToAction from "~/components/SendToAction";
+import DescriptionInput from "~/components/Forms/Inputs/DescriptionInput";
 export { loader, action };
 
 export default function SolicitarPagamento() {
@@ -70,8 +71,8 @@ export default function SolicitarPagamento() {
   const userJSONStringfyed = userInfo
     ? JSON.stringify(userInfo)
     : JSON.stringify({
-        err: "Informações de usuário do telegram nao encontrado",
-      });
+      err: "Informações de usuário do telegram nao encontrado",
+    });
 
   return isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS) ? (
     <Form method="post" className="container">
@@ -98,20 +99,18 @@ export default function SolicitarPagamento() {
         setFornecedor={setFornecedor}
       />
 
-      <DescricaoInput descricao={descricao} setDescricao={setDescricao} />
+      <DescriptionInput descricao={descricao} setDescricao={setDescricao} />
 
-      <div className="form-group">
-        <label className="form-label">Valor:</label>
-        <ValorInput name="valor" valor={valor} setValor={setValor} />
-      </div>
 
-      <input type="hidden" name="telegramUserInfo" value={userJSONStringfyed} />
-      <input type="hidden" name="project" value={projectJSONStringfyed} />
-      <input type="hidden" name="fornecedor" value={supplierJSONStringfyed} />
-      <input
-        type="hidden"
-        name="fornecedores"
-        value={suppliersJSONStringfyed}
+      <RealValueInput name="valor" valor={valor} setValor={setValor} />
+
+      <SendToAction
+        fields={[
+          { name: "telegramUserInfo", value: userJSONStringfyed },
+          { name: "project", value: projectJSONStringfyed },
+          { name: "fornecedor", value: supplierJSONStringfyed },
+          { name: "fornecedores", value: suppliersJSONStringfyed },
+        ]}
       />
 
       <button
@@ -123,11 +122,10 @@ export default function SolicitarPagamento() {
       </button>
       <Link to="/adicionar-fornecedor">
         <button
-          className={`button-full ${
-            !isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)
-              ? "button-disabled"
-              : ""
-          }`}
+          className={`button-full ${!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)
+            ? "button-disabled"
+            : ""
+            }`}
           disabled={!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)}
         >
           📦 Adicionar Fornecedor

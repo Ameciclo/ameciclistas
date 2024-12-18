@@ -1,27 +1,38 @@
 import React from "react";
 
-interface TextInputProps {
+interface NumberInputProps {
   label: string;
+  type?: string;
   value: string | number;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  min?: string | number;
+  step?: string | number;
+  placeholder?: string;
 }
 
-const TextInput: React.FC<TextInputProps> = ({
+const NumberInput: React.FC<NumberInputProps> = ({
   label,
+  type = "text",
   value,
   onChange,
+  min,
+  step,
+  placeholder,
 }) => {
   return (
     <div className="form-group">
       <label className="form-label">{label}</label>
       <input
         className="form-input"
-        type="text"
+        type={type}
         value={value}
         onChange={onChange}
+        min={min}
+        step={step}
+        placeholder={placeholder}
       />
     </div>
   );
 };
 
-export default TextInput;
+export default NumberInput;
