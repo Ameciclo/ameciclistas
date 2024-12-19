@@ -1,6 +1,5 @@
 import { useParams } from "@remix-run/react";
 import { Link } from "@remix-run/react";
-import { BackButton } from "~/components/CommonButtons";
 
 const messages = {
   "criar-evento": {

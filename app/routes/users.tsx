@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useLoaderData, Form } from "@remix-run/react";
-import { UserCategory } from "~/utils/types";
+import { UserCategory, UserData } from "~/utils/types";
 import { loader } from "~/handlers/loaders/users";
 import { action } from "~/handlers/actions/users-action";
 import SendToAction from "~/components/SendToAction";
 import { BackButton } from "~/components/CommonButtons";
+import { isAuth } from "~/utils/isAuthorized";
+import { getTelegramUsersInfo } from "~/utils/users";
 export { loader, action }
 
 const roles = [
@@ -19,13 +21,26 @@ const UserManagement: React.FC = () => {
     const { usersInfo } = useLoaderData<typeof loader>();
     const [search, setSearch] = useState("");
     const [newRole, setNewRole] = useState("");
+    const [userPermissions, setUserPermissions] = useState([UserCategory.ANY_USER]);
+    const [user, setUser] = useState<UserData | null>(null);
+    
+    useEffect(() => {
+        setUser(() => getTelegramUsersInfo());
+    }, []);
+
+
+    useEffect(() => {
+        if (user?.id && usersInfo[user.id]) {
+            setUserPermissions([usersInfo[user.id].role as any]);
+        }
+    }, [user]);
 
     const filteredUsers = Object.values(usersInfo).filter((user: any) =>
         user.name?.toLowerCase().includes(search.toLowerCase())
     );
 
 
-    return (
+    return isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS) ? (
         <div className="container mx-auto py-8 px-4">
             <h1 className="text-3xl font-bold text-teal-600 text-center">
                 Gerenciamento de Usuários
@@ -91,6 +106,11 @@ const UserManagement: React.FC = () => {
                 <BackButton />
             </div>
         </div>
+    ) : (
+        <Unauthorized
+            pageName="Solicitar Pagamentos"
+            requiredPermission="Coordenador de Projeto"
+        />
     );
 };
 
