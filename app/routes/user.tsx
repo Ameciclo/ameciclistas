@@ -1,5 +1,3 @@
-// app/routes/user.tsx
-
 import { useEffect, useState } from "react";
 import { Form, useLoaderData } from "@remix-run/react";
 import { UserCategory, UserData } from "~/utils/types";
@@ -79,7 +77,11 @@ export default function User() {
         )}
 
 
-        <button type="submit" className="button-full">CADASTRAR</button>
+        {
+          !usersInfo[user?.id as unknown as string] && (
+            <button className="button-full">SOU AMECICLISTA</button>
+          )
+        }
 
         <BackButton />
       </Form>
