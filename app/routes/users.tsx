@@ -7,6 +7,7 @@ import SendToAction from "~/components/SendToAction";
 import { BackButton } from "~/components/CommonButtons";
 import { isAuth } from "~/utils/isAuthorized";
 import { getTelegramUsersInfo } from "~/utils/users";
+import Unauthorized from "~/components/Unauthorized";
 export { loader, action }
 
 const roles = [
