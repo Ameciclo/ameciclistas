@@ -12,7 +12,6 @@ import SendToAction from "~/components/SendToAction";
 export { loader, action };
 
 export default function User() {
-  const [userData, setUserData] = useState<UserData | null>(null);
   const { currentUserCategories, usersInfo } = useLoaderData<typeof loader>();
   const [userPermissions, setUserPermissions] = useState(currentUserCategories);
   const [user, setUser] = useState<UserData | null>(null);
@@ -27,7 +26,7 @@ export default function User() {
     }
   }, [user]);
 
-  useEffect(() => setUserData(() => getTelegramUsersInfo()), []);
+  useEffect(() => setUser(() => getTelegramUsersInfo()), []);
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -35,17 +34,17 @@ export default function User() {
         Dados do Usuário
       </h1>
 
-      {userData ? (
+      {user ? (
         <div className="mt-6 text-center">
-          <h2 className="text-xl font-semibold">Olá, {userData.first_name}!</h2>
+          <h2 className="text-xl font-semibold">Olá, {user.first_name}!</h2>
           <ul className="mt-2">
-            <li>ID: {userData.id}</li>
+            <li>ID: {user.id}</li>
             <li>
-              Nome: {userData.first_name} {userData.last_name || ""}
+              Nome: {user.first_name} {user.last_name || ""}
             </li>
-            <li>Usuário: {userData.username || "N/A"}</li>
-            <li>Código do Idioma: {userData.language_code}</li>
-            <li>Premium: {userData.is_premium ? "Sim" : "Não"}</li>
+            <li>Usuário: {user.username || "N/A"}</li>
+            <li>Código do Idioma: {user.language_code}</li>
+            <li>Premium: {user.is_premium ? "Sim" : "Não"}</li>
             <li>Permissao: {userPermissions}</li>
           </ul>
           <br />
@@ -74,13 +73,13 @@ export default function User() {
         ) : (
           <SendToAction
             fields={[
-              { name: "user", value: JSON.stringify(userData) },
+              { name: "user", value: JSON.stringify(user) },
             ]}
           />
         )}
 
 
-        <button type="submit" className="button-full">SOU AMECICLISTA</button>
+        <button type="submit" className="button-full">CADASTRAR</button>
 
         <BackButton />
       </Form>
