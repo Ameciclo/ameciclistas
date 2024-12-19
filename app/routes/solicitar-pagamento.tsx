@@ -48,7 +48,7 @@ export default function SolicitarPagamento() {
     if (user?.id && usersInfo[user.id]) {
       setUserPermissions([usersInfo[user.id].role as any]);
     }
-  }, [user]);
+  }, [user, usersInfo]);
 
   // Verifica se todos os campos obrigatórios estão preenchidos
   const isFormValid =
@@ -136,8 +136,8 @@ export default function SolicitarPagamento() {
     </Form>
   ) : (
     <Unauthorized
-      pageName="Solicitar Pagamentos"
-      requiredPermission="Coordenador de Projeto"
+      pageName="Gerenciamento de Usuários"
+      requiredPermission="Coordenador da Ameciclo"
     />
   );
 }
