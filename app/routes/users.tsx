@@ -52,38 +52,38 @@ const UserManagement: React.FC = () => {
                     </thead>
                     <tbody>
                         {filteredUsers.map((user: any) => (
-                           <tr key={user.id}>
-                           <td className="border border-gray-300 px-4 py-2">{user.name}</td>
-                           <td className="border border-gray-300 px-4 py-2">
-                             <Form method="post">
-                               <div className="flex justify-between items-center">
-                                 <select
-                                   name="role"
-                                   className="form-select"
-                                   defaultValue={user.role}
-                                   onChange={(e) => setNewRole(e.target.value)}
-                                 >
-                                   {roles.map((role) => (
-                                     <option key={role} value={role}>
-                                       {role}
-                                     </option>
-                                   ))}
-                                 </select>
-                                 <SendToAction
-                                   fields={[
-                                     { name: "user", value: JSON.stringify(user) },
-                                     { name: "role", value: newRole },
-                                   ]}
-                                 />
-                                 <button
-                                   className="ml-1 px-2 py-1 bg-blue-500 text-white rounded text-sm"
-                                 >
-                                   Atualizar
-                                 </button>
-                               </div>
-                             </Form>
-                           </td>
-                         </tr>                         
+                            <tr key={user.id}>
+                                <td className="border border-gray-300 px-4 py-2">{user.name}</td>
+                                <td className="border border-gray-300 px-4 py-2">
+                                    <Form method="post">
+                                        <div className="flex justify-between items-center">
+                                            <select
+                                                name="role"
+                                                className="form-select w-36"
+                                                defaultValue={user.role}
+                                                onChange={(e) => setNewRole(e.target.value)}
+                                            >
+                                                {roles.map((role) => (
+                                                    <option key={role} value={role}>
+                                                        {role}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <SendToAction
+                                                fields={[
+                                                    { name: "user", value: JSON.stringify(user) },
+                                                    { name: "role", value: newRole },
+                                                ]}
+                                            />
+                                            <button
+                                                className="ml-1 px-2 py-1 bg-blue-500 text-white rounded text-sm"
+                                            >
+                                                Atualizar
+                                            </button>
+                                        </div>
+                                    </Form>
+                                </td>
+                            </tr>
                         ))}
                     </tbody>
                 </table>
