@@ -79,7 +79,7 @@ export default function User() {
 
         {
           !usersInfo[user?.id as unknown as string] && (
-            <button className="button-full">SOU AMECICLISTA</button>
+            <button className="button-full">CADASTRAR</button>
           )
         }
 
