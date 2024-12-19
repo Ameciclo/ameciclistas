@@ -19,10 +19,10 @@ const roles = [
 ];
 
 const UserManagement: React.FC = () => {
-    const { usersInfo } = useLoaderData<typeof loader>();
+    const { usersInfo, currentUserCategories } = useLoaderData<typeof loader>();
     const [search, setSearch] = useState("");
     const [newRole, setNewRole] = useState("");
-    const [userPermissions, setUserPermissions] = useState([UserCategory.ANY_USER]);
+    const [userPermissions, setUserPermissions] = useState(currentUserCategories);
     const [user, setUser] = useState<UserData | null>(null);
     
     useEffect(() => {
@@ -41,7 +41,7 @@ const UserManagement: React.FC = () => {
     );
 
 
-    return isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS) ? (
+    return isAuth(userPermissions, UserCategory.AMECICLO_COORDINATORS) ? (
         <div className="container mx-auto py-8 px-4">
             <h1 className="text-3xl font-bold text-teal-600 text-center">
                 Gerenciamento de Usuários
