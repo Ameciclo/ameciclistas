@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { UserCategory, UserData } from "~/utils/types";
 import Unauthorized from "~/components/Unauthorized";
 import { isAuth } from "~/utils/isAuthorized";
-import { getTelegramUserInfo } from "~/utils/users";
+import { getTelegramUsersInfo } from "~/utils/users";
 import { CardList } from "~/components/CardsList";
 import { BackButton } from "~/components/CommonButtons";
 
@@ -12,26 +12,26 @@ import FormTitle from "~/components/Forms/FormTitle";
 export { loader };
 
 export default function GruposTrabalho() {
-  const { userCategoriesObject, currentUserCategories, workgroups } =
+  const { usersInfo, currentUserCategories, workgroups } =
     useLoaderData<LoaderData>();
   const [userPermissions, setUserPermissions] = useState<UserCategory[]>(
     currentUserCategories
   );
-  const [userInfo, setUserInfo] = useState<UserData | null>(null);
+  const [user, setUser] = useState<UserData | null>(null);
 
   // Obter informações do usuário pelo Telegram
   useEffect(() => {
-    setUserInfo(() => getTelegramUserInfo());
+    setUser(() => getTelegramUsersInfo());
   }, []);
 
   // Atualiza permissões com base no usuário
   useEffect(() => {
-    if (userInfo?.id && userCategoriesObject[userInfo.id]) {
+    if (user?.id && usersInfo[user.id]) {
       setUserPermissions([
-        userCategoriesObject[userInfo.id] as unknown as UserCategory,
+        usersInfo[user.id] as unknown as UserCategory,
       ]);
     }
-  }, [userInfo, userCategoriesObject]);
+  }, [user, usersInfo]);
 
   // Mapear cores para as categorias
   const categoryColors: Record<string, string> = {

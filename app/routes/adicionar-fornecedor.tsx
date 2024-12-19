@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Form, Link, useLoaderData } from "@remix-run/react";
 import { isAuth } from "~/utils/isAuthorized";
-import { getTelegramUserInfo } from "~/utils/users";
+import { getTelegramUsersInfo } from "~/utils/users";
 import { UserCategory, UserData } from "~/utils/types";
 import Unauthorized from "~/components/Unauthorized";
 import { formatEmail, formatIdNumber, formatPhone } from "~/utils/format";
@@ -16,20 +16,20 @@ import FormTitle from "~/components/Forms/FormTitle";
 export { loader, action };
 
 export default function AdicionarFornecedor() {
-  const { userCategoriesObject, currentUserCategories } =
+  const { usersInfo, currentUserCategories } =
     useLoaderData<typeof loader>();
   const [userPermissions, setUserPermissions] = useState(currentUserCategories);
-  const [userInfo, setUserInfo] = useState<UserData | null>({} as UserData);
+  const [user, setUser] = useState<UserData | null>({} as UserData);
 
   useEffect(() => {
-    setUserInfo(getTelegramUserInfo());
+    setUser(getTelegramUsersInfo());
   }, []);
 
   useEffect(() => {
-    if (userInfo?.id && userCategoriesObject[userInfo.id]) {
-      setUserPermissions([userCategoriesObject[userInfo.id] as any]);
+    if (user?.id && usersInfo[user.id]) {
+      setUserPermissions([usersInfo[user.id].role as any]);
     }
-  }, [userInfo]);
+  }, [user]);
 
   const [personType, setPersonType] = useState<"fisica" | "juridica">(
     "juridica"

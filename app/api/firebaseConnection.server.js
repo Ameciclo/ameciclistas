@@ -40,6 +40,7 @@ export const getCategories = async () => {
   try {
     const userRef = db.ref("telegram_users");
     const snapshot = await userRef.once("value");
+    console.log(snapshot.val())
 
     if (snapshot.exists()) {
       return snapshot.val();
@@ -106,12 +107,12 @@ export async function saveCalendarEvent(eventInfo) {
   });
 }
 
-export async function createUser(userInfo, typeUser) {
+export async function createUser(usersInfo) {
   return new Promise((resolve, reject) => {
     const ref = db.ref("telegram_users");
 
     ref
-      .update({ [userInfo?.id]: typeUser })
+      .update({ [usersInfo?.id]: "ANY_USER" })
       .then((snapshot) => {
         resolve(snapshot);
       })
@@ -121,12 +122,43 @@ export async function createUser(userInfo, typeUser) {
   });
 }
 
-export async function createUser2(userInfo) {
+export async function createFullUser(usersInfo) {
   return new Promise((resolve, reject) => {
-    const ref = db.ref("users");
+    const ref = db.ref("telegram_users");
+
+    const { id, name } = usersInfo;
+    const user = {
+      id,
+      name,
+      role: "ANY_USER",
+    };
 
     ref
-      .update(userInfo)
+      .child(user.id)
+      .update(user)
+      .then((snapshot) => {
+        resolve(snapshot);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export async function updateFullUser(usersInfo, role) {
+  return new Promise((resolve, reject) => {
+    const ref = db.ref("telegram_users");
+
+    const { id, name } = usersInfo;
+    const user = {
+      id,
+      name,
+      role,
+    };
+
+    ref
+      .child(user.id)
+      .update(user)
       .then((snapshot) => {
         resolve(snapshot);
       })

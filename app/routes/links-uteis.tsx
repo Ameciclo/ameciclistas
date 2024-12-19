@@ -3,23 +3,23 @@ import { useEffect, useState } from "react";
 import { BackButton, ButtonsListWithPermissions } from "~/components/CommonButtons";
 import { UserCategory, UserData } from "~/utils/types";
 import { loader } from "./_index";
-import { getTelegramUserInfo } from "~/utils/users";
+import { getTelegramUsersInfo } from "~/utils/users";
 export { loader };
 
 export default function LinksUteis() {
-  const { currentUserCategories, userCategoriesObject } = useLoaderData<typeof loader>();
+  const { currentUserCategories, usersInfo } = useLoaderData<typeof loader>();
   const [userPermissions, setUserPermissions] = useState(currentUserCategories);
-  const [userInfo, setUserInfo] = useState<UserData | null>(null);
+  const [user, setUser] = useState<UserData | null>(null);
 
   useEffect(() => {
-    setUserInfo(() => getTelegramUserInfo());
+    setUser(() => getTelegramUsersInfo());
   }, []);
 
   useEffect(() => {
-    if (userInfo?.id && userCategoriesObject?.[userInfo.id]) {
-      setUserPermissions([userCategoriesObject[userInfo.id] as UserCategory]);
+    if (user?.id && usersInfo?.[user.id]) {
+      setUserPermissions([usersInfo[user.id].role as UserCategory]);
     }
-  }, [userInfo, userCategoriesObject]);
+  }, [user, usersInfo]);
 
   const links = [
     {

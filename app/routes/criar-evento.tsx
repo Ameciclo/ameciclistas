@@ -1,6 +1,6 @@
 import { Form, useLoaderData } from "@remix-run/react";
 import { useState, useEffect } from "react";
-import { getTelegramUserInfo } from "../utils/users";
+import { getTelegramUsersInfo } from "../utils/users";
 import { UserCategory, UserData } from "~/utils/types";
 import { isAuth } from "~/utils/isAuthorized";
 import Unauthorized from "~/components/Unauthorized";
@@ -19,10 +19,10 @@ import SubmitButton from "~/components/SubmitButton";
 import FormTitle from "~/components/Forms/FormTitle";
 
 export default function CriarEvento() {
-  const { userCategoriesObject, currentUserCategories } =
+  const { usersInfo, currentUserCategories } =
     useLoaderData<typeof loader>();
   const [userPermissions, setUserPermissions] = useState(currentUserCategories);
-  const [userInfo, setUserInfo] = useState<UserData | null>({} as UserData);
+  const [user, setUser] = useState<UserData | null>({} as UserData);
   const [titulo, setTitulo] = useState("");
   const [data, setData] = useState<string>("");
   const [hora, setHora] = useState<string>("");
@@ -30,13 +30,13 @@ export default function CriarEvento() {
   const [descricao, setDescricao] = useState("");
   const [agenda, setAgenda] = useState("");
 
-  useEffect(() => setUserInfo(() => getTelegramUserInfo()), []);
+  useEffect(() => setUser(() => getTelegramUsersInfo()), []);
 
   useEffect(() => {
-    if (userInfo?.id && userCategoriesObject[userInfo.id]) {
-      setUserPermissions([userCategoriesObject[userInfo.id] as any]);
+    if (user?.id && usersInfo[user.id]) {
+      setUserPermissions([usersInfo[user.id].role as any]);
     }
-  }, [userInfo]);
+  }, [user]);
 
   const isFormValid =
     titulo !== "" &&
@@ -94,7 +94,7 @@ export default function CriarEvento() {
           { name: "duracao", value: duracao },
           { name: "descricao", value: descricao },
           { name: "agenda", value: agenda },
-          { name: "from", value: JSON.stringify(userInfo) },
+          { name: "from", value: JSON.stringify(user) },
         ]}
       />
 

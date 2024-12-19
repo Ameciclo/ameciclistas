@@ -22,7 +22,7 @@ export async function loader() {
       type: supplier.type|| "",
     })
   );
-  const userCategoriesObject = await getCategories();
+  const usersInfo = await getCategories();
   const currentUserCategories: UserCategory[] = [
     process.env.NODE_ENV === "development"
       ? UserCategory.DEVELOPMENT
@@ -33,6 +33,6 @@ export async function loader() {
     projects,
     suppliers,
     currentUserCategories,
-    userCategoriesObject,
+    usersInfo,
   });
 }

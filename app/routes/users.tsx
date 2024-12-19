@@ -1,49 +1,28 @@
 import React, { useState } from "react";
+import { useLoaderData, Form } from "@remix-run/react";
 import { UserCategory } from "~/utils/types";
+import { loader } from "~/handlers/loaders/users";
+import { action } from "~/handlers/actions/users-action";
+import SendToAction from "~/components/SendToAction";
+export { loader, action }
 
 const roles = [
     UserCategory.AMECICLISTAS,
     UserCategory.PROJECT_COORDINATORS,
     UserCategory.AMECICLO_COORDINATORS,
     UserCategory.ANY_USER,
-];
-
-const usersExemple = [
-    {
-        id: 1,
-        name: "João Silva",
-        role: "Administrador",
-    },
-    {
-        id: 2,
-        name: "Maria Oliveira",
-        role: "Editor",
-    },
-    {
-        id: 3,
-        name: "Pedro Souza",
-        role: "Contribuidor",
-    },
-    {
-        id: 4,
-        name: "Ana Costa",
-        role: "Leitor",
-    },
-    {
-        id: 5,
-        name: "Carlos Almeida",
-        role: "Moderador",
-    },
+    UserCategory.DEVELOPMENT,
 ];
 
 const UserManagement: React.FC = () => {
-    const [users, _setUsers] = useState(usersExemple);
-    const [search, setSearch] = useState(""); // Estado para armazenar a pesquisa
+    const { usersInfo } = useLoaderData<typeof loader>();
+    const [search, setSearch] = useState("");
+    const [newRole, setNewRole] = useState("");
 
-    // Função de filtro para o nome do usuário
-    const filteredUsers = users.filter((user) =>
-        user.name.toLowerCase().includes(search.toLowerCase())
+    const filteredUsers = Object.values(usersInfo).filter((user: any) =>
+        user.name?.toLowerCase().includes(search.toLowerCase())
     );
+
 
     return (
         <div className="container mx-auto py-8 px-4">
@@ -71,17 +50,36 @@ const UserManagement: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredUsers.map((user) => (
+                        {filteredUsers.map((user: any) => (
                             <tr key={user.id}>
                                 <td className="border border-gray-300 px-4 py-2">{user.name}</td>
                                 <td className="border border-gray-300 px-4 py-2">
-                                    <select className="form-select" value={user.role}>
-                                        {roles.map((role) => (
-                                            <option key={role} value={role}>
-                                                {role}
-                                            </option>
-                                        ))}
-                                    </select>
+                                    <Form method="post">
+                                        <select
+                                            name="role" // Esse name garante que o valor do select seja enviado no POST
+                                            className="form-select"
+                                            defaultValue={user.role} // Define o valor inicial com o papel atual do usuário
+                                            onChange={(e) => setNewRole(e.target.value)}
+                                        >
+                                            {roles.map((role) => (
+                                                <option key={role} value={role}>
+                                                    {role}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <SendToAction
+                                            fields={[
+                                                { name: "user", value: JSON.stringify(user) },
+                                                { name: "role", value: newRole },
+                                            ]}
+                                        />
+                                        <button
+                                            className="ml-2 px-4 py-2 bg-blue-500 text-white rounded"
+                                        >
+                                            Atualizar
+                                        </button>
+                                    </Form>
+
                                 </td>
                             </tr>
                         ))}

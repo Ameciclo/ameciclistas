@@ -13,7 +13,7 @@ import RealValueInput from "~/components/Forms/Inputs/RealValueInput";
 import { UserCategory, UserData } from "../utils/types";
 import { Project } from "~/utils/types";
 
-import { getTelegramUserInfo } from "~/utils/users";
+import { getTelegramUsersInfo } from "~/utils/users";
 import { isAuth } from "~/utils/isAuthorized";
 import Unauthorized from "~/components/Unauthorized";
 import { BackButton } from "~/components/CommonButtons";
@@ -26,7 +26,7 @@ import FormTitle from "~/components/Forms/FormTitle";
 export { loader, action };
 
 export default function SolicitarPagamento() {
-  const { projects, suppliers, currentUserCategories, userCategoriesObject } =
+  const { projects, suppliers, currentUserCategories, usersInfo } =
     useLoaderData<typeof loader>();
   const [userPermissions, setUserPermissions] = useState(currentUserCategories);
   const [projetoSelecionado, setProjetoSelecionado] = useState<Project | null>(
@@ -38,17 +38,17 @@ export default function SolicitarPagamento() {
   const [descricao, setDescricao] = useState("");
   const [valor, setValor] = useState("0");
   const [fornecedor, setFornecedor] = useState("");
-  const [userInfo, setUserInfo] = useState<UserData | null>(null);
+  const [user, setUser] = useState<UserData | null>(null);
 
   useEffect(() => {
-    setUserInfo(() => getTelegramUserInfo());
+    setUser(() => getTelegramUsersInfo());
   }, []);
 
   useEffect(() => {
-    if (userInfo?.id && userCategoriesObject[userInfo.id]) {
-      setUserPermissions([userCategoriesObject[userInfo.id] as any]);
+    if (user?.id && usersInfo[user.id]) {
+      setUserPermissions([usersInfo[user.id].role as any]);
     }
-  }, [userInfo]);
+  }, [user]);
 
   // Verifica se todos os campos obrigatórios estão preenchidos
   const isFormValid =
@@ -69,8 +69,8 @@ export default function SolicitarPagamento() {
   const supplierJSONStringfyed = fornecedorSelecionado
     ? JSON.stringify(fornecedorSelecionado)
     : "";
-  const userJSONStringfyed = userInfo
-    ? JSON.stringify(userInfo)
+  const userJSONStringfyed = user
+    ? JSON.stringify(user)
     : JSON.stringify({
       err: "Informações de usuário do telegram nao encontrado",
     });
@@ -107,7 +107,7 @@ export default function SolicitarPagamento() {
 
       <SendToAction
         fields={[
-          { name: "telegramUserInfo", value: userJSONStringfyed },
+          { name: "telegramusersInfo", value: userJSONStringfyed },
           { name: "project", value: projectJSONStringfyed },
           { name: "fornecedor", value: supplierJSONStringfyed },
           { name: "fornecedores", value: suppliersJSONStringfyed },

@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { Form, useLoaderData } from "@remix-run/react";
-import { UserData } from "~/utils/types";
-import { getTelegramUserInfo } from "~/utils/users";
+import { UserCategory, UserData } from "~/utils/types";
+import { getTelegramUsersInfo } from "~/utils/users";
 import { BackButton } from "~/components/CommonButtons";
 
 import { action } from "~/handlers/actions/user-action";
@@ -13,21 +13,21 @@ export { loader, action };
 
 export default function User() {
   const [userData, setUserData] = useState<UserData | null>(null);
-  const { currentUserCategories, userCategoriesObject } = useLoaderData<typeof loader>();
+  const { currentUserCategories, usersInfo } = useLoaderData<typeof loader>();
   const [userPermissions, setUserPermissions] = useState(currentUserCategories);
-  const [userInfo, setUserInfo] = useState<UserData | null>(null);
+  const [user, setUser] = useState<UserData | null>(null);
 
   useEffect(() => {
-    setUserInfo(() => getTelegramUserInfo());
+    setUser(() => getTelegramUsersInfo());
   }, []);
 
   useEffect(() => {
-    if (userInfo?.id && userCategoriesObject[userInfo.id]) {
-      setUserPermissions([userCategoriesObject[userInfo.id] as any]);
+    if (user?.id && usersInfo[user.id]) {
+      setUserPermissions([usersInfo[user.id].role as any]);
     }
-  }, [userInfo]);
+  }, [user]);
 
-  useEffect(() => setUserData(() => getTelegramUserInfo()), []);
+  useEffect(() => setUserData(() => getTelegramUsersInfo()), []);
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -62,17 +62,26 @@ export default function User() {
       )}
 
       <Form method="post" className="container">
-        <SendToAction
-          fields={[
-            { name: "user", value: JSON.stringify(userData) },
-          ]}
-        />
-        
-        {
-          !userCategoriesObject[userData?.id as unknown as string] && (
-            <button className="button-full">SOU AMECICLISTA</button>
-          )
-        }
+        {process.env.NODE_ENV === "development" ? (
+          <SendToAction
+            fields={[
+              {
+                name: "user",
+                value: JSON.stringify({ id: "123", name: "Dev User", role: UserCategory.ANY_USER }),
+              },
+            ]}
+          />
+        ) : (
+          <SendToAction
+            fields={[
+              { name: "user", value: JSON.stringify(userData) },
+            ]}
+          />
+        )}
+
+
+        <button type="submit" className="button-full">SOU AMECICLISTA</button>
+
         <BackButton />
       </Form>
     </div>
