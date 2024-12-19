@@ -24,7 +24,7 @@ const UserManagement: React.FC = () => {
     const [newRole, setNewRole] = useState("");
     const [userPermissions, setUserPermissions] = useState(currentUserCategories);
     const [user, setUser] = useState<UserData | null>(null);
-    
+
     useEffect(() => {
         setUser(() => getTelegramUsersInfo());
     }, []);
@@ -109,8 +109,8 @@ const UserManagement: React.FC = () => {
         </div>
     ) : (
         <Unauthorized
-            pageName="Solicitar Pagamentos"
-            requiredPermission="Coordenador de Projeto"
+            pageName="Gerenciamento de Usuários"
+            requiredPermission="Coordenador da Ameciclo"
         />
     );
 };
