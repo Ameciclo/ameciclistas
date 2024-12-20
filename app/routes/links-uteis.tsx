@@ -70,7 +70,32 @@ export default function LinksUteis() {
       icon: "🎥",
       requiredPermission: UserCategory.AMECICLISTAS, // Coordenadores de projeto
     },
+    {
+      to: "http://internos.ameciclo.org/",
+      label: "Eventos Internos",
+      icon: "📅",
+      requiredPermission: UserCategory.ANY_USER, // Sem restrição
+    },
+    {
+      to: "http://externos.ameciclo.org/",
+      label: "Eventos Externos",
+      icon: "🌍",
+      requiredPermission: UserCategory.ANY_USER, // Sem restrição
+    },
+    {
+      to: "http://organizacional.ameciclo.org/",
+      label: "Organizacional",
+      icon: "📋",
+      requiredPermission: UserCategory.AMECICLISTAS, // Apenas para membros
+    },
+    {
+      to: "http://divulgacao.ameciclo.org/",
+      label: "Divulgação de eventos externos",
+      icon: "📢",
+      requiredPermission: UserCategory.ANY_USER, // Sem restrição
+    },
   ];
+  
 
   return (
     <div className="container mx-auto p-4 flex flex-col">
