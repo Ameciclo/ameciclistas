@@ -7,14 +7,15 @@ export const action: ActionFunction = async ({ request }) => {
 
   const user = {
     id: JSON.parse(formData.get("user") as string).id,
-    name: `${JSON.parse(formData.get("user") as string).first_name} ${JSON.parse(formData.get("user") as string).last_name || ""}`,
+    name: `${JSON.parse(formData.get("user") as string).first_name} ${
+      JSON.parse(formData.get("user") as string).last_name || ""
+    }`,
     role: UserCategory.ANY_USER,
-  }
+    telegram_user: JSON.parse(formData.get("user") as string),
+  };
 
   try {
-    await createFullUser(
-      user
-    );
+    await createFullUser(user);
   } catch (error) {
     console.log(error);
   }
