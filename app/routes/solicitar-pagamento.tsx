@@ -42,7 +42,7 @@ export default function SolicitarPagamento() {
 
   useEffect(() => {
     setUser(() => getTelegramUsersInfo());
-  }, []);
+  }, [usersInfo]);
 
   useEffect(() => {
     if (user?.id && usersInfo[user.id]) {
@@ -72,8 +72,8 @@ export default function SolicitarPagamento() {
   const userJSONStringfyed = user
     ? JSON.stringify(user)
     : JSON.stringify({
-      err: "Informações de usuário do telegram nao encontrado",
-    });
+        err: "Informações de usuário do telegram nao encontrado",
+      });
 
   return isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS) ? (
     <Form method="post" className="container">
@@ -102,7 +102,6 @@ export default function SolicitarPagamento() {
 
       <DescriptionInput descricao={descricao} setDescricao={setDescricao} />
 
-
       <RealValueInput name="valor" valor={valor} setValor={setValor} />
 
       <SendToAction
@@ -123,10 +122,11 @@ export default function SolicitarPagamento() {
       </button>
       <Link to="/adicionar-fornecedor">
         <button
-          className={`button-full ${!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)
-            ? "button-disabled"
-            : ""
-            }`}
+          className={`button-full ${
+            !isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)
+              ? "button-disabled"
+              : ""
+          }`}
           disabled={!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)}
         >
           📦 Adicionar Fornecedor
