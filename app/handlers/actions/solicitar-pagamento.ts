@@ -16,7 +16,7 @@ const createPaymentRequest = (formData: FormData) => {
     from_chat_id: 0,
     group_message_id: 0,
     invoice_url: "",
-    from: JSON.parse(formData.get("telegramUserInfo") as string),
+    from: JSON.parse(formData.get("telegramusersInfo") as string),
     supplier: JSON.parse(
       formData.get("fornecedores") as string
     ).find((s: any) => s.name === formData.get("fornecedor")),
