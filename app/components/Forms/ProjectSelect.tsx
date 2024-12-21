@@ -31,11 +31,15 @@ const ProjectSelect: React.FC<ProjectSelectProps> = ({
         }}
       >
         <option value="">Selecione um projeto</option>
-        {projetos.map((projeto, index) => (
-          <option key={index} value={projeto.spreadsheet_id}>
-            {projeto.name}
-          </option>
-        ))}
+        {
+          projetos
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .map((projeto, index) => (
+              <option key={index} value={projeto.spreadsheet_id}>
+                {projeto.name}
+              </option>
+            ))
+        }
       </select>
     </div>
   );

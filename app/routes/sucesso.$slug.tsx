@@ -1,7 +1,5 @@
 import { useParams } from "@remix-run/react";
 import { Link } from "@remix-run/react";
-import { messaging } from "firebase-admin";
-import { BackButton } from "~/components/CommonButtons";
 
 const messages = {
   "criar-evento": {
@@ -52,7 +50,6 @@ function SuccessPage({ title, message, actions }: SuccessPageProps) {
             <button className="button-full">{action.label}</button>
           </Link>
         ))}
-        <BackButton />
       </div>
     </div>
   );

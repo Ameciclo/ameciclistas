@@ -1,14 +1,19 @@
 import { redirect, ActionFunction } from "@remix-run/node";
-import { createUser } from "~/api/firebaseConnection.server";
+import { createFullUser } from "~/api/firebaseConnection.server";
+import { UserCategory } from "~/utils/types";
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
-  const actionType = formData.get("actionType"); // Identifica o tipo de ação
+
+  const user = {
+    id: JSON.parse(formData.get("user") as string).id,
+    name: `${JSON.parse(formData.get("user") as string).first_name} ${JSON.parse(formData.get("user") as string).last_name || ""}`,
+    role: UserCategory.ANY_USER,
+  }
 
   try {
-    await createUser(
-      JSON.parse(formData.get("user") as string),
-      "AMECICLISTAS"
+    await createFullUser(
+      user
     );
   } catch (error) {
     console.log(error);

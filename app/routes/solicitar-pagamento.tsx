@@ -7,24 +7,26 @@ import { useLoaderData, Form, Link } from "@remix-run/react";
 import ProjectSelect from "~/components/Forms/ProjectSelect";
 import RubricaSelect from "~/components/Forms/RubricaSelect";
 import FornecedorInput from "~/components/Forms/FornecedorInput";
-import DescricaoInput from "~/components/Forms/DescricaoInput";
-import ValorInput from "~/components/Forms/ValorInput";
+import RealValueInput from "~/components/Forms/Inputs/RealValueInput";
 
 // Group utilities and types
 import { UserCategory, UserData } from "../utils/types";
 import { Project } from "~/utils/types";
 
-import { getTelegramUserInfo } from "~/utils/users";
+import { getTelegramUsersInfo } from "~/utils/users";
 import { isAuth } from "~/utils/isAuthorized";
 import Unauthorized from "~/components/Unauthorized";
 import { BackButton } from "~/components/CommonButtons";
 
 import { action } from "~/handlers/actions/solicitar-pagamento";
 import { loader } from "~/handlers/loaders/solicitar-pagamento";
+import SendToAction from "~/components/SendToAction";
+import DescriptionInput from "~/components/Forms/Inputs/DescriptionInput";
+import FormTitle from "~/components/Forms/FormTitle";
 export { loader, action };
 
 export default function SolicitarPagamento() {
-  const { projects, suppliers, currentUserCategories, userCategoriesObject } =
+  const { projects, suppliers, currentUserCategories, usersInfo } =
     useLoaderData<typeof loader>();
   const [userPermissions, setUserPermissions] = useState(currentUserCategories);
   const [projetoSelecionado, setProjetoSelecionado] = useState<Project | null>(
@@ -36,17 +38,17 @@ export default function SolicitarPagamento() {
   const [descricao, setDescricao] = useState("");
   const [valor, setValor] = useState("0");
   const [fornecedor, setFornecedor] = useState("");
-  const [userInfo, setUserInfo] = useState<UserData | null>(null);
+  const [user, setUser] = useState<UserData | null>(null);
 
   useEffect(() => {
-    setUserInfo(() => getTelegramUserInfo());
+    setUser(() => getTelegramUsersInfo());
   }, []);
 
   useEffect(() => {
-    if (userInfo?.id && userCategoriesObject[userInfo.id]) {
-      setUserPermissions([userCategoriesObject[userInfo.id] as any]);
+    if (user?.id && usersInfo[user.id]) {
+      setUserPermissions([usersInfo[user.id].role as any]);
     }
-  }, [userInfo]);
+  }, [user]);
 
   // Verifica se todos os campos obrigatórios estão preenchidos
   const isFormValid =
@@ -67,15 +69,15 @@ export default function SolicitarPagamento() {
   const supplierJSONStringfyed = fornecedorSelecionado
     ? JSON.stringify(fornecedorSelecionado)
     : "";
-  const userJSONStringfyed = userInfo
-    ? JSON.stringify(userInfo)
+  const userJSONStringfyed = user
+    ? JSON.stringify(user)
     : JSON.stringify({
-        err: "Informações de usuário do telegram nao encontrado",
-      });
+      err: "Informações de usuário do telegram nao encontrado",
+    });
 
   return isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS) ? (
     <Form method="post" className="container">
-      <h2 className="text-primary">💰 Solicitar Pagamento</h2>
+      <FormTitle>💰 Solicitar Pagamento</FormTitle>
 
       <ProjectSelect
         projetos={projects}
@@ -98,21 +100,18 @@ export default function SolicitarPagamento() {
         setFornecedor={setFornecedor}
       />
 
-      <DescricaoInput descricao={descricao} setDescricao={setDescricao} />
+      <DescriptionInput descricao={descricao} setDescricao={setDescricao} />
 
-      <div className="form-group">
-        <label className="form-label">Valor:</label>
-        <ValorInput name="valor" valor={valor} setValor={setValor} />
-      </div>
 
-      <input type="hidden" name="actionType" value="solicitarPagamento" />
-      <input type="hidden" name="telegramUserInfo" value={userJSONStringfyed} />
-      <input type="hidden" name="project" value={projectJSONStringfyed} />
-      <input type="hidden" name="fornecedor" value={supplierJSONStringfyed} />
-      <input
-        type="hidden"
-        name="fornecedores"
-        value={suppliersJSONStringfyed}
+      <RealValueInput name="valor" valor={valor} setValor={setValor} />
+
+      <SendToAction
+        fields={[
+          { name: "telegramusersInfo", value: userJSONStringfyed },
+          { name: "project", value: projectJSONStringfyed },
+          { name: "fornecedor", value: supplierJSONStringfyed },
+          { name: "fornecedores", value: suppliersJSONStringfyed },
+        ]}
       />
 
       <button
@@ -124,11 +123,10 @@ export default function SolicitarPagamento() {
       </button>
       <Link to="/adicionar-fornecedor">
         <button
-          className={`button-full ${
-            !isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)
-              ? "button-disabled"
-              : ""
-          }`}
+          className={`button-full ${!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)
+            ? "button-disabled"
+            : ""
+            }`}
           disabled={!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)}
         >
           📦 Adicionar Fornecedor

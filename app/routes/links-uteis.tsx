@@ -1,8 +1,25 @@
+import { useLoaderData } from "@remix-run/react";
+import { useEffect, useState } from "react";
 import { BackButton, ButtonsListWithPermissions } from "~/components/CommonButtons";
-import { UserCategory } from "~/utils/types";
+import { UserCategory, UserData } from "~/utils/types";
+import { loader } from "./_index";
+import { getTelegramUsersInfo } from "~/utils/users";
+export { loader };
 
 export default function LinksUteis() {
-  const userPermissions = [UserCategory.ANY_USER]; // Exemplo: permissões do usuário atual
+  const { currentUserCategories, usersInfo } = useLoaderData<typeof loader>();
+  const [userPermissions, setUserPermissions] = useState(currentUserCategories);
+  const [user, setUser] = useState<UserData | null>(null);
+
+  useEffect(() => {
+    setUser(() => getTelegramUsersInfo());
+  }, []);
+
+  useEffect(() => {
+    if (user?.id && usersInfo?.[user.id]) {
+      setUserPermissions([usersInfo[user.id].role as UserCategory]);
+    }
+  }, [user, usersInfo]);
 
   const links = [
     {
@@ -53,7 +70,32 @@ export default function LinksUteis() {
       icon: "🎥",
       requiredPermission: UserCategory.AMECICLISTAS, // Coordenadores de projeto
     },
+    {
+      to: "http://internos.ameciclo.org/",
+      label: "Eventos Internos",
+      icon: "📅",
+      requiredPermission: UserCategory.ANY_USER, // Sem restrição
+    },
+    {
+      to: "http://externos.ameciclo.org/",
+      label: "Eventos Externos",
+      icon: "🌍",
+      requiredPermission: UserCategory.ANY_USER, // Sem restrição
+    },
+    {
+      to: "http://organizacional.ameciclo.org/",
+      label: "Organizacional",
+      icon: "📋",
+      requiredPermission: UserCategory.AMECICLISTAS, // Apenas para membros
+    },
+    {
+      to: "http://divulgacao.ameciclo.org/",
+      label: "Divulgação de eventos externos",
+      icon: "📢",
+      requiredPermission: UserCategory.ANY_USER, // Sem restrição
+    },
   ];
+  
 
   return (
     <div className="container mx-auto p-4 flex flex-col">
@@ -63,7 +105,7 @@ export default function LinksUteis() {
 
       <ButtonsListWithPermissions
         links={links}
-        userPermissions={userPermissions}
+        userPermissions={userPermissions || [UserCategory.ANY_USER]}
       />
 
       <br />

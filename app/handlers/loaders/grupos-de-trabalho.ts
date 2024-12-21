@@ -3,13 +3,13 @@ import { TelegramUser, UserCategory, Workgroup } from "~/utils/types";
 import type { LoaderFunction } from "@remix-run/node";
 
 export type LoaderData = {
-  userCategoriesObject: Record<string, TelegramUser>;
+  usersInfo: Record<string, TelegramUser>;
   currentUserCategories: UserCategory[];
   workgroups: Workgroup[];
 };
 
 export const loader: LoaderFunction = async () => {
-  const userCategoriesObject = {}; // Substitua com a lógica real
+  const usersInfo = {}; // Substitua com a lógica real
   const currentUserCategories: UserCategory[] = [
     process.env.NODE_ENV === "development"
       ? UserCategory.DEVELOPMENT
@@ -19,7 +19,7 @@ export const loader: LoaderFunction = async () => {
   const workgroups: Workgroup[] = await getWorkgroups();
 
   return {
-    userCategoriesObject,
+    usersInfo,
     currentUserCategories,
     workgroups,
   };

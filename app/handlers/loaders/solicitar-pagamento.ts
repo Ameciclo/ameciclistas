@@ -5,23 +5,24 @@ import {
   getSuppliers,
   getCategories,
 } from "~/api/firebaseConnection.server";
-import { UserCategory } from "~/utils/types";
+import { Project, Supplier, UserCategory } from "~/utils/types";
 
 export async function loader() {
-  const projects = Object.values(await getProjects());
-  const suppliers = Object.values(await getSuppliers()).map(
+  const projects: Project[] = Object.values(await getProjects());
+  let suppliers: Supplier[] = await getSuppliers()
+  suppliers = Object.values(suppliers).map(
     (supplier: any) => ({
       id: supplier.id || "",
-      nome: supplier.name || "",
-      razaoSocial: supplier.razaoSocial || "",
-      cpfCnpj: supplier.cpfCnpj || "",
-      email: supplier.email || "",
-      telefone: supplier.telefone || "",
-      chavePix: supplier.chavePix || "",
-      tipoChavePix: supplier.tipoChavePix || "",
+      id_number: supplier.id_number || "",
+      name: supplier.name || "",
+      nickname: supplier.nickname || "",
+      address: supplier.address || "",
+      contacts: supplier.contacts || [],
+      payment_methods: supplier.payment_methods || [],
+      type: supplier.type|| "",
     })
   );
-  const userCategoriesObject = await getCategories();
+  const usersInfo = await getCategories();
   const currentUserCategories: UserCategory[] = [
     process.env.NODE_ENV === "development"
       ? UserCategory.DEVELOPMENT
@@ -32,6 +33,6 @@ export async function loader() {
     projects,
     suppliers,
     currentUserCategories,
-    userCategoriesObject,
+    usersInfo,
   });
 }

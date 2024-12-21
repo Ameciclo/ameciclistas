@@ -9,6 +9,7 @@ interface ButtonItem {
   label: string;
   icon?: string;
   requiredPermission?: UserCategory; // Torna o campo opcional
+  hide?: boolean;
 }
 
 // Interface para os props
@@ -23,28 +24,53 @@ export const ButtonsListWithPermissions: React.FC<ButtonListProps> = ({
 }) => {
   return (
     <div className="mt-6">
-      {links.map(({ to, label, icon, requiredPermission }, index) => (
-        <Link key={index} to={to}>
-          <button
-            className={`button-full ${
-              !isAuth(
+      {links.map(({ to, label, icon, requiredPermission, hide = false }, index) =>
+        !hide ? (
+          <Link key={index} to={to}>
+            <button
+              className={`button-full ${!isAuth(
                 userPermissions,
                 requiredPermission || UserCategory.ANY_USER
               )
-                ? "button-disabled"
-                : ""
-            }`}
-            disabled={
-              !isAuth(
-                userPermissions,
-                requiredPermission || UserCategory.ANY_USER
-              )
-            }
-          >
-            {icon} {label}
-          </button>
-        </Link>
-      ))}
+                  ? "button-disabled"
+                  : ""
+                }`}
+              disabled={
+                !isAuth(
+                  userPermissions,
+                  requiredPermission || UserCategory.ANY_USER
+                )
+              }
+            >
+              {icon} {label}
+            </button>
+          </Link>
+        ) : (
+          isAuth(
+            userPermissions,
+            requiredPermission || UserCategory.ANY_USER
+          ) &&
+          (
+            <Link key={index} to={to}>
+              <button
+                className={`button-full ${!isAuth(
+                  userPermissions,
+                  requiredPermission || UserCategory.ANY_USER
+                )
+                    ? "button-disabled"
+                    : ""
+                  }`}
+                disabled={
+                  !isAuth(
+                    userPermissions,
+                    requiredPermission || UserCategory.ANY_USER
+                  )
+                }
+              >
+                {icon} {label}
+              </button>
+            </Link>)
+        ))}
     </div>
   );
 };

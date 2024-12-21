@@ -7,7 +7,7 @@ export async function getProjects() {
 }
 
 export async function getSuppliers() {
-  const ref = db.ref("recipients");
+  const ref = db.ref("suppliers");
   const snapshot = await ref.once("value");
   return snapshot.val();
 }
@@ -40,6 +40,7 @@ export const getCategories = async () => {
   try {
     const userRef = db.ref("telegram_users");
     const snapshot = await userRef.once("value");
+    console.log(snapshot.val())
 
     if (snapshot.exists()) {
       return snapshot.val();
@@ -52,30 +53,6 @@ export const getCategories = async () => {
     return null;
   }
 };
-
-export async function saveSupplier(recipientInfo) {
-  return new Promise((resolve, reject) => {
-    const ref = db.ref("recipients");
-    const key = ref.push().key;
-
-    if (!key) {
-      return reject(new Error("Falha ao gerar chave para a solicitação."));
-    }
-
-    if (!recipientInfo?.id) throw new Error("Você não está no telegram");
-    recipientInfo.id = key;
-
-    ref
-      .child(key)
-      .update(recipientInfo)
-      .then((snapshot) => {
-        resolve(snapshot);
-      })
-      .catch((err) => {
-        reject(err);
-      });
-  });
-}
 
 export async function saveSupplierToDatabase(supplierData) {
   return new Promise((resolve, reject) => {
@@ -130,12 +107,58 @@ export async function saveCalendarEvent(eventInfo) {
   });
 }
 
-export async function createUser(userInfo, typeUser) {
+export async function createUser(usersInfo) {
   return new Promise((resolve, reject) => {
     const ref = db.ref("telegram_users");
 
     ref
-      .update({ [userInfo?.id]: typeUser })
+      .update({ [usersInfo?.id]: "ANY_USER" })
+      .then((snapshot) => {
+        resolve(snapshot);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export async function createFullUser(usersInfo) {
+  return new Promise((resolve, reject) => {
+    const ref = db.ref("telegram_users");
+
+    const { id, name } = usersInfo;
+    const user = {
+      id,
+      name,
+      role: "ANY_USER",
+    };
+
+    ref
+      .child(user.id)
+      .update(user)
+      .then((snapshot) => {
+        resolve(snapshot);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export async function updateFullUser(usersInfo, role) {
+  return new Promise((resolve, reject) => {
+    const ref = db.ref("telegram_users");
+
+    const { id, name } = usersInfo;
+    const user = {
+      id,
+      name,
+      role,
+    };
+
+    ref
+      .child(user.id)
+      .update(user)
       .then((snapshot) => {
         resolve(snapshot);
       })

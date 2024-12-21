@@ -1,7 +1,7 @@
 import { useLoaderData } from "@remix-run/react";
 import { UserCategory, UserData } from "~/utils/types";
 import { useEffect, useState } from "react";
-import { getTelegramUserInfo } from "~/utils/users";
+import { getTelegramUsersInfo } from "~/utils/users";
 import telegramInit from "~/utils/telegramInit";
 import { ButtonsListWithPermissions } from "~/components/CommonButtons";
 
@@ -39,24 +39,32 @@ const links = [
     icon: "⚙️",
     requiredPermission: UserCategory.ANY_USER,
   },
+  {
+    to: "/users",
+    label: "Gerenciamento de Usuários",
+    icon: "🔧",
+    requiredPermission: UserCategory.AMECICLO_COORDINATORS,
+    hide: true,
+  },
 ];
 
 export default function Index() {
-  const { userCategoriesObject, currentUserCategories } =
+  const [user, setUser] = useState<UserData | null>({} as UserData);
+
+  const { usersInfo, currentUserCategories } =
     useLoaderData<typeof loader>();
   const [userPermissions, setUserPermissions] = useState(currentUserCategories);
-  const [userInfo, setUserInfo] = useState<UserData | null>({} as UserData);
 
   useEffect(() => {
     telegramInit();
-    setUserInfo(() => getTelegramUserInfo());
+    setUser(() => getTelegramUsersInfo());
   }, []);
 
   useEffect(() => {
-    if (userInfo?.id && userCategoriesObject[userInfo.id]) {
-      setUserPermissions([userCategoriesObject[userInfo.id] as any]);
+    if (user?.id && usersInfo[user.id]) {
+      setUserPermissions([usersInfo[user.id].role as UserCategory]);
     }
-  }, [userInfo]);
+  }, [user]);
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -72,7 +80,7 @@ export default function Index() {
         <p className="text-xs text-center">Permissões de {userPermissions}</p>
       )}
       {process.env.NODE_ENV === "production" && (
-        <p className="text-xs text-center">Olá, {userInfo?.first_name}!</p>
+        <p className="text-xs text-center">Olá, {user?.first_name}!</p>
       )}
       <ButtonsListWithPermissions links={links} userPermissions={userPermissions} />
     </div>

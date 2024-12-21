@@ -4,7 +4,7 @@ import { getCategories } from "~/api/firebaseConnection.server";
 import { UserCategory } from "~/utils/types";
 
 export async function commonLoader() {
-  const userCategoriesObject = await getCategories();
+  const usersInfo = await getCategories();
   const currentUserCategories: UserCategory[] = [
     process.env.NODE_ENV === "development"
       ? UserCategory.DEVELOPMENT
@@ -13,6 +13,6 @@ export async function commonLoader() {
 
   return json({
     currentUserCategories,
-    userCategoriesObject,
+    usersInfo,
   });
 }

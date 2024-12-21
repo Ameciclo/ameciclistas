@@ -1,20 +1,30 @@
-// app/routes/user.tsx
-
 import { useEffect, useState } from "react";
 import { Form, useLoaderData } from "@remix-run/react";
-import { UserData } from "~/utils/types";
-import { getTelegramUserInfo } from "~/utils/users";
+import { UserCategory, UserData } from "~/utils/types";
+import { getTelegramUsersInfo } from "~/utils/users";
 import { BackButton } from "~/components/CommonButtons";
 
 import { action } from "~/handlers/actions/user-action";
 import { loader } from "~/handlers/loaders/user";
+import SendToAction from "~/components/SendToAction";
 export { loader, action };
 
 export default function User() {
-  const [userData, setUserData] = useState<UserData | null>(null);
-  const { userCategoriesObject } = useLoaderData<typeof loader>();
+  const { currentUserCategories, usersInfo } = useLoaderData<typeof loader>();
+  const [userPermissions, setUserPermissions] = useState(currentUserCategories);
+  const [user, setUser] = useState<UserData | null>(null);
 
-  useEffect(() => setUserData(() => getTelegramUserInfo()), []);
+  useEffect(() => {
+    setUser(() => getTelegramUsersInfo());
+  }, []);
+
+  useEffect(() => {
+    if (user?.id && usersInfo[user.id]) {
+      setUserPermissions([usersInfo[user.id].role as any]);
+    }
+  }, [user]);
+
+  useEffect(() => setUser(() => getTelegramUsersInfo()), []);
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -22,17 +32,18 @@ export default function User() {
         Dados do Usuário
       </h1>
 
-      {userData ? (
+      {user ? (
         <div className="mt-6 text-center">
-          <h2 className="text-xl font-semibold">Olá, {userData.first_name}!</h2>
+          <h2 className="text-xl font-semibold">Olá, {user.first_name}!</h2>
           <ul className="mt-2">
-            <li>ID: {userData.id}</li>
+            <li>ID: {user.id}</li>
             <li>
-              Nome: {userData.first_name} {userData.last_name || ""}
+              Nome: {user.first_name} {user.last_name || ""}
             </li>
-            <li>Usuário: {userData.username || "N/A"}</li>
-            <li>Código do Idioma: {userData.language_code}</li>
-            <li>Premium: {userData.is_premium ? "Sim" : "Não"}</li>
+            <li>Usuário: {user.username || "N/A"}</li>
+            <li>Código do Idioma: {user.language_code}</li>
+            <li>Premium: {user.is_premium ? "Sim" : "Não"}</li>
+            <li>Permissao: {userPermissions}</li>
           </ul>
           <br />
           <br />
@@ -48,11 +59,30 @@ export default function User() {
       )}
 
       <Form method="post" className="container">
-        <input type="hidden" name="actionType" value="createUser" />
-        <input type="hidden" name="user" value={JSON.stringify(userData)} />
-        {!userCategoriesObject[userData?.id as unknown as string] && (
-          <button className="button-full">SOU AMECICLISTA</button>
+        {process.env.NODE_ENV === "development" ? (
+          <SendToAction
+            fields={[
+              {
+                name: "user",
+                value: JSON.stringify({ id: "123", name: "Dev User", role: UserCategory.ANY_USER }),
+              },
+            ]}
+          />
+        ) : (
+          <SendToAction
+            fields={[
+              { name: "user", value: JSON.stringify(user) },
+            ]}
+          />
         )}
+
+
+        {
+          !usersInfo[user?.id as unknown as string] && (
+            <button className="button-full">CADASTRAR</button>
+          )
+        }
+
         <BackButton />
       </Form>
     </div>

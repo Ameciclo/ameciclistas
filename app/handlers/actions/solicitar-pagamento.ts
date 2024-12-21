@@ -1,32 +1,26 @@
 import { redirect, ActionFunction, json } from "@remix-run/node";
 import { savePaymentRequest } from "~/api/firebaseConnection.server";
+import { formatDate } from "~/utils/format";
 
 const createPaymentRequest = (formData: FormData) => {
-  const date = new Date();
-  const unixMilliseconds = date.getTime();
-  const formatter = new Intl.DateTimeFormat("pt-BR", {
-    timeZone: "America/Sao_Paulo",
-    dateStyle: "short",
-    timeStyle: "medium",
-  });
+  const date = formatDate.format(new Date());
   let project = JSON.parse(formData.get("project") as string);
   project.id = project.spreadsheet_id;
 
   return {
-    date: unixMilliseconds,
-    dateParsed: formatter.format(date),
+    date,
     project,
     budgetItem: formData.get("rubrica"),
-    recipientName: formData.get("fornecedor"),
     description: formData.get("descricao"),
     value: formData.get("valor"),
     from_chat_id: 0,
     group_message_id: 0,
     invoice_url: "",
     from: JSON.parse(formData.get("telegramUserInfo") as string),
-    recipientInformation: JSON.parse(
+    supplier: JSON.parse(
       formData.get("fornecedores") as string
-    ).find((s: any) => s.nome === formData.get("fornecedor")),
+    ).find((s: any) => s.name === formData.get("fornecedor")),
+    confirmed_by: [],
   };
 };
 
