@@ -63,9 +63,9 @@ export default function CriarEvento() {
 
       const durationMinutes = endTotalMinutes - startTotalMinutes;
 
-      if(durationMinutes >= 10) setDuracao(String(durationMinutes) + " minutos.");
-      if(durationMinutes >= 0 && durationMinutes <= 10) setDuracao("Duração do evento deve ser no mínimo 10");
-      if(durationMinutes < 0) setDuracao("Confira preenchimento de horário");
+      if(durationMinutes >= 10) setDuracao("Duração: " + String(durationMinutes) + " minutos.");
+      if(durationMinutes >= 0 && durationMinutes <= 10) setDuracao("** A duração do evento precisa ser maior que 10 minutos");
+      if(durationMinutes < 0) setDuracao("*** Confira preenchimento de horário");
     }
   }, [hora, hora_fim]);
 
@@ -92,7 +92,7 @@ export default function CriarEvento() {
         onChange={(e: any) => setHoraFim(e.target.value)}
       />
 
-      {duracao && (<h3>[ DURAÇÃO: {duracao} ]</h3>)}
+      {duracao && (<h3>{duracao}</h3>)}
 
       <br />
       <DescriptionInput descricao={descricao} setDescricao={setDescricao} />
