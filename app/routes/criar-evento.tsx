@@ -26,9 +26,11 @@ export default function CriarEvento() {
   const [titulo, setTitulo] = useState("");
   const [data, setData] = useState<string>("");
   const [hora, setHora] = useState<string>("");
-  const [duracao, setDuracao] = useState("");
+  const [hora_fim, setHoraFim] = useState<string>("");
+  const [duracao, setDuracao] = useState<string>("");
   const [descricao, setDescricao] = useState("");
   const [agenda, setAgenda] = useState("");
+  const [gt, setGT] = useState("");
 
   useEffect(() => setUser(() => getTelegramUsersInfo()), []);
 
@@ -43,8 +45,29 @@ export default function CriarEvento() {
     data !== "" &&
     hora !== "" &&
     duracao !== "" &&
+    duracao !== "Duração do evento deve ser no mínimo 10" &&
+    duracao !== "Confira preenchimento de horário" &&
     descricao !== "" &&
-    agenda !== "";
+    agenda !== "" &&
+    gt !== "";
+
+
+
+  useEffect(() => {
+    if (hora && hora_fim) {
+      const [startHours, startMinutes] = hora.split(':').map(Number);
+      const [endHours, endMinutes] = hora_fim.split(':').map(Number);
+
+      const startTotalMinutes = startHours * 60 + startMinutes;
+      const endTotalMinutes = endHours * 60 + endMinutes;
+
+      const durationMinutes = endTotalMinutes - startTotalMinutes;
+
+      if(durationMinutes >= 10) setDuracao(String(durationMinutes) + " minutos.");
+      if(durationMinutes >= 0 && durationMinutes <= 10) setDuracao("Duração do evento deve ser no mínimo 10");
+      if(durationMinutes < 0) setDuracao("Confira preenchimento de horário");
+    }
+  }, [hora, hora_fim]);
 
   return isAuth(userPermissions, UserCategory.AMECICLISTAS) ? (
     <Form className="container" method="post">
@@ -59,18 +82,19 @@ export default function CriarEvento() {
 
       <HourInput
         value={hora}
+        label="Hora Início:"
         onChange={(e: any) => setHora(e.target.value)}
       />
 
-      <NumberInput
-        label="Duração (em horas):"
-        type="number"
-        value={duracao}
-        onChange={(e: any) => setDuracao(e.target.value)}
-        min="0"
-        step="0.5"
-        placeholder="Ex: 1.5"
+      <HourInput
+        value={hora_fim}
+        label="Hora Fim:"
+        onChange={(e: any) => setHoraFim(e.target.value)}
       />
+
+      {duracao && (<h3>[ DURAÇÃO: {duracao} ]</h3>)}
+
+      <br />
       <DescriptionInput descricao={descricao} setDescricao={setDescricao} />
 
       <SelectInput
@@ -86,14 +110,53 @@ export default function CriarEvento() {
         ]}
       />
 
+      <SelectInput
+        label="Grupo de Trabalho (GT): "
+        value={gt}
+        onChange={(e: any) => setGT(e.target.value)}
+        options={[
+          {
+            value: "",
+            label: "Selecione um GT"
+          },
+          {
+            value: "Incidência",
+            label: "Incidência"
+          },
+          {
+            value: "Pesquisa",
+            label: "Pesquisa"
+          },
+          {
+            value: "Formação Externa",
+            label: "Formação Externa"
+          },
+          {
+            value: "Interpautas",
+            label: "Interpautas"
+          },
+          {
+            value: "Escola da Bicicleta",
+            label: "Escola da Bicicleta"
+          },
+          {
+            value: "Cultura",
+            label: "Cultura"
+          }
+
+        ]}
+      />
+
       <SendToAction
         fields={[
           { name: "titulo", value: titulo },
           { name: "data", value: data },
           { name: "hora", value: hora },
+          { name: "hora_fim", value: hora_fim },
           { name: "duracao", value: duracao },
           { name: "descricao", value: descricao },
           { name: "agenda", value: agenda },
+          { name: "grupo_de_trabalho", value: gt },
           { name: "from", value: JSON.stringify(user) },
         ]}
       />
