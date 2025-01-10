@@ -6,7 +6,7 @@ const createPaymentRequest = (formData: FormData) => {
   const date = formatDate.format(new Date());
   let project = JSON.parse(formData.get("project") as string);
   project.id = project.spreadsheet_id;
-
+  
   return {
     date,
     project,
@@ -16,11 +16,10 @@ const createPaymentRequest = (formData: FormData) => {
     from_chat_id: 0,
     group_message_id: 0,
     invoice_url: "",
-    from: JSON.parse(formData.get("telegramUserInfo") as string),
+    from: JSON.parse(formData.get("telegramusersInfo") as string),
     supplier: JSON.parse(
       formData.get("fornecedores") as string
     ).find((s: any) => s.name === formData.get("fornecedor")),
-    confirmed_by: [],
   };
 };
 
