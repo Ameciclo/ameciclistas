@@ -23,12 +23,13 @@ export default function CriarEvento() {
     useLoaderData<typeof loader>();
   const [userPermissions, setUserPermissions] = useState(currentUserCategories);
   const [user, setUser] = useState<UserData | null>({} as UserData);
-  const [titulo, setTitulo] = useState("");
-  const [data, setData] = useState<string>("");
-  const [hora, setHora] = useState<string>("");
-  const [hora_fim, setHoraFim] = useState<string>("");
-  const [duracao, setDuracao] = useState<string>("");
-  const [descricao, setDescricao] = useState("");
+  const [title, setTitle] = useState("");
+  const [date, setDate] = useState<string>("");
+  const [hour, setHour] = useState<string>("");
+  const [end_hour, setEndHour] = useState<string>("");
+  const [durationMessage, setDurationMessage] = useState<string>("");
+  const [duration, setDuration] = useState<number>(0);
+  const [description, setDescription] = useState("");
   const [agenda, setAgenda] = useState("");
   const [gt, setGT] = useState("");
 
@@ -41,61 +42,63 @@ export default function CriarEvento() {
   }, [user]);
 
   const isFormValid =
-    titulo !== "" &&
-    data !== "" &&
-    hora !== "" &&
-    duracao !== "" &&
-    duracao !== "Duração do evento deve ser no mínimo 10" &&
-    duracao !== "Confira preenchimento de horário" &&
-    descricao !== "" &&
+    title !== "" &&
+    date !== "" &&
+    hour !== "" &&
+    durationMessage !== "" &&
+    durationMessage !== "Duração do evento deve ser no mínimo 10" &&
+    durationMessage !== "Confira preenchimento de horário" &&
+    duration > 0 &&
+    description !== "" &&
     agenda !== "" &&
     gt !== "";
 
 
 
   useEffect(() => {
-    if (hora && hora_fim) {
-      const [startHours, startMinutes] = hora.split(':').map(Number);
-      const [endHours, endMinutes] = hora_fim.split(':').map(Number);
+    if (hour && end_hour) {
+      const [startHours, startMinutes] = hour.split(':').map(Number);
+      const [endHours, endMinutes] = end_hour.split(':').map(Number);
 
       const startTotalMinutes = startHours * 60 + startMinutes;
       const endTotalMinutes = endHours * 60 + endMinutes;
 
       const durationMinutes = endTotalMinutes - startTotalMinutes;
+      setDuration(durationMinutes)
 
-      if(durationMinutes >= 10) setDuracao("Duração: " + String(durationMinutes) + " minutos.");
-      if(durationMinutes >= 0 && durationMinutes <= 10) setDuracao("** A duração do evento precisa ser maior que 10 minutos");
-      if(durationMinutes < 0) setDuracao("*** Confira preenchimento de horário");
+      if(durationMinutes >= 10) setDurationMessage("Duração: " + String(durationMinutes) + " minutos.");
+      if(durationMinutes >= 0 && durationMinutes <= 10) setDurationMessage("** A duração do evento precisa ser maior que 10 minutos");
+      if(durationMinutes < 0) setDurationMessage("*** Confira preenchimento de horário");
     }
-  }, [hora, hora_fim]);
+  }, [hour, end_hour]);
 
   return isAuth(userPermissions, UserCategory.AMECICLISTAS) ? (
     <Form className="container" method="post">
       <FormTitle>📅 Criar Evento</FormTitle>
 
-      <NumberInput label="Título do Evento:" value={titulo} onChange={(e: any) => setTitulo(e.target.value)} />
+      <NumberInput label="Título do Evento:" value={title} onChange={(e: any) => setTitle(e.target.value)} />
 
       <DateInput
-        value={data}
-        onChange={(e: any) => setData(e.target.value)}
+        value={date}
+        onChange={(e: any) => setDate(e.target.value)}
       />
 
       <HourInput
-        value={hora}
+        value={hour}
         label="Hora Início:"
-        onChange={(e: any) => setHora(e.target.value)}
+        onChange={(e: any) => setHour(e.target.value)}
       />
 
       <HourInput
-        value={hora_fim}
+        value={end_hour}
         label="Hora Fim:"
-        onChange={(e: any) => setHoraFim(e.target.value)}
+        onChange={(e: any) => setEndHour(e.target.value)}
       />
 
-      {duracao && (<h3>{duracao}</h3>)}
+      {durationMessage && (<h3>{durationMessage}</h3>)}
 
       <br />
-      <DescriptionInput descricao={descricao} setDescricao={setDescricao} />
+      <DescriptionInput descricao={description} setDescricao={setDescription} />
 
       <SelectInput
         label="Agenda: "
@@ -149,12 +152,12 @@ export default function CriarEvento() {
 
       <SendToAction
         fields={[
-          { name: "titulo", value: titulo },
-          { name: "data", value: data },
-          { name: "hora", value: hora },
-          { name: "hora_fim", value: hora_fim },
-          { name: "duracao", value: duracao },
-          { name: "descricao", value: descricao },
+          { name: "titulo", value: title },
+          { name: "data", value: date },
+          { name: "hora", value: hour },
+          { name: "hora_fim", value: end_hour },
+          { name: "duracao", value: duration },
+          { name: "descricao", value: description },
           { name: "agenda", value: agenda },
           { name: "grupo_de_trabalho", value: gt },
           { name: "from", value: JSON.stringify(user) },
