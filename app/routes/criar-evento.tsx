@@ -23,15 +23,15 @@ export default function CriarEvento() {
     useLoaderData<typeof loader>();
   const [userPermissions, setUserPermissions] = useState(currentUserCategories);
   const [user, setUser] = useState<UserData | null>({} as UserData);
-  const [title, setTitle] = useState("");
+  const [title, setTitle] = useState<string>("");
   const [date, setDate] = useState<string>("");
   const [hour, setHour] = useState<string>("");
   const [end_hour, setEndHour] = useState<string>("");
   const [durationMessage, setDurationMessage] = useState<string>("");
-  const [duration, setDuration] = useState<number>(0);
-  const [description, setDescription] = useState("");
-  const [agenda, setAgenda] = useState("");
-  const [gt, setGT] = useState("");
+  const [duration, setDuration] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
+  const [agenda, setAgenda] = useState<string>("");
+  const [gt, setGT] = useState<string>("");
 
   useEffect(() => setUser(() => getTelegramUsersInfo()), []);
 
@@ -48,7 +48,7 @@ export default function CriarEvento() {
     durationMessage !== "" &&
     durationMessage !== "Duração do evento deve ser no mínimo 10" &&
     durationMessage !== "Confira preenchimento de horário" &&
-    duration > 0 &&
+    duration !== "" &&
     description !== "" &&
     agenda !== "" &&
     gt !== "";
@@ -64,7 +64,9 @@ export default function CriarEvento() {
       const endTotalMinutes = endHours * 60 + endMinutes;
 
       const durationMinutes = endTotalMinutes - startTotalMinutes;
-      setDuration(durationMinutes)
+      const durationHour = durationMinutes/60;
+      
+      setDuration(String(durationHour));
 
       if(durationMinutes >= 10) setDurationMessage("Duração: " + String(durationMinutes) + " minutos.");
       if(durationMinutes >= 0 && durationMinutes <= 10) setDurationMessage("** A duração do evento precisa ser maior que 10 minutos");
