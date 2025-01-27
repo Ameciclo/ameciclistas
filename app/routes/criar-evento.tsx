@@ -31,7 +31,7 @@ export default function CriarEvento() {
   const [duration, setDuration] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [agenda, setAgenda] = useState<string>("");
-  const [gt, setGT] = useState<string>("");
+  const [workGroup, setWorkGroup] = useState<string>("");
 
   useEffect(() => setUser(() => getTelegramUsersInfo()), []);
 
@@ -46,12 +46,12 @@ export default function CriarEvento() {
     date !== "" &&
     hour !== "" &&
     durationMessage !== "" &&
-    durationMessage !== "Duração do evento deve ser no mínimo 10" &&
-    durationMessage !== "Confira preenchimento de horário" &&
+    durationMessage !== "** A duração do evento precisa ser maior que 10 minutos" &&
+    durationMessage !== "*** Confira preenchimento de horário" &&
     duration !== "" &&
     description !== "" &&
     agenda !== "" &&
-    gt !== "";
+    workGroup !== "";
 
 
 
@@ -65,8 +65,10 @@ export default function CriarEvento() {
 
       const durationMinutes = endTotalMinutes - startTotalMinutes;
       const durationHour = durationMinutes/60;
+
+      const durationParsed = String(durationHour).split(",").join(".");
       
-      setDuration(String(durationHour));
+      setDuration(String(durationParsed));
 
       if(durationMinutes >= 10) setDurationMessage("Duração: " + String(durationMinutes) + " minutos.");
       if(durationMinutes >= 0 && durationMinutes <= 10) setDurationMessage("** A duração do evento precisa ser maior que 10 minutos");
@@ -117,8 +119,8 @@ export default function CriarEvento() {
 
       <SelectInput
         label="Grupo de Trabalho (GT): "
-        value={gt}
-        onChange={(e: any) => setGT(e.target.value)}
+        value={workGroup}
+        onChange={(e: any) => setWorkGroup(e.target.value)}
         options={[
           {
             value: "",
@@ -161,7 +163,7 @@ export default function CriarEvento() {
           { name: "duracao", value: duration },
           { name: "descricao", value: description },
           { name: "agenda", value: agenda },
-          { name: "grupo_de_trabalho", value: gt },
+          { name: "grupo_de_trabalho", value: workGroup },
           { name: "from", value: JSON.stringify(user) },
         ]}
       />
