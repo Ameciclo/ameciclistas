@@ -82,7 +82,7 @@ export async function saveSupplierToDatabase(supplierData) {
   });
 }
 
-export async function saveCalendarEvent(eventInfo) {
+export async function saveCalendarEvent(eventInfo, eventName) {
   return new Promise((resolve, reject) => {
     const ref = db.ref("calendar");
     const key = ref.push().key;
@@ -94,7 +94,7 @@ export async function saveCalendarEvent(eventInfo) {
     eventInfo.id = key;
 
     ref
-      .child(eventInfo.startDate)
+      .child(eventName)
       .update(eventInfo)
       .then((snapshot) => {
         resolve(snapshot);

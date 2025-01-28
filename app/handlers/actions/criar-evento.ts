@@ -17,7 +17,7 @@ export const action: ActionFunction = async ({ request }) => {
 
   try {
     const calendarEventData = createCalendarEventData(formData);
-    await saveCalendarEvent(calendarEventData);
+    await saveCalendarEvent(calendarEventData, eventName);
     console.log(calendarEventData);
     return redirect("/sucesso/criar-evento");
   } catch (error: any) {
