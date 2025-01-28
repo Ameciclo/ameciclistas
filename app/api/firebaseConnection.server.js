@@ -93,10 +93,10 @@ export async function saveCalendarEvent(eventInfo) {
 
     eventInfo.id = key;
 
-    const { name } = eventInfo;
+    const { startDate } = eventInfo;
 
     ref
-      .child(name)
+      .child(startDate)
       .update(eventInfo)
       .then((snapshot) => {
         resolve(snapshot);
