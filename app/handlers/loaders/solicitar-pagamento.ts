@@ -3,7 +3,7 @@ import { json } from "@remix-run/react";
 import {
   getProjects,
   getSuppliers,
-  getCategories,
+  getUsersFirebase,
 } from "~/api/firebaseConnection.server";
 import { Project, Supplier, UserCategory } from "~/utils/types";
 
@@ -22,7 +22,7 @@ export async function loader() {
       type: supplier.type|| "",
     })
   );
-  const usersInfo = await getCategories();
+  const usersInfo = await getUsersFirebase();
   const currentUserCategories: UserCategory[] = [
     process.env.NODE_ENV === "development"
       ? UserCategory.DEVELOPMENT

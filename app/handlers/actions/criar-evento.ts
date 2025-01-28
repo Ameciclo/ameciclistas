@@ -2,12 +2,13 @@ import { redirect, ActionFunction, json } from "@remix-run/node";
 import { saveCalendarEvent } from "~/api/firebaseConnection.server";
 
 const createCalendarEventData = (formData: FormData) => ({
-  titulo: formData.get("titulo"),
-  data: formData.get("data"),
-  hora: formData.get("hora"),
-  duracao: formData.get("duracao"),
-  descricao: formData.get("descricao"),
-  agenda: formData.get("agenda"),
+  name: formData.get("name"),
+  startDate: (new Date(formData.get("date") + " " + formData.get("startTime"))).toISOString(),
+  endDate: (new Date(formData.get("date") + " " + formData.get("endTime"))).toISOString(),
+  description: formData.get("description"),
+  location: formData.get("location"),
+  calendar: formData.get("calendar"),
+  workgroup: formData.get("workgroup"),
   from: JSON.parse(formData.get("from") as string),
 });
 

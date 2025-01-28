@@ -1,7 +1,7 @@
 import React from "react";
 
 interface HiddenInputProps {
-  fields: { name: string; value: string }[];
+  fields: { name: string; value: string | number }[];
 }
 
 const SendToAction: React.FC<HiddenInputProps> = ({ fields }) => {

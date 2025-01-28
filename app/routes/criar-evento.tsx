@@ -23,12 +23,15 @@ export default function CriarEvento() {
     useLoaderData<typeof loader>();
   const [userPermissions, setUserPermissions] = useState(currentUserCategories);
   const [user, setUser] = useState<UserData | null>({} as UserData);
-  const [titulo, setTitulo] = useState("");
-  const [data, setData] = useState<string>("");
-  const [hora, setHora] = useState<string>("");
-  const [duracao, setDuracao] = useState("");
-  const [descricao, setDescricao] = useState("");
-  const [agenda, setAgenda] = useState("");
+  const [name, setName] = useState<string>("");
+  const [date, setDate] = useState<string>("");
+  const [startTime, setStartTime] = useState<string>("");
+  const [endTime, setEndTime] = useState<string>("");
+  const [durationMessage, setDurationMessage] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
+  const [location, setLocation] = useState<string>("");
+  const [calendar, setCalendar] = useState<string>("");
+  const [workGroup, setWorkGroup] = useState<string>("");
 
   useEffect(() => setUser(() => getTelegramUsersInfo()), []);
 
@@ -39,61 +42,128 @@ export default function CriarEvento() {
   }, [user]);
 
   const isFormValid =
-    titulo !== "" &&
-    data !== "" &&
-    hora !== "" &&
-    duracao !== "" &&
-    descricao !== "" &&
-    agenda !== "";
+    name !== "" &&
+    date !== "" &&
+    startTime !== "" &&
+    durationMessage !== "" &&
+    durationMessage !== "** A duração do evento precisa ser maior que 10 minutos" &&
+    durationMessage !== "*** Confira preenchimento de horário" &&
+    description !== "" &&
+    calendar !== "" &&
+    workGroup !== "";
+
+
+
+  useEffect(() => {
+    if (startTime && endTime) {
+      const [startHours, startMinutes] = startTime.split(':').map(Number);
+      const [endHours, endMinutes] = endTime.split(':').map(Number);
+
+      const startTotalMinutes = startHours * 60 + startMinutes;
+      const endTotalMinutes = endHours * 60 + endMinutes;
+
+      const durationMinutes = endTotalMinutes - startTotalMinutes;
+           
+      if(durationMinutes >= 10) setDurationMessage("Duração: " + String(durationMinutes) + " minutos.");
+      if(durationMinutes >= 0 && durationMinutes <= 10) setDurationMessage("** A duração do evento precisa ser maior que 10 minutos");
+      if(durationMinutes < 0) setDurationMessage("*** Confira preenchimento de horário");
+    }
+  }, [startTime, endTime]);
 
   return isAuth(userPermissions, UserCategory.AMECICLISTAS) ? (
     <Form className="container" method="post">
       <FormTitle>📅 Criar Evento</FormTitle>
 
-      <NumberInput label="Título do Evento:" value={titulo} onChange={(e: any) => setTitulo(e.target.value)} />
+      <NumberInput label="Nome do Evento:" value={name} onChange={(e: any) => setName(e.target.value)} />
 
       <DateInput
-        value={data}
-        onChange={(e: any) => setData(e.target.value)}
+        value={date}
+        onChange={(e: any) => setDate(e.target.value)}
       />
 
       <HourInput
-        value={hora}
-        onChange={(e: any) => setHora(e.target.value)}
+        value={startTime}
+        label="Hora Início:"
+        onChange={(e: any) => setStartTime(e.target.value)}
       />
 
-      <NumberInput
-        label="Duração (em horas):"
-        type="number"
-        value={duracao}
-        onChange={(e: any) => setDuracao(e.target.value)}
-        min="0"
-        step="0.5"
-        placeholder="Ex: 1.5"
+      <HourInput
+        value={endTime}
+        label="Hora Fim:"
+        onChange={(e: any) => setEndTime(e.target.value)}
       />
-      <DescriptionInput descricao={descricao} setDescricao={setDescricao} />
+
+      {durationMessage && (<h3>{durationMessage}</h3>)}
+
+      <br />
+      <DescriptionInput descricao={description} setDescricao={setDescription} />
+
+      <NumberInput label="Local do Evento:" value={location} onChange={(e: any) => setLocation(e.target.value)} />
 
       <SelectInput
         label="Agenda: "
-        value={agenda}
-        onChange={(e: any) => setAgenda(e.target.value)}
+        value={calendar}
+        onChange={(e: any) => setCalendar(e.target.value)}
         options={[
           { value: "", label: "Selecione uma agenda" },
-          { value: "Eventos Internos", label: "Eventos Internos" },
-          { value: "Eventos Externos", label: "Eventos Externos" },
-          { value: "Divulgação de eventos externos", label: "Divulgação de eventos externos" },
-          { value: "Organizacional", label: "Organizacional" },
+          { value: "ameciclo@gmail.com", label: "Eventos Internos" },
+          { value: "oj4bkgv1g6cmcbtsap4obgi9vc@group.calendar.google.com", label: "Eventos Externos" },
+          { value: "k0gbrljrh0e4l2v8cuc05nsljc@group.calendar.google.com", label: "Divulgação de eventos externos" },
+          { value: "an6nh96auj9n3jtj28qno1limg@group.calendar.google.com", label: "Organizacional" },
+        ]}
+      />
+
+      <SelectInput
+        label="Grupo de Trabalho (GT): "
+        value={workGroup}
+        onChange={(e: any) => setWorkGroup(e.target.value)}
+        options={[
+          {
+            value: "",
+            label: "Selecione um GT"
+          },
+          {
+            value: "Incidência",
+            label: "Incidência"
+          },
+          {
+            value: "Pesquisa",
+            label: "Pesquisa"
+          },
+          {
+            value: "Formação Externa",
+            label: "Formação Externa"
+          },
+          {
+            value: "Interpautas",
+            label: "Interpautas"
+          },
+          {
+            value: "Escola da Bicicleta",
+            label: "Escola da Bicicleta"
+          },
+          {
+            value: "Cultura",
+            label: "Cultura"
+          },
+          {
+            value: "Eixos",
+            label: "Algum dos Eixos"
+          }
+
         ]}
       />
 
       <SendToAction
         fields={[
-          { name: "titulo", value: titulo },
-          { name: "data", value: data },
-          { name: "hora", value: hora },
-          { name: "duracao", value: duracao },
-          { name: "descricao", value: descricao },
-          { name: "agenda", value: agenda },
+          { name: "name", value: name },
+          { name: "date", value: date },
+          { name: "startTime", value: startTime },
+          { name: "endTime", value: endTime },
+          { name: "description", value: description },
+          { name: "location", value: location },
+          { name: "calendar", value: calendar },
+          { name: "workgroup", value: workGroup },
           { name: "from", value: JSON.stringify(user) },
         ]}
       />
