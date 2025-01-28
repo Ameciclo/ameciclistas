@@ -23,14 +23,14 @@ export default function CriarEvento() {
     useLoaderData<typeof loader>();
   const [userPermissions, setUserPermissions] = useState(currentUserCategories);
   const [user, setUser] = useState<UserData | null>({} as UserData);
-  const [title, setTitle] = useState<string>("");
+  const [name, setName] = useState<string>("");
   const [date, setDate] = useState<string>("");
-  const [hour, setHour] = useState<string>("");
-  const [end_hour, setEndHour] = useState<string>("");
+  const [startTime, setStartTime] = useState<string>("");
+  const [endTime, setEndTime] = useState<string>("");
   const [durationMessage, setDurationMessage] = useState<string>("");
-  const [duration, setDuration] = useState<string>("");
   const [description, setDescription] = useState<string>("");
-  const [agenda, setAgenda] = useState<string>("");
+  const [location, setLocation] = useState<string>("");
+  const [calendar, setCalendar] = useState<string>("");
   const [workGroup, setWorkGroup] = useState<string>("");
 
   useEffect(() => setUser(() => getTelegramUsersInfo()), []);
@@ -42,45 +42,39 @@ export default function CriarEvento() {
   }, [user]);
 
   const isFormValid =
-    title !== "" &&
+    name !== "" &&
     date !== "" &&
-    hour !== "" &&
+    startTime !== "" &&
     durationMessage !== "" &&
     durationMessage !== "** A duração do evento precisa ser maior que 10 minutos" &&
     durationMessage !== "*** Confira preenchimento de horário" &&
-    duration !== "" &&
     description !== "" &&
-    agenda !== "" &&
+    calendar !== "" &&
     workGroup !== "";
 
 
 
   useEffect(() => {
-    if (hour && end_hour) {
-      const [startHours, startMinutes] = hour.split(':').map(Number);
-      const [endHours, endMinutes] = end_hour.split(':').map(Number);
+    if (startTime && endTime) {
+      const [startHours, startMinutes] = startTime.split(':').map(Number);
+      const [endHours, endMinutes] = endTime.split(':').map(Number);
 
       const startTotalMinutes = startHours * 60 + startMinutes;
       const endTotalMinutes = endHours * 60 + endMinutes;
 
       const durationMinutes = endTotalMinutes - startTotalMinutes;
-      const durationHour = durationMinutes/60;
-
-      const durationParsed = String(durationHour).split(",").join(".");
-      
-      setDuration(String(durationParsed));
-
+           
       if(durationMinutes >= 10) setDurationMessage("Duração: " + String(durationMinutes) + " minutos.");
       if(durationMinutes >= 0 && durationMinutes <= 10) setDurationMessage("** A duração do evento precisa ser maior que 10 minutos");
       if(durationMinutes < 0) setDurationMessage("*** Confira preenchimento de horário");
     }
-  }, [hour, end_hour]);
+  }, [startTime, endTime]);
 
   return isAuth(userPermissions, UserCategory.AMECICLISTAS) ? (
     <Form className="container" method="post">
       <FormTitle>📅 Criar Evento</FormTitle>
 
-      <NumberInput label="Título do Evento:" value={title} onChange={(e: any) => setTitle(e.target.value)} />
+      <NumberInput label="Nome do Evento:" value={name} onChange={(e: any) => setName(e.target.value)} />
 
       <DateInput
         value={date}
@@ -88,15 +82,15 @@ export default function CriarEvento() {
       />
 
       <HourInput
-        value={hour}
+        value={startTime}
         label="Hora Início:"
-        onChange={(e: any) => setHour(e.target.value)}
+        onChange={(e: any) => setStartTime(e.target.value)}
       />
 
       <HourInput
-        value={end_hour}
+        value={endTime}
         label="Hora Fim:"
-        onChange={(e: any) => setEndHour(e.target.value)}
+        onChange={(e: any) => setEndTime(e.target.value)}
       />
 
       {durationMessage && (<h3>{durationMessage}</h3>)}
@@ -104,10 +98,12 @@ export default function CriarEvento() {
       <br />
       <DescriptionInput descricao={description} setDescricao={setDescription} />
 
+      <NumberInput label="Local do Evento:" value={location} onChange={(e: any) => setLocation(e.target.value)} />
+
       <SelectInput
         label="Agenda: "
-        value={agenda}
-        onChange={(e: any) => setAgenda(e.target.value)}
+        value={calendar}
+        onChange={(e: any) => setCalendar(e.target.value)}
         options={[
           { value: "", label: "Selecione uma agenda" },
           { value: "Eventos Internos", label: "Eventos Internos" },
@@ -160,14 +156,14 @@ export default function CriarEvento() {
 
       <SendToAction
         fields={[
-          { name: "titulo", value: title },
-          { name: "data", value: date },
-          { name: "hora", value: hour },
-          { name: "hora_fim", value: end_hour },
-          { name: "duracao", value: duration },
-          { name: "descricao", value: description },
-          { name: "agenda", value: agenda },
-          { name: "grupo_de_trabalho", value: workGroup },
+          { name: "name", value: name },
+          { name: "date", value: date },
+          { name: "startTime", value: startTime },
+          { name: "endTime", value: endTime },
+          { name: "description", value: description },
+          { name: "location", value: location },
+          { name: "calendar", value: calendar },
+          { name: "workgroup", value: workGroup },
           { name: "from", value: JSON.stringify(user) },
         ]}
       />
