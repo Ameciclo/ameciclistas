@@ -96,7 +96,7 @@ export async function saveCalendarEvent(eventInfo) {
     const { startDate } = eventInfo;
 
     ref
-      .child(startDate)
+      .child(startDate.toISOString().replace(/[:.]/g, "-"))
       .update(eventInfo)
       .then((snapshot) => {
         resolve(snapshot);
