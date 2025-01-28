@@ -94,7 +94,7 @@ export async function saveCalendarEvent(eventInfo) {
     eventInfo.id = key;
 
     ref
-      .child(key)
+      .child(eventInfo.startDate)
       .update(eventInfo)
       .then((snapshot) => {
         resolve(snapshot);
