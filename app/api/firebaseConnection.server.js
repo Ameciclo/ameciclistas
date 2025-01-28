@@ -93,8 +93,11 @@ export async function saveCalendarEvent(eventInfo) {
 
     eventInfo.id = key;
 
+    const { startDate } = eventInfo;
+    const childName = startDate.replace(/[:.]/g, "-");
+
     ref
-      .child(key)
+      .child(childName)
       .update(eventInfo)
       .then((snapshot) => {
         resolve(snapshot);
