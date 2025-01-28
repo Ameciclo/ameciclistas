@@ -106,10 +106,10 @@ export default function CriarEvento() {
         onChange={(e: any) => setCalendar(e.target.value)}
         options={[
           { value: "", label: "Selecione uma agenda" },
-          { value: "Eventos Internos", label: "Eventos Internos" },
-          { value: "Eventos Externos", label: "Eventos Externos" },
-          { value: "Divulgação de eventos externos", label: "Divulgação de eventos externos" },
-          { value: "Organizacional", label: "Organizacional" },
+          { value: "ameciclo@gmail.com", label: "Eventos Internos" },
+          { value: "oj4bkgv1g6cmcbtsap4obgi9vc@group.calendar.google.com", label: "Eventos Externos" },
+          { value: "k0gbrljrh0e4l2v8cuc05nsljc@group.calendar.google.com", label: "Divulgação de eventos externos" },
+          { value: "an6nh96auj9n3jtj28qno1limg@group.calendar.google.com", label: "Organizacional" },
         ]}
       />
 
