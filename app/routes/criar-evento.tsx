@@ -149,6 +149,10 @@ export default function CriarEvento() {
           {
             value: "Cultura",
             label: "Cultura"
+          },
+          {
+            value: "Eixos",
+            label: "Algum dos Eixos"
           }
 
         ]}
