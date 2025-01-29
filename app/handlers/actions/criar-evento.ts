@@ -7,7 +7,7 @@ const createCalendarEventData = (formData: FormData) => ({
   endDate: (new Date(formData.get("date") + " " + formData.get("endTime"))).toISOString(),
   description: formData.get("description"),
   location: formData.get("location"),
-  calendar: formData.get("calendar"),
+  calendarId: formData.get("calendar"),
   workgroup: formData.get("workgroup"),
   from: JSON.parse(formData.get("from") as string),
 });
