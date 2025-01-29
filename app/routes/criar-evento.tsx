@@ -30,7 +30,7 @@ export default function CriarEvento() {
   const [durationMessage, setDurationMessage] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [location, setLocation] = useState<string>("");
-  const [calendar, setCalendar] = useState<string>("");
+  const [calendarId, setCalendarId] = useState<string>("");
   const [workGroup, setWorkGroup] = useState<string>("");
 
   useEffect(() => setUser(() => getTelegramUsersInfo()), []);
@@ -49,7 +49,7 @@ export default function CriarEvento() {
     durationMessage !== "** A duração do evento precisa ser maior que 10 minutos" &&
     durationMessage !== "*** Confira preenchimento de horário" &&
     description !== "" &&
-    calendar !== "" &&
+    calendarId !== "" &&
     workGroup !== "";
 
 
@@ -102,8 +102,8 @@ export default function CriarEvento() {
 
       <SelectInput
         label="Agenda: "
-        value={calendar}
-        onChange={(e: any) => setCalendar(e.target.value)}
+        value={calendarId}
+        onChange={(e: any) => setCalendarId(e.target.value)}
         options={[
           { value: "", label: "Selecione uma agenda" },
           { value: "ameciclo@gmail.com", label: "Eventos Internos" },
@@ -162,7 +162,7 @@ export default function CriarEvento() {
           { name: "endTime", value: endTime },
           { name: "description", value: description },
           { name: "location", value: location },
-          { name: "calendar", value: calendar },
+          { name: "calendarId", value: calendarId },
           { name: "workgroup", value: workGroup },
           { name: "from", value: JSON.stringify(user) },
         ]}
