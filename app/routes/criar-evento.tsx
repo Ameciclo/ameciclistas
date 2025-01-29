@@ -123,31 +123,31 @@ export default function CriarEvento() {
             label: "Selecione um GT"
           },
           {
-            value: "Incidência",
+            value: "-1001163972258",
             label: "Incidência"
           },
           {
-            value: "Pesquisa",
+            value: "-1001434654374",
             label: "Pesquisa"
           },
           {
-            value: "Formação Externa",
+            value: "-1001262630444",
             label: "Formação Externa"
           },
           {
-            value: "Interpautas",
+            value: "-1001283224155",
             label: "Interpautas"
           },
           {
-            value: "Escola da Bicicleta",
-            label: "Escola da Bicicleta"
+            value: "-1001387463477",
+            label: "Escola de Cicloativismo"
           },
           {
-            value: "Cultura",
+            value: "-1002002954299",
             label: "Cultura"
           },
           {
-            value: "Eixos",
+            value: "-1001378328092",
             label: "Algum dos Eixos"
           }
 
