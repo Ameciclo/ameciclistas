@@ -30,7 +30,7 @@ export default function CriarEvento() {
   const [durationMessage, setDurationMessage] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [location, setLocation] = useState<string>("");
-  const [calendar, setCalendar] = useState<string>("");
+  const [calendarId, setCalendarId] = useState<string>("");
   const [workGroup, setWorkGroup] = useState<string>("");
 
   useEffect(() => setUser(() => getTelegramUsersInfo()), []);
@@ -49,7 +49,7 @@ export default function CriarEvento() {
     durationMessage !== "** A duração do evento precisa ser maior que 10 minutos" &&
     durationMessage !== "*** Confira preenchimento de horário" &&
     description !== "" &&
-    calendar !== "" &&
+    calendarId !== "" &&
     workGroup !== "";
 
 
@@ -102,8 +102,8 @@ export default function CriarEvento() {
 
       <SelectInput
         label="Agenda: "
-        value={calendar}
-        onChange={(e: any) => setCalendar(e.target.value)}
+        value={calendarId}
+        onChange={(e: any) => setCalendarId(e.target.value)}
         options={[
           { value: "", label: "Selecione uma agenda" },
           { value: "ameciclo@gmail.com", label: "Eventos Internos" },
@@ -123,31 +123,31 @@ export default function CriarEvento() {
             label: "Selecione um GT"
           },
           {
-            value: "Incidência",
+            value: "-1001163972258",
             label: "Incidência"
           },
           {
-            value: "Pesquisa",
+            value: "-1001434654374",
             label: "Pesquisa"
           },
           {
-            value: "Formação Externa",
+            value: "-1001262630444",
             label: "Formação Externa"
           },
           {
-            value: "Interpautas",
+            value: "-1001283224155",
             label: "Interpautas"
           },
           {
-            value: "Escola da Bicicleta",
-            label: "Escola da Bicicleta"
+            value: "-1001387463477",
+            label: "Escola de Cicloativismo"
           },
           {
-            value: "Cultura",
+            value: "-1002002954299",
             label: "Cultura"
           },
           {
-            value: "Eixos",
+            value: "-1001378328092",
             label: "Algum dos Eixos"
           }
 
@@ -162,7 +162,7 @@ export default function CriarEvento() {
           { name: "endTime", value: endTime },
           { name: "description", value: description },
           { name: "location", value: location },
-          { name: "calendar", value: calendar },
+          { name: "calendarId", value: calendarId },
           { name: "workgroup", value: workGroup },
           { name: "from", value: JSON.stringify(user) },
         ]}
