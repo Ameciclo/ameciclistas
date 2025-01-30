@@ -1,5 +1,5 @@
 import { redirect, ActionFunction } from "@remix-run/node";
-import { updateFullUser } from "~/api/firebaseConnection.server";
+import { updateRoleUser } from "~/api/firebaseConnection.server";
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
@@ -7,7 +7,7 @@ export const action: ActionFunction = async ({ request }) => {
   const newRole = formData.get("role") as string;
 
   try {
-    await updateFullUser(user, newRole);
+    await updateRoleUser(user, newRole);
   } catch (error) {
     console.log(error);
   }

@@ -147,20 +147,17 @@ export async function createFullUser(usersInfo) {
   });
 }
 
-export async function updateFullUser(usersInfo, role) {
+export async function updateRoleUser(usersInfo, role) {
   return new Promise((resolve, reject) => {
     const ref = db.ref("subscribers");
 
-    const { id, name } = usersInfo;
+    const { id } = usersInfo;
     const user = {
-      id,
-      name,
       role,
-      telgram_user: usersInfo,
     };
 
     ref
-      .child(user.id)
+      .child(id)
       .update(user)
       .then((snapshot) => {
         resolve(snapshot);
