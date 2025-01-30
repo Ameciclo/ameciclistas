@@ -85,16 +85,10 @@ export async function saveSupplierToDatabase(supplierData) {
 export async function saveCalendarEvent(eventInfo) {
   return new Promise((resolve, reject) => {
     const ref = db.ref("calendar");
-    const key = ref.push().key;
-
-    if (!key) {
-      return reject(new Error("Falha ao gerar chave para a solicitação."));
-    }
-
-    eventInfo.id = key;
 
     const { startDate } = eventInfo;
     const childName = startDate.replace(/[:.]/g, "-");
+    eventInfo.id = childName;
 
     ref
       .child(childName)
