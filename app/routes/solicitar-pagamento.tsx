@@ -16,6 +16,7 @@ import SendToAction from "~/components/SendToAction";
 // Utilitários e tipos
 import { UserCategory, UserData } from "../utils/types";
 import { Project } from "~/utils/types";
+
 import { getTelegramUsersInfo } from "~/utils/users";
 import { isAuth } from "~/utils/isAuthorized";
 import Unauthorized from "~/components/Unauthorized";
@@ -28,7 +29,7 @@ export default function SolicitarPagamento() {
   const { projects, suppliers, currentUserCategories, usersInfo } =
     useLoaderData<typeof loader>();
 
-  // Estados já existentes
+  // Estados existentes
   const [userPermissions, setUserPermissions] = useState(currentUserCategories);
   const [projetoSelecionado, setProjetoSelecionado] = useState<Project | null>(
     null
@@ -41,10 +42,11 @@ export default function SolicitarPagamento() {
   const [fornecedor, setFornecedor] = useState("");
   const [user, setUser] = useState<UserData | null>(null);
 
-  // Novos estados para seleção de transação e reembolso
+  // Estados novos para transação, reembolso e data de pagamento
   const [transactionType, setTransactionType] = useState("Solicitar Pagamento");
   const [isReembolso, setIsReembolso] = useState(false);
   const [reembolsoFornecedor, setReembolsoFornecedor] = useState("");
+  const [paymentDate, setPaymentDate] = useState("");
 
   useEffect(() => {
     setUser(() => getTelegramUsersInfo());
@@ -56,7 +58,7 @@ export default function SolicitarPagamento() {
     }
   }, [user]);
 
-  // Validação do formulário – se reembolso estiver marcado, o campo da pessoa do reembolso deve ser preenchido
+  // Validação do formulário: se reembolso estiver marcado, o campo da pessoa do reembolso deve ser preenchido.
   const isFormValid =
     projetoSelecionado !== null &&
     rubricaSelecionada !== null &&
@@ -65,12 +67,12 @@ export default function SolicitarPagamento() {
     fornecedor.trim() !== "" &&
     (!isReembolso || reembolsoFornecedor.trim() !== "");
 
+  // Encontrar o fornecedor selecionado na lista (para enviar o objeto completo)
   const fornecedorSelecionado = suppliers.find((s: any) => s.id === fornecedor);
 
   const projectJSONStringfyed = projetoSelecionado
     ? JSON.stringify(projetoSelecionado)
     : "";
-  const suppliersJSONStringfyed = JSON.stringify(suppliers);
   const supplierJSONStringfyed = fornecedorSelecionado
     ? JSON.stringify(fornecedorSelecionado)
     : "";
@@ -80,11 +82,18 @@ export default function SolicitarPagamento() {
         err: "Informações de usuário do telegram não encontrado",
       });
 
+  // Os tipos de transação que exigem o campo de data de pagamento
+  const transactionTypesThatNeedDate = [
+    "Agendar pagamento",
+    "Registrar pagamento",
+    "Registrar Caixa Físico",
+  ];
+
   return isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS) ? (
     <Form method="post" className="container">
       <FormTitle>💰 Solicitar Pagamento</FormTitle>
 
-      {/* Novo campo para selecionar o tipo de transação */}
+      {/* Campo para selecionar o tipo de transação */}
       <div className="form-group">
         <label className="form-label">Tipo de Transação:</label>
         <select
@@ -114,16 +123,13 @@ export default function SolicitarPagamento() {
         />
       )}
 
-      <div className="form-group">
-        <label className="form-label">Fornecedor:</label>
-        <FornecedorInput
-          fornecedores={suppliers}
-          fornecedor={fornecedor}
-          setFornecedor={setFornecedor}
-        />{" "}
-      </div>
+      <FornecedorInput
+        fornecedores={suppliers}
+        fornecedor={fornecedor}
+        setFornecedor={setFornecedor}
+      />
 
-      {/* Campo de Reembolso */}
+      {/* Checkbox para Reembolso e, se marcado, campo para a pessoa do reembolso */}
       <div className="form-group">
         <label className="form-label">
           <input
@@ -137,7 +143,6 @@ export default function SolicitarPagamento() {
       {isReembolso && (
         <div className="form-group">
           <label className="form-label">Pessoa do Reembolso:</label>
-          {/* Reaproveita o mesmo componente de Fornecedor para buscar pelo nome */}
           <FornecedorInput
             fornecedores={suppliers}
             fornecedor={reembolsoFornecedor}
@@ -150,15 +155,32 @@ export default function SolicitarPagamento() {
 
       <RealValueInput name="valor" valor={valor} setValor={setValor} />
 
+      {/* Exibe o campo de data somente para os tipos que exigem */}
+      {transactionTypesThatNeedDate.includes(transactionType) && (
+        <div className="form-group">
+          <label className="form-label">Data de Pagamento:</label>
+          <input
+            type="date"
+            className="form-input"
+            value={paymentDate}
+            onChange={(e) => setPaymentDate(e.target.value)}
+          />
+        </div>
+      )}
+
+      {/* Envio dos dados com keys em inglês */}
       <SendToAction
         fields={[
-          { name: "telegramusersInfo", value: userJSONStringfyed },
+          { name: "telegramUsersInfo", value: userJSONStringfyed },
           { name: "project", value: projectJSONStringfyed },
-          { name: "fornecedor", value: supplierJSONStringfyed },
-          { name: "suppliers", value: suppliersJSONStringfyed },
+          { name: "budgetItem", value: rubricaSelecionada || "" },
+          { name: "description", value: descricao },
+          { name: "value", value: valor },
+          { name: "supplier", value: supplierJSONStringfyed },
           { name: "transactionType", value: transactionType },
-          { name: "isReembolso", value: JSON.stringify(isReembolso) },
-          { name: "reembolsoFornecedor", value: reembolsoFornecedor },
+          { name: "isRefund", value: JSON.stringify(isReembolso) },
+          { name: "refundSupplier", value: reembolsoFornecedor },
+          { name: "paymentDate", value: paymentDate },
         ]}
       />
 
@@ -171,6 +193,7 @@ export default function SolicitarPagamento() {
       </button>
       <Link to="/adicionar-fornecedor">
         <button
+          type="button"
           className={`button-full ${
             !isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)
               ? "button-disabled"
