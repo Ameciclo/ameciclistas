@@ -91,10 +91,9 @@ export async function saveCalendarEvent(eventInfo) {
       return reject(new Error("Falha ao gerar chave para a solicitação."));
     }
 
-    eventInfo.id = key;
-
+    const randomHash = Math.random().toString(36).substring(2, 8);
     const { startDate } = eventInfo;
-    const childName = startDate.replace(/[:.]/g, "-");
+    const childName = startDate.replace(/[:.]/g, "-") + "-" + randomHash
 
     ref
       .child(childName)

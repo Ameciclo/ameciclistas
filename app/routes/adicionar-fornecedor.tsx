@@ -16,8 +16,7 @@ import FormTitle from "~/components/Forms/FormTitle";
 export { loader, action };
 
 export default function AdicionarFornecedor() {
-  const { usersInfo, currentUserCategories } =
-    useLoaderData<typeof loader>();
+  const { usersInfo, currentUserCategories } = useLoaderData<typeof loader>();
   const [userPermissions, setUserPermissions] = useState(currentUserCategories);
   const [user, setUser] = useState<UserData | null>({} as UserData);
 
@@ -218,27 +217,46 @@ export default function AdicionarFornecedor() {
             <select
               className="p-2 border border-gray-300 rounded-md"
               value={contact.type}
-              onChange={(e) =>
-                handleContactChange(index, "type", e.target.value)
-              }
+              onChange={(e) => {
+                const newType = e.target.value;
+                // Atualiza o tipo
+                handleContactChange(index, "type", newType);
+                // Se selecionar "Sem contato", define o valor automaticamente
+                if (newType === "Sem contato") {
+                  handleContactChange(index, "value", "sem contato");
+                } else if (contact.value === "sem contato") {
+                  // Se voltar de "Sem contato", limpa o valor
+                  handleContactChange(index, "value", "");
+                }
+              }}
             >
               <option value="E-mail">E-mail</option>
               <option value="Telefone">Telefone</option>
               <option value="Instagram">Instagram</option>
               <option value="Telegram">Telegram</option>
               <option value="Outro">Outro</option>
+              <option value="Sem contato">Sem contato</option>
             </select>
-            <input
-              className="p-2 border border-gray-300 rounded-md flex-grow"
-              type={contact.type === "E-mail" ? "email" : "text"}
-              value={contact.value}
-              onChange={(e) =>
-                contact.type === "E-mail"
-                  ? handleEmailChange(index, e.target.value)
-                  : handlePhoneChange(index, e.target.value)
-              }
-              placeholder="Contato..."
-            />
+
+            {/* Renderiza o input apenas se o tipo não for "Sem contato" */}
+            {contact.type !== "Sem contato" && (
+              <input
+                className="p-2 border border-gray-300 rounded-md flex-grow"
+                type={contact.type === "E-mail" ? "email" : "text"}
+                value={contact.value}
+                onChange={(e) => {
+                  if (contact.type === "E-mail") {
+                    handleEmailChange(index, e.target.value);
+                  } else if (contact.type === "Telefone") {
+                    handlePhoneChange(index, e.target.value);
+                  } else {
+                    handleContactChange(index, "value", e.target.value);
+                  }
+                }}
+                placeholder="Contato..."
+              />
+            )}
+
             {contacts.length > 1 && (
               <button
                 type="button"
@@ -269,13 +287,19 @@ export default function AdicionarFornecedor() {
                 value={method.type}
                 onChange={(e) => {
                   const newType = e.target.value;
+                  // Para os tipos que não exigem input manual, já define o valor
                   const newValue =
-                    newType === "bill" || newType === "cash" ? newType : "";
+                    newType === "bill" ||
+                    newType === "cash" ||
+                    newType === "PIX Código"
+                      ? newType
+                      : "";
                   handlePaymentMethodChange(index, "type", newType);
                   handlePaymentMethodChange(index, "value", newValue);
                 }}
               >
                 <option value="PIX">PIX</option>
+                <option value="PIX Código">PIX Código</option>
                 <option value="account">Conta Bancária</option>
                 <option value="bill">Boleto</option>
                 <option value="cash">Dinheiro</option>
@@ -305,9 +329,15 @@ export default function AdicionarFornecedor() {
                 />
               )}
 
-              {(method.type === "bill" || method.type === "cash") && (
+              {(method.type === "bill" ||
+                method.type === "cash" ||
+                method.type === "PIX Código") && (
                 <span className="flex-grow">
-                  {method.type === "bill" ? "Boleto" : "Dinheiro"}
+                  {method.type === "bill"
+                    ? "Boleto"
+                    : method.type === "cash"
+                    ? "Dinheiro"
+                    : "PIX Código"}
                 </span>
               )}
 
