@@ -66,13 +66,23 @@ export const formatDate = new Intl.DateTimeFormat("pt-BR", {
   timeStyle: "medium",
 });
 
+export function formatDateToISO(
+  dateString: string,
+  timeString: string
+): string {
+  // Criando a data no fuso local (assumindo que o servidor roda em UTC)
+  const date = new Date(`${dateString}T${timeString}:00-03:00`); // Define UTC-3 diretamente
+
+  return date.toISOString(); // Retorna no formato ISO
+}
+
 export const formatRealValue = (value: string) => {
-    const cleanedValue = value.replace(/\D/g, '');
+  const cleanedValue = value.replace(/\D/g, "");
 
-    const formattedValue = new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(parseFloat(cleanedValue) / 100);
+  const formattedValue = new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(parseFloat(cleanedValue) / 100);
 
-    return formattedValue;
-  };
+  return formattedValue;
+};

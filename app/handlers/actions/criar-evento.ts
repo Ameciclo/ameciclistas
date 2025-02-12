@@ -1,16 +1,28 @@
 import { redirect, ActionFunction, json } from "@remix-run/node";
 import { saveCalendarEvent } from "~/api/firebaseConnection.server";
+import { formatDateToISO } from "~/utils/format";
 
-const createCalendarEventData = (formData: FormData) => ({
-  name: formData.get("name"),
-  startDate: (new Date(formData.get("date") + " " + formData.get("startTime"))).toISOString(),
-  endDate: (new Date(formData.get("date") + " " + formData.get("endTime"))).toISOString(),
-  description: formData.get("description"),
-  location: formData.get("location"),
-  calendarId: formData.get("calendarId"),
-  workgroup: parseInt(formData.get("workgroup") as string),
-  from: JSON.parse(formData.get("from") as string),
-});
+const createCalendarEventData = (formData: FormData) => {
+  const getString = (key: string): string =>
+    formData.get(key)?.toString() || "";
+  const getNumber = (key: string): number =>
+    parseInt(formData.get(key) as string, 10) || 0;
+  const getJson = (key: string): any => {
+    const value = formData.get(key);
+    return value ? JSON.parse(value as string) : null;
+  };
+
+  return {
+    name: getString("name"),
+    startDate: formatDateToISO(getString("date"), getString("startTime")),
+    endDate: formatDateToISO(getString("date"), getString("endTime")),
+    description: getString("description"),
+    location: getString("location"),
+    calendarId: getString("calendarId"),
+    workgroup: getNumber("workgroup"),
+    from: getJson("from"),
+  };
+};
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
