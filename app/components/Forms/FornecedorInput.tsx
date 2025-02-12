@@ -72,7 +72,6 @@ const FornecedorInput: React.FC<FornecedorInputProps> = ({
 }) => {
   return (
     <div className="form-group">
-      <label className="form-label">Fornecedor:</label>
       <SupplierAutocomplete
         fornecedores={fornecedores}
         value={fornecedor}
