@@ -22,29 +22,50 @@ export const formatCNPJ = (cnpj: string): string => {
     .replace(/(\d{3})(\d)/, "$1/$2")
     .replace(/(\d{4})(\d)/, "$1-$2");
 };
-
 // Formatação de Telefone
 export const formatPhone = (phone: string): string => {
   const onlyDigits = phone.replace(/\D/g, "");
-  if (onlyDigits.length <= 8) {
-    return onlyDigits.replace(/(\d{4})(\d)/, "$1-$2");
-  } else if (onlyDigits.length === 9) {
-    return `(${onlyDigits.slice(0, 2)}) ${onlyDigits.slice(
-      2,
-      7
-    )}-${onlyDigits.slice(7)}`;
-  } else if (onlyDigits.length === 10) {
+
+  // Sem DDD: Telefone fixo (8 dígitos)
+  if (onlyDigits.length === 8) {
+    return onlyDigits.replace(/(\d{4})(\d{4})/, "$1-$2");
+  }
+
+  // Sem DDD: Telefone móvel (9 dígitos)
+  if (onlyDigits.length === 9) {
+    return onlyDigits.replace(/(\d{5})(\d{4})/, "$1-$2");
+  }
+
+  // Com DDD: Telefone fixo (10 dígitos: 2 do DDD + 8 do número)
+  if (onlyDigits.length === 10) {
     return `(${onlyDigits.slice(0, 2)}) ${onlyDigits.slice(
       2,
       6
     )}-${onlyDigits.slice(6)}`;
-  } else {
-    return `+${onlyDigits.slice(0, -10)} (${onlyDigits.slice(
-      -10,
-      -8
-    )}) ${onlyDigits.slice(-8, -4)}-${onlyDigits.slice(-4)}`;
   }
+
+  // Com DDD: Telefone móvel (11 dígitos: 2 do DDD + 9 do número)
+  if (onlyDigits.length === 11) {
+    return `(${onlyDigits.slice(0, 2)}) ${onlyDigits.slice(
+      2,
+      7
+    )}-${onlyDigits.slice(7)}`;
+  }
+
+  // Formatação para números internacionais (mais de 11 dígitos)
+  if (onlyDigits.length > 11) {
+    const countryCode = onlyDigits.slice(0, onlyDigits.length - 10);
+    const ddd = onlyDigits.slice(onlyDigits.length - 10, onlyDigits.length - 8);
+    const numberPart = onlyDigits.slice(onlyDigits.length - 8);
+    return `+${countryCode} (${ddd}) ${numberPart.slice(
+      0,
+      4
+    )}-${numberPart.slice(4)}`;
+  }
+
+  return phone;
 };
+
 // Formatação de Email (simplificada)
 export const formatEmail = (email: string): string => {
   return email.trim().toLowerCase();
