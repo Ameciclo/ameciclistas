@@ -93,7 +93,8 @@ export async function saveCalendarEvent(eventInfo) {
 
     const randomHash = Math.random().toString(36).substring(2, 8);
     const { startDate } = eventInfo;
-    const childName = startDate.replace(/[:.]/g, "-") + "-" + randomHash
+    const childName = startDate.replace(/[:.]/g, "-") + "-" + randomHash;
+    eventInfo.id = childName;
 
     ref
       .child(childName)
