@@ -4,7 +4,7 @@ import { getTelegramUsersInfo } from "../utils/users";
 import { UserCategory, UserData } from "~/utils/types";
 import { isAuth } from "~/utils/isAuthorized";
 import Unauthorized from "~/components/Unauthorized";
-import { BackButton } from "~/components/Forms/CommonButtons";
+import { BackButton } from "~/components/Forms/Buttons";
 import { action } from "~/handlers/actions/criar-evento";
 import { loader } from "~/handlers/loaders/criar-evento";
 export { loader, action };

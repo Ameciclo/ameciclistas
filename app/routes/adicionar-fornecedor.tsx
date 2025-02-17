@@ -6,7 +6,7 @@ import { UserCategory, UserData } from "~/utils/types";
 import Unauthorized from "~/components/Unauthorized";
 import { formatEmail, formatIdNumber, formatPhone } from "~/utils/format";
 import { validateIdNumber } from "~/utils/idNumber";
-import { BackButton } from "~/components/Forms/CommonButtons";
+import { BackButton } from "~/components/Forms/Buttons";
 
 import { action } from "../handlers/actions/adicionar-fornecedor";
 import { loader } from "~/handlers/loaders/adicionar-fornecedor";

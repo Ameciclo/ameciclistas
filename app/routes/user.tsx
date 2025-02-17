@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Form, useLoaderData } from "@remix-run/react";
 import { UserCategory, UserData } from "~/utils/types";
 import { getTelegramUsersInfo } from "~/utils/users";
-import { BackButton } from "~/components/Forms/CommonButtons";
+import { BackButton } from "~/components/Forms/Buttons";
 
 import { action } from "~/handlers/actions/user-action";
 import { loader } from "~/handlers/loaders/user";

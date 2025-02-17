@@ -3,19 +3,20 @@
 import { useEffect, useState } from "react";
 import { useLoaderData, Form, Link } from "@remix-run/react";
 
-// Componentes internos
-import AutosuggestInput from "~/components/Forms/Inputs/GenericAutosuggest";
 import CurrenyValueInput from "~/components/Forms/Inputs/CurrencyValueInput";
 import LongTextInput from "~/components/Forms/Inputs/LongTextInput";
 import FormTitle from "~/components/Forms/FormTitle";
 import {
+  SubmitButton,
   BackButton,
-  ButtonsListWithPermissions,
-} from "~/components/Forms/CommonButtons";
+  GenericButton,
+} from "~/components/Forms/Buttons";
 import SendToAction from "~/components/Forms/SendToAction";
 import SelectInput from "~/components/Forms/Inputs/SelectInput";
+import DateInput from "~/components/Forms/Inputs/DateInput";
+import Checkbox from "~/components/Forms/Inputs/CheckBoxI";
+import GenericAutosuggest from "~/components/Forms/Inputs/GenericAutosuggest";
 
-// Utilitários e tipos
 import { Supplier, UserCategory, UserData } from "../utils/types";
 
 import { getTelegramUsersInfo } from "~/utils/users";
@@ -24,10 +25,6 @@ import Unauthorized from "~/components/Unauthorized";
 
 import { action } from "~/handlers/actions/solicitar-pagamento";
 import { loader } from "~/handlers/loaders/solicitar-pagamento";
-import DateInput from "~/components/Forms/Inputs/DateInput";
-import Checkbox from "~/components/Forms/Inputs/CheckBoxI";
-import GenericAutosuggest from "~/components/Forms/Inputs/GenericAutosuggest";
-import SubmitButton from "~/components/Forms/SubmitButton";
 export { loader, action };
 
 export default function SolicitarPagamento() {
@@ -195,16 +192,18 @@ export default function SolicitarPagamento() {
           { name: "paymentDate", value: paymentDate },
         ]}
       />
-      <SubmitButton isEnabled={isFormValid} label="🤞 Enviar Solicitação" />
-      <ButtonsListWithPermissions
-        links={[
-          {
-            to: "/adicionar-fornecedor",
-            label: "📦 Adicionar Fornecedor",
-            requiredPermission: UserCategory.PROJECT_COORDINATORS,
-          },
-        ]}
+      <SubmitButton
+        isEnabled={isFormValid}
+        label="🤞 Enviar Solicitação"
         userPermissions={userPermissions}
+        requiredPermission={UserCategory.PROJECT_COORDINATORS}
+      />
+      {/* Botão único para adicionar fornecedor */}
+      <GenericButton
+        to="/adicionar-fornecedor"
+        label="📦 Adicionar Fornecedor"
+        userPermissions={userPermissions}
+        requiredPermission={UserCategory.PROJECT_COORDINATORS}
       />
       <BackButton />
     </Form>

@@ -4,7 +4,7 @@ import { UserCategory, UserData } from "~/utils/types";
 import { loader } from "~/handlers/loaders/users";
 import { action } from "~/handlers/actions/users-action";
 import SendToAction from "~/components/Forms/SendToAction";
-import { BackButton } from "~/components/Forms/CommonButtons";
+import { BackButton } from "~/components/Forms/Buttons";
 import { isAuth } from "~/utils/isAuthorized";
 import { getTelegramUsersInfo } from "~/utils/users";
 import Unauthorized from "~/components/Unauthorized";

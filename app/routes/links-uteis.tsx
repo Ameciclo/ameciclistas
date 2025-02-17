@@ -1,6 +1,6 @@
 import { useLoaderData } from "@remix-run/react";
 import { useEffect, useState } from "react";
-import { BackButton, ButtonsListWithPermissions } from "~/components/Forms/CommonButtons";
+import { BackButton, ButtonsListWithPermissions } from "~/components/Forms/Buttons";
 import { UserCategory, UserData } from "~/utils/types";
 import { loader } from "./_index";
 import { getTelegramUsersInfo } from "~/utils/users";
