@@ -5,15 +5,15 @@ import { Project } from "~/utils/types";
 interface ProjectSelectProps {
   projects: Project[];
   selectedProject: Project | null;
-  setSelectedProject: React.Dispatch<React.SetStateAction<Project | null>>;
-  setSelectedBudgetItem: React.Dispatch<React.SetStateAction<string | null>>;
+  setProject: React.Dispatch<React.SetStateAction<Project | null>>;
+  setBudgetItem: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
-const ProjectSelect: React.FC<ProjectSelectProps> = ({
+const ProjectSelector: React.FC<ProjectSelectProps> = ({
   projects,
   selectedProject,
-  setSelectedProject,
-  setSelectedBudgetItem,
+  setProject,
+  setBudgetItem,
 }) => {
   return (
     <div className="form-group">
@@ -26,23 +26,21 @@ const ProjectSelect: React.FC<ProjectSelectProps> = ({
           const project = projects.find(
             (p) => p.spreadsheet_id === e.target.value
           );
-          setSelectedProject(project || null);
-          setSelectedBudgetItem(null);
+          setProject(project || null);
+          setBudgetItem(null);
         }}
       >
         <option value="">Selecione um projeto</option>
-        {
-          projects
-            .sort((a, b) => a.name.localeCompare(b.name))
-            .map((project, index) => (
-              <option key={index} value={project.spreadsheet_id}>
-                {project.name}
-              </option>
-            ))
-        }
+        {projects
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .map((project, index) => (
+            <option key={index} value={project.spreadsheet_id}>
+              {project.name}
+            </option>
+          ))}
       </select>
     </div>
   );
 };
 
-export default ProjectSelect;
+export default ProjectSelector;

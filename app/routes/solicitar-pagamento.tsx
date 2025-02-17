@@ -4,18 +4,16 @@ import { useEffect, useState } from "react";
 import { useLoaderData, Form, Link } from "@remix-run/react";
 
 // Componentes internos
-import ProjectSelect from "~/components/Forms/ProjectSelect";
-import RubricaSelect from "~/components/Forms/RubricaSelect";
-import FornecedorInput from "~/components/Forms/FornecedorInput";
+import FornecedorInput from "~/components/Forms/SupplierSelect";
 import RealValueInput from "~/components/Forms/Inputs/RealValueInput";
 import DescriptionInput from "~/components/Forms/Inputs/DescriptionInput";
 import FormTitle from "~/components/Forms/FormTitle";
 import { BackButton } from "~/components/CommonButtons";
 import SendToAction from "~/components/SendToAction";
+import SelectInput from "~/components/Forms/Inputs/SelectInput";
 
 // Utilitários e tipos
 import { UserCategory, UserData } from "../utils/types";
-import { Project } from "~/utils/types";
 
 import { getTelegramUsersInfo } from "~/utils/users";
 import { isAuth } from "~/utils/isAuthorized";
@@ -29,21 +27,35 @@ export default function SolicitarPagamento() {
   const { projects, suppliers, currentUserCategories, usersInfo } =
     useLoaderData<typeof loader>();
 
-  // Estados existentes
   const [userPermissions, setUserPermissions] = useState(currentUserCategories);
-  const [projetoSelecionado, setProjetoSelecionado] = useState<Project | null>(
-    null
+  const [transactionType, setTransactionType] = useState("Solicitar Pagamento");
+
+  const projectOptions = projects
+    .map((project) => ({
+      value: project.spreadsheet_id,
+      label: project.name,
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+  projectOptions.unshift({ value: "", label: "Selecione um projeto" });
+
+  const [projectId, setProjectId] = useState("");
+  const [budgetItem, setBudgetItem] = useState("");
+
+  const selectedProject = projects.find(
+    (project) => project.spreadsheet_id === projectId
   );
-  const [rubricaSelecionada, setRubricaSelecionada] = useState<string | null>(
-    null
-  );
+
+  const budgetOptions = selectedProject
+    ? selectedProject.budget_items
+        .sort((a, b) => a.localeCompare(b))
+        .map((item) => ({ value: item, label: item }))
+    : [{ value: "", label: "Selecione uma rubrica" }];
+
   const [descricao, setDescricao] = useState("");
   const [valor, setValor] = useState("0");
   const [fornecedor, setFornecedor] = useState("");
   const [user, setUser] = useState<UserData | null>(null);
 
-  // Estados novos para transação, reembolso e data de pagamento
-  const [transactionType, setTransactionType] = useState("Solicitar Pagamento");
   const [isReembolso, setIsReembolso] = useState(false);
   const [reembolsoFornecedor, setReembolsoFornecedor] = useState("");
   const [paymentDate, setPaymentDate] = useState("");
@@ -60,8 +72,8 @@ export default function SolicitarPagamento() {
 
   // Validação do formulário: se reembolso estiver marcado, o campo da pessoa do reembolso deve ser preenchido.
   const isFormValid =
-    projetoSelecionado !== null &&
-    rubricaSelecionada !== null &&
+    projectId !== null &&
+    budgetItem !== null &&
     descricao.trim() !== "" &&
     valor !== "0" &&
     fornecedor.trim() !== "" &&
@@ -70,9 +82,7 @@ export default function SolicitarPagamento() {
   // Encontrar o fornecedor selecionado na lista (para enviar o objeto completo)
   const fornecedorSelecionado = suppliers.find((s: any) => s.id === fornecedor);
 
-  const projectJSONStringfyed = projetoSelecionado
-    ? JSON.stringify(projetoSelecionado)
-    : "";
+  const projectJSONStringfyed = projectId ? JSON.stringify(projectId) : "";
   const supplierJSONStringfyed = fornecedorSelecionado
     ? JSON.stringify(fornecedorSelecionado)
     : "";
@@ -93,33 +103,34 @@ export default function SolicitarPagamento() {
     <Form method="post" className="container">
       <FormTitle>💰 Solicitar Pagamento</FormTitle>
 
-      {/* Campo para selecionar o tipo de transação */}
-      <div className="form-group">
-        <label className="form-label">Tipo de Transação:</label>
-        <select
-          className="form-input"
-          value={transactionType}
-          onChange={(e) => setTransactionType(e.target.value)}
-        >
-          <option value="Solicitar Pagamento">Solicitar Pagamento</option>
-          <option value="Registrar pagamento">Registrar pagamento</option>
-          <option value="Registrar Caixa Físico">Registrar Caixa Físico</option>
-          <option value="Agendar pagamento">Agendar pagamento</option>
-        </select>
-      </div>
-
-      <ProjectSelect
-        projects={projects}
-        selectedProject={projetoSelecionado}
-        setSelectedProject={setProjetoSelecionado}
-        setSelectedBudgetItem={setRubricaSelecionada}
+      <SelectInput
+        label="Tipo de Transação:"
+        name="transactionType"
+        value={transactionType}
+        onChange={(e) => setTransactionType(e.target.value)}
+        options={[
+          { value: "Solicitar Pagamento", label: "Solicitar Pagamento" },
+          { value: "Registrar pagamento", label: "Registrar pagamento" },
+          { value: "Registrar Caixa Físico", label: "Registrar Caixa Físico" },
+          { value: "Agendar pagamento", label: "Agendar pagamento" },
+        ]}
       />
 
-      {projetoSelecionado && (
-        <RubricaSelect
-          projetoSelecionado={projetoSelecionado}
-          rubricaSelecionada={rubricaSelecionada}
-          setRubricaSelecionada={setRubricaSelecionada}
+      <SelectInput
+        label="Projeto:"
+        name="project"
+        value={projectId}
+        onChange={(e) => setProjectId(e.target.value)}
+        options={projectOptions}
+      />
+
+      {projectId && (
+        <SelectInput
+          label="Rubrica:"
+          name="budgetItem"
+          value={budgetItem}
+          onChange={(e) => setBudgetItem(e.target.value)}
+          options={budgetOptions}
         />
       )}
 
@@ -173,7 +184,7 @@ export default function SolicitarPagamento() {
         fields={[
           { name: "telegramUsersInfo", value: userJSONStringfyed },
           { name: "project", value: projectJSONStringfyed },
-          { name: "budgetItem", value: rubricaSelecionada || "" },
+          { name: "budgetItem", value: budgetItem || "" },
           { name: "description", value: descricao },
           { name: "value", value: valor },
           { name: "supplier", value: supplierJSONStringfyed },

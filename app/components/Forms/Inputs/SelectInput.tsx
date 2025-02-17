@@ -1,25 +1,47 @@
+// components/Forms/Inputs/SelectInput.tsx
 import React from "react";
 
-interface SelectInputProps {
-  label: string;
+export interface SelectOption {
   value: string;
-  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-  options: { value: string; label: string }[];
+  label: string;
 }
 
-const SelectInput: React.FC<SelectInputProps> = ({ label, value, onChange, options }) => {
+export interface SelectInputProps {
+  label: string;
+  name: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  options: SelectOption[];
+  className?: string;
+}
+
+const SelectInput: React.FC<SelectInputProps> = ({
+  label,
+  name,
+  value,
+  onChange,
+  options,
+  className = "",
+}) => {
   return (
     <div className="form-group">
-      <label className="font-bold">{label}</label>
-      <select className="form-input" value={value} onChange={onChange}>
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
+      <label className="form-label" htmlFor={name}>
+        {label}
+      </label>
+      <select
+        id={name}
+        name={name}
+        value={value}
+        onChange={onChange}
+        className={`form-input ${className}`}
+      >
+        {options.map((opt) => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
           </option>
         ))}
       </select>
     </div>
-
   );
 };
 
