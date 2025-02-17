@@ -3,7 +3,7 @@ import { UserCategory, UserData } from "~/utils/types";
 import { useEffect, useState } from "react";
 import { getTelegramUsersInfo } from "~/utils/users";
 import telegramInit from "~/utils/telegramInit";
-import { ButtonsListWithPermissions } from "~/components/CommonButtons";
+import { ButtonsListWithPermissions } from "~/components/Forms/CommonButtons";
 
 import { loader } from "~/handlers/loaders/_index";
 export { loader };

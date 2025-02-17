@@ -8,8 +8,11 @@ import AutosuggestInput from "~/components/Forms/Inputs/GenericAutosuggest";
 import CurrenyValueInput from "~/components/Forms/Inputs/CurrencyValueInput";
 import LongTextInput from "~/components/Forms/Inputs/LongTextInput";
 import FormTitle from "~/components/Forms/FormTitle";
-import { BackButton } from "~/components/CommonButtons";
-import SendToAction from "~/components/SendToAction";
+import {
+  BackButton,
+  ButtonsListWithPermissions,
+} from "~/components/Forms/CommonButtons";
+import SendToAction from "~/components/Forms/SendToAction";
 import SelectInput from "~/components/Forms/Inputs/SelectInput";
 
 // Utilitários e tipos
@@ -24,6 +27,7 @@ import { loader } from "~/handlers/loaders/solicitar-pagamento";
 import DateInput from "~/components/Forms/Inputs/DateInput";
 import Checkbox from "~/components/Forms/Inputs/CheckBoxI";
 import GenericAutosuggest from "~/components/Forms/Inputs/GenericAutosuggest";
+import SubmitButton from "~/components/Forms/SubmitButton";
 export { loader, action };
 
 export default function SolicitarPagamento() {
@@ -153,8 +157,8 @@ export default function SolicitarPagamento() {
         <GenericAutosuggest<Supplier>
           title="Pessoa Reembolsada:"
           items={suppliers}
-          value={supplier}
-          onChange={setSupplier}
+          value={refundSupplier}
+          onChange={setRefundSupplier}
           getItemValue={(item) => item.name} // Certifique-se de que esse valor é único
           getItemLabel={(item) =>
             item.nickname ? `${item.nickname} (${item.name})` : item.name
@@ -191,26 +195,17 @@ export default function SolicitarPagamento() {
           { name: "paymentDate", value: paymentDate },
         ]}
       />
-      <button
-        type="submit"
-        className={isFormValid ? "button-full" : "button-full button-disabled"}
-        disabled={!isFormValid}
-      >
-        🤞 Enviar Solicitação
-      </button>
-      <Link to="/adicionar-fornecedor">
-        <button
-          type="button"
-          className={`button-full ${
-            !isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)
-              ? "button-disabled"
-              : ""
-          }`}
-          disabled={!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)}
-        >
-          📦 Adicionar Fornecedor
-        </button>
-      </Link>
+      <SubmitButton isEnabled={isFormValid} label="🤞 Enviar Solicitação" />
+      <ButtonsListWithPermissions
+        links={[
+          {
+            to: "/adicionar-fornecedor",
+            label: "📦 Adicionar Fornecedor",
+            requiredPermission: UserCategory.PROJECT_COORDINATORS,
+          },
+        ]}
+        userPermissions={userPermissions}
+      />
       <BackButton />
     </Form>
   ) : (

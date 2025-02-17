@@ -4,7 +4,7 @@ import { getTelegramUsersInfo } from "../utils/users";
 import { UserCategory, UserData } from "~/utils/types";
 import { isAuth } from "~/utils/isAuthorized";
 import Unauthorized from "~/components/Unauthorized";
-import { BackButton } from "~/components/CommonButtons";
+import { BackButton } from "~/components/Forms/CommonButtons";
 import { action } from "~/handlers/actions/criar-evento";
 import { loader } from "~/handlers/loaders/criar-evento";
 export { loader, action };
@@ -12,10 +12,10 @@ export { loader, action };
 import SelectInput from "~/components/Forms/Inputs/SelectInput";
 import NumberInput from "~/components/Forms/Inputs/NumberInput";
 import DescriptionInput from "~/components/Forms/Inputs/LongTextInput";
-import SendToAction from "~/components/SendToAction";
+import SendToAction from "~/components/Forms/SendToAction";
 import HourInput from "~/components/Forms/Inputs/HourInput";
 import DateInput from "~/components/Forms/Inputs/DateInput";
-import SubmitButton from "~/components/SubmitButton";
+import SubmitButton from "~/components/Forms/SubmitButton";
 import FormTitle from "~/components/Forms/FormTitle";
 
 export default function CriarEvento() {
