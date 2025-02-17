@@ -7,14 +7,13 @@ interface DateInputProps {
 }
 
 const DateInput: React.FC<DateInputProps> = ({
-  value,
   label,
+  value,
   onChange,
 }) => {
-  const textLabel = label ? label : "Data:"
   return (
     <div className="form-group">
-      <label className="form-label">{textLabel}</label>
+      <label className="form-label">{label ? label : "Data:"}</label>
       <input
         className="form-input"
         type="date"

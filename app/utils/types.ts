@@ -17,8 +17,8 @@ export interface Supplier {
   type: string,
 }
 
-export interface Budget {
-  nome: string;
+export interface BudgetItems {
+  name: string;
 }
 
 export interface Project {

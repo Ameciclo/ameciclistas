@@ -6,11 +6,11 @@ import { UserCategory, UserData } from "~/utils/types";
 import Unauthorized from "~/components/Unauthorized";
 import { formatEmail, formatIdNumber, formatPhone } from "~/utils/format";
 import { validateIdNumber } from "~/utils/idNumber";
-import { BackButton } from "~/components/CommonButtons";
+import { BackButton } from "~/components/Forms/Buttons";
 
 import { action } from "../handlers/actions/adicionar-fornecedor";
 import { loader } from "~/handlers/loaders/adicionar-fornecedor";
-import SendToAction from "~/components/SendToAction";
+import SendToAction from "~/components/Forms/SendToAction";
 import SelectInput from "~/components/Forms/Inputs/SelectInput";
 import FormTitle from "~/components/Forms/FormTitle";
 export { loader, action };

@@ -5,7 +5,7 @@ import Unauthorized from "~/components/Unauthorized";
 import { isAuth } from "~/utils/isAuthorized";
 import { getTelegramUsersInfo } from "~/utils/users";
 import { CardList } from "~/components/CardsList";
-import { BackButton } from "~/components/CommonButtons";
+import { BackButton } from "~/components/Forms/Buttons";
 
 import { loader, LoaderData } from "../handlers/loaders/grupos-de-trabalho";
 import FormTitle from "~/components/Forms/FormTitle";
