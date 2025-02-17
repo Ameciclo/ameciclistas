@@ -1,5 +1,5 @@
-import React from 'react';
-import { formatRealValue } from '~/utils/format';
+import React from "react";
+import { formatRealValue } from "~/utils/format";
 
 interface ValorInputProps {
   valor: string;
@@ -7,11 +7,15 @@ interface ValorInputProps {
   name: string;
 }
 
-const RealValueInput: React.FC<ValorInputProps> = ({ valor, setValor, name }) => {
+const CurrenyValueInput: React.FC<ValorInputProps> = ({
+  valor,
+  setValor,
+  name,
+}) => {
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = event.target.value;
 
-    const numericValue = inputValue.replace(/\D/g, '');
+    const numericValue = inputValue.replace(/\D/g, "");
     setValor(numericValue);
   };
 
@@ -29,4 +33,4 @@ const RealValueInput: React.FC<ValorInputProps> = ({ valor, setValor, name }) =>
   );
 };
 
-export default RealValueInput;
+export default CurrenyValueInput;

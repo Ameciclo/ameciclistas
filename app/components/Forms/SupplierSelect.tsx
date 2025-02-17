@@ -5,10 +5,10 @@ import Autosuggest from "react-autosuggest";
 import { Supplier } from "~/utils/types";
 import SendToAction from "../SendToAction";
 
-interface FornecedorInputProps {
-  fornecedores: any[];
-  fornecedor: string;
-  setFornecedor: React.Dispatch<React.SetStateAction<string>>;
+interface AutosuggestInputProps {
+  suggestionsList: any[];
+  suggestion: string;
+  setSuggestion: React.Dispatch<React.SetStateAction<string>>;
 }
 
 interface Props {
@@ -16,16 +16,21 @@ interface Props {
   value: string;
   onChange: (value: string) => void;
 }
-const SupplierAutocomplete: React.FC<Props> = ({ fornecedores, value, onChange }) => {
+const SupplierAutocomplete: React.FC<Props> = ({
+  fornecedores,
+  value,
+  onChange,
+}) => {
   const [suggestions, setSuggestions] = useState<Supplier[]>([]);
 
   const getSuggestions = (inputValue: string) => {
     const lowercasedInput = inputValue.toLowerCase();
     return fornecedores
-      .filter(fornecedor =>
-        fornecedor.name.toLowerCase().includes(lowercasedInput) ||
-        (fornecedor.nickname &&
-          fornecedor.nickname.toLowerCase().includes(lowercasedInput))
+      .filter(
+        (fornecedor) =>
+          fornecedor.name.toLowerCase().includes(lowercasedInput) ||
+          (fornecedor.nickname &&
+            fornecedor.nickname.toLowerCase().includes(lowercasedInput))
       )
       .slice(0, 5);
   };
@@ -65,21 +70,21 @@ const SupplierAutocomplete: React.FC<Props> = ({ fornecedores, value, onChange }
   );
 };
 
-const FornecedorInput: React.FC<FornecedorInputProps> = ({
-  fornecedores,
-  fornecedor,
-  setFornecedor,
+const AutosuggestInput: React.FC<AutosuggestInputProps> = ({
+  suggestionsList,
+  suggestion,
+  setSuggestion,
 }) => {
   return (
     <div className="form-group">
       <SupplierAutocomplete
-        fornecedores={fornecedores}
-        value={fornecedor}
-        onChange={setFornecedor}
+        fornecedores={suggestionsList}
+        value={suggestion}
+        onChange={setSuggestion}
       />
-      <SendToAction fields={[{ name: "fornecedor", value: fornecedor }]} />
+      <SendToAction fields={[{ name: "fornecedor", value: suggestion }]} />
     </div>
   );
 };
 
-export default FornecedorInput;
+export default AutosuggestInput;

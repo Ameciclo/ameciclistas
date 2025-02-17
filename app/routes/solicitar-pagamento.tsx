@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import { useLoaderData, Form, Link } from "@remix-run/react";
 
 // Componentes internos
-import FornecedorInput from "~/components/Forms/SupplierSelect";
-import RealValueInput from "~/components/Forms/Inputs/RealValueInput";
-import DescriptionInput from "~/components/Forms/Inputs/DescriptionInput";
+import AutosuggestInput from "~/components/Forms/SupplierSelect";
+import CurrenyValueInput from "~/components/Forms/Inputs/CurrencyValueInput";
+import LongTextInput from "~/components/Forms/Inputs/LongTextInput";
 import FormTitle from "~/components/Forms/FormTitle";
 import { BackButton } from "~/components/CommonButtons";
 import SendToAction from "~/components/SendToAction";
@@ -51,7 +51,7 @@ export default function SolicitarPagamento() {
         .map((item) => ({ value: item, label: item }))
     : [{ value: "", label: "Selecione uma rubrica" }];
 
-  const [descricao, setDescricao] = useState("");
+  const [description, setDescription] = useState("");
   const [valor, setValor] = useState("0");
   const [fornecedor, setFornecedor] = useState("");
   const [user, setUser] = useState<UserData | null>(null);
@@ -74,7 +74,7 @@ export default function SolicitarPagamento() {
   const isFormValid =
     projectId !== null &&
     budgetItem !== null &&
-    descricao.trim() !== "" &&
+    description.trim() !== "" &&
     valor !== "0" &&
     fornecedor.trim() !== "" &&
     (!isReembolso || reembolsoFornecedor.trim() !== "");
@@ -134,10 +134,10 @@ export default function SolicitarPagamento() {
         />
       )}
 
-      <FornecedorInput
-        fornecedores={suppliers}
-        fornecedor={fornecedor}
-        setFornecedor={setFornecedor}
+      <AutosuggestInput
+        suggestionsList={suppliers}
+        suggestion={fornecedor}
+        setSuggestion={setFornecedor}
       />
 
       {/* Checkbox para Reembolso e, se marcado, campo para a pessoa do reembolso */}
@@ -154,17 +154,21 @@ export default function SolicitarPagamento() {
       {isReembolso && (
         <div className="form-group">
           <label className="form-label">Pessoa do Reembolso:</label>
-          <FornecedorInput
-            fornecedores={suppliers}
-            fornecedor={reembolsoFornecedor}
-            setFornecedor={setReembolsoFornecedor}
+          <AutosuggestInput
+            suggestionsList={suppliers}
+            suggestion={reembolsoFornecedor}
+            setSuggestion={setReembolsoFornecedor}
           />
         </div>
       )}
 
-      <DescriptionInput descricao={descricao} setDescricao={setDescricao} />
+      <LongTextInput
+        title={"Descrição"}
+        text={description}
+        setText={setDescription}
+      />
 
-      <RealValueInput name="valor" valor={valor} setValor={setValor} />
+      <CurrenyValueInput name="valor" valor={valor} setValor={setValor} />
 
       {/* Exibe o campo de data somente para os tipos que exigem */}
       {transactionTypesThatNeedDate.includes(transactionType) && (
@@ -185,7 +189,7 @@ export default function SolicitarPagamento() {
           { name: "telegramUsersInfo", value: userJSONStringfyed },
           { name: "project", value: projectJSONStringfyed },
           { name: "budgetItem", value: budgetItem || "" },
-          { name: "description", value: descricao },
+          { name: "description", value: description },
           { name: "value", value: valor },
           { name: "supplier", value: supplierJSONStringfyed },
           { name: "transactionType", value: transactionType },
