@@ -22,6 +22,7 @@ import Unauthorized from "~/components/Unauthorized";
 import { action } from "~/handlers/actions/solicitar-pagamento";
 import { loader } from "~/handlers/loaders/solicitar-pagamento";
 import DateInput from "~/components/Forms/Inputs/DateInput";
+import Checkbox from "~/components/Forms/Inputs/CheckBoxI";
 export { loader, action };
 
 export default function SolicitarPagamento() {
@@ -139,16 +140,7 @@ export default function SolicitarPagamento() {
         setSuggestion={setSupplier}
       />
 
-      <div className="form-group">
-        <label className="form-label">
-          <input
-            type="checkbox"
-            checked={isRefund}
-            onChange={(e) => setIsRefund(e.target.checked)}
-          />{" "}
-          Reembolso
-        </label>
-      </div>
+      <Checkbox label="Reembolso" checked={isRefund} onChange={setIsRefund} />
       {isRefund && (
         <div className="form-group">
           <label className="form-label">Pessoa do Reembolso:</label>
