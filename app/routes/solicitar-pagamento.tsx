@@ -109,10 +109,10 @@ export default function SolicitarPagamento() {
       </div>
 
       <ProjectSelect
-        projetos={projects}
-        projetoSelecionado={projetoSelecionado}
-        setProjetoSelecionado={setProjetoSelecionado}
-        setRubricaSelecionada={setRubricaSelecionada}
+        projects={projects}
+        selectedProject={projetoSelecionado}
+        setSelectedProject={setProjetoSelecionado}
+        setSelectedBudgetItem={setRubricaSelecionada}
       />
 
       {projetoSelecionado && (

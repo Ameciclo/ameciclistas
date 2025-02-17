@@ -3,40 +3,40 @@ import React from "react";
 import { Project } from "~/utils/types";
 
 interface ProjectSelectProps {
-  projetos: Project[];
-  projetoSelecionado: Project | null;
-  setProjetoSelecionado: React.Dispatch<React.SetStateAction<Project | null>>;
-  setRubricaSelecionada: React.Dispatch<React.SetStateAction<string | null>>;
+  projects: Project[];
+  selectedProject: Project | null;
+  setSelectedProject: React.Dispatch<React.SetStateAction<Project | null>>;
+  setSelectedBudgetItem: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
 const ProjectSelect: React.FC<ProjectSelectProps> = ({
-  projetos,
-  projetoSelecionado,
-  setProjetoSelecionado,
-  setRubricaSelecionada,
+  projects,
+  selectedProject,
+  setSelectedProject,
+  setSelectedBudgetItem,
 }) => {
   return (
     <div className="form-group">
       <label className="form-label">Projeto:</label>
       <select
-        name="projeto"
+        name="project"
         className="form-input"
-        value={projetoSelecionado?.spreadsheet_id || ""}
+        value={selectedProject?.spreadsheet_id || ""}
         onChange={(e) => {
-          const projeto = projetos.find(
+          const project = projects.find(
             (p) => p.spreadsheet_id === e.target.value
           );
-          setProjetoSelecionado(projeto || null);
-          setRubricaSelecionada(null);
+          setSelectedProject(project || null);
+          setSelectedBudgetItem(null);
         }}
       >
         <option value="">Selecione um projeto</option>
         {
-          projetos
+          projects
             .sort((a, b) => a.name.localeCompare(b.name))
-            .map((projeto, index) => (
-              <option key={index} value={projeto.spreadsheet_id}>
-                {projeto.name}
+            .map((project, index) => (
+              <option key={index} value={project.spreadsheet_id}>
+                {project.name}
               </option>
             ))
         }

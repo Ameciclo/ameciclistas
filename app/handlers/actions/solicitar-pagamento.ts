@@ -40,7 +40,7 @@ const createPaymentRequest = (formData: FormData) => {
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
-
+  console.log("Solicitando pagamento com ", formData);
   try {
     const paymentRequest = createPaymentRequest(formData);
     await savePaymentRequest(paymentRequest);
