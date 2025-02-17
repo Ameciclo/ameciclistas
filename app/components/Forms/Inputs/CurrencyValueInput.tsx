@@ -1,22 +1,22 @@
 import React from "react";
-import { formatRealValue } from "~/utils/format";
+import { formatCurrencyToReal } from "~/utils/format";
 
 interface ValorInputProps {
-  valor: string;
-  setValor: (value: string) => void;
+  currencyValue: string;
+  setCurrencyValue: (value: string) => void;
   name: string;
 }
 
 const CurrenyValueInput: React.FC<ValorInputProps> = ({
-  valor,
-  setValor,
   name,
+  currencyValue,
+  setCurrencyValue,
 }) => {
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = event.target.value;
 
     const numericValue = inputValue.replace(/\D/g, "");
-    setValor(numericValue);
+    setCurrencyValue(numericValue);
   };
 
   return (
@@ -25,7 +25,7 @@ const CurrenyValueInput: React.FC<ValorInputProps> = ({
       <input
         type="text"
         name={name}
-        value={formatRealValue(valor)}
+        value={formatCurrencyToReal(currencyValue)}
         onChange={handleChange}
         placeholder="R$ 0,00"
       />

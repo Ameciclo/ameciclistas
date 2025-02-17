@@ -1,5 +1,3 @@
-// components/SolicitarPagamento/FornecedorInput.tsx
-// components/Forms/SupplierAutocomplete.tsx
 import React, { useState } from "react";
 import Autosuggest from "react-autosuggest";
 import { Supplier } from "~/utils/types";
@@ -16,21 +14,16 @@ interface Props {
   value: string;
   onChange: (value: string) => void;
 }
-const SupplierAutocomplete: React.FC<Props> = ({
-  fornecedores,
-  value,
-  onChange,
-}) => {
+const SupplierAutocomplete: React.FC<Props> = ({ fornecedores, value, onChange }) => {
   const [suggestions, setSuggestions] = useState<Supplier[]>([]);
 
   const getSuggestions = (inputValue: string) => {
     const lowercasedInput = inputValue.toLowerCase();
     return fornecedores
-      .filter(
-        (fornecedor) =>
-          fornecedor.name.toLowerCase().includes(lowercasedInput) ||
-          (fornecedor.nickname &&
-            fornecedor.nickname.toLowerCase().includes(lowercasedInput))
+      .filter(fornecedor =>
+        fornecedor.name.toLowerCase().includes(lowercasedInput) ||
+        (fornecedor.nickname &&
+          fornecedor.nickname.toLowerCase().includes(lowercasedInput))
       )
       .slice(0, 5);
   };

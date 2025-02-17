@@ -97,7 +97,7 @@ export function formatDateToISO(
   return date.toISOString(); // Retorna no formato ISO
 }
 
-export const formatRealValue = (value: string) => {
+export const formatCurrencyToReal = (value: string) => {
   const cleanedValue = value.replace(/\D/g, "");
 
   const formattedValue = new Intl.NumberFormat("pt-BR", {
