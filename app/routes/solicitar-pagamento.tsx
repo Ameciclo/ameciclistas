@@ -77,23 +77,25 @@ export default function SolicitarPagamento() {
     (project) => project.spreadsheet_id === projectId
   );
 
+  const projectJSONStringfyed = selectedProject
+    ? JSON.stringify(selectedProject)
+    : "";
+
   const budgetOptions = selectedProject
     ? selectedProject.budget_items
         .sort((a, b) => a.localeCompare(b))
         .map((item) => ({ value: item, label: item }))
     : [{ value: "", label: "Selecione uma rubrica" }];
 
-  const projectJSONStringfyed = selectedProject
-    ? JSON.stringify(selectedProject)
-    : "";
-
-  const selectedSupplier = suppliers.find((s: any) => s.id === supplierId);
+  const selectedSupplier = suppliers.find(
+    (s: any) => (s.id_number || s.id) === supplierId
+  );
   const supplierJSONStringfyed = selectedSupplier
     ? JSON.stringify(selectedSupplier)
     : "";
 
   const selectedRefundSupplier = suppliers.find(
-    (s: any) => s.id === refundSupplierId
+    (s: any) => (s.id_number || s.id) === refundSupplierId
   );
   const refundSupplierJSONStringfyed = selectedRefundSupplier
     ? JSON.stringify(selectedRefundSupplier)
@@ -112,8 +114,9 @@ export default function SolicitarPagamento() {
     budgetItem !== null &&
     supplierId.trim() !== "" &&
     description.trim() !== "" &&
-    paymentValue !== "0";
-    
+    paymentValue !== "0" &&
+    (!isRefund || refundSupplierId.trim() !== "");
+
   return isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS) ? (
     <Form method="post" className="container">
       <FormTitle>💰 Solicitar Pagamento</FormTitle>
@@ -157,7 +160,8 @@ export default function SolicitarPagamento() {
         value={supplierInput}
         onChange={setSupplierInput}
         onSuggestionSelected={(_event, { suggestion }) => {
-          setSupplierId(suggestion.id);
+          const uniqueId = suggestion.id_number || suggestion.id;
+          setSupplierId(uniqueId);
           setSupplierInput(
             suggestion.nickname
               ? `${suggestion.nickname} (${suggestion.name})`
@@ -184,7 +188,8 @@ export default function SolicitarPagamento() {
           value={refundSupplierInput}
           onChange={setRefundSupplierInput}
           onSuggestionSelected={(_event, { suggestion }) => {
-            setRefundSupplierId(suggestion.id);
+            const uniqueId = suggestion.id_number || suggestion.id;
+            setRefundSupplierId(uniqueId);
             setRefundSupplierInput(
               suggestion.nickname
                 ? `${suggestion.nickname} (${suggestion.name})`
@@ -203,6 +208,7 @@ export default function SolicitarPagamento() {
           }
         />
       )}
+
       <LongTextInput
         title={"Descrição"}
         text={description}

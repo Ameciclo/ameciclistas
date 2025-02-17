@@ -114,6 +114,7 @@ export default function CriarEvento() {
 
       <SelectInput
         label="Agenda: "
+        name="calendarId"
         value={calendarId}
         onChange={(e: any) => setCalendarId(e.target.value)}
         options={[
@@ -135,6 +136,7 @@ export default function CriarEvento() {
       />
 
       <SelectInput
+        name="workgroup"
         label="Grupo de Trabalho (GT): "
         value={workGroup}
         onChange={(e: any) => setWorkGroup(e.target.value)}

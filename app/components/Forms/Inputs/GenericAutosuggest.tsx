@@ -56,7 +56,7 @@ const GenericAutosuggest = <T,>({
   const getSuggestionValue = (suggestion: T) => getItemValue(suggestion);
 
   const renderSuggestion = (suggestion: T) => (
-    <div style={{ cursor: "pointer" }}>{getItemLabel(suggestion)}</div>
+    <div style={{ cursor: "pointer" }}>➕ {getItemLabel(suggestion)}</div>
   );
 
   return (
