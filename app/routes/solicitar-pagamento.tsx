@@ -35,16 +35,26 @@ export default function SolicitarPagamento() {
   const [userPermissions, setUserPermissions] = useState(currentUserCategories);
   const [paymentDate, setPaymentDate] = useState(() => {
     const today = new Date();
-    return today.toISOString().split("T")[0]; // Formato "YYYY-MM-DD"
+    return today.toISOString();
   });
   const [transactionType, setTransactionType] = useState("Solicitar Pagamento");
   const [projectId, setProjectId] = useState("");
   const [budgetItem, setBudgetItem] = useState("");
-  const [supplier, setSupplier] = useState("");
+  const [supplierId, setSupplierId] = useState("");
   const [isRefund, setIsRefund] = useState(false);
-  const [refundSupplier, setRefundSupplier] = useState("");
+  const [refundSupplierId, setRefundSupplierId] = useState("");
   const [description, setDescription] = useState("");
   const [paymentValue, setPaymentValue] = useState("0");
+
+  useEffect(() => {
+    setUser(() => getTelegramUsersInfo());
+  }, [usersInfo]);
+
+  useEffect(() => {
+    if (user?.id && usersInfo[user.id]) {
+      setUserPermissions([usersInfo[user.id].role as any]);
+    }
+  }, [user]);
 
   const projectOptions = projects
     .map((project) => ({
@@ -64,36 +74,35 @@ export default function SolicitarPagamento() {
         .map((item) => ({ value: item, label: item }))
     : [{ value: "", label: "Selecione uma rubrica" }];
 
-  useEffect(() => {
-    setUser(() => getTelegramUsersInfo());
-  }, [usersInfo]);
+  const projectJSONStringfyed = selectedProject
+    ? JSON.stringify(selectedProject)
+    : "";
 
-  useEffect(() => {
-    if (user?.id && usersInfo[user.id]) {
-      setUserPermissions([usersInfo[user.id].role as any]);
-    }
-  }, [user]);
+  const selectedSupplier = suppliers.find((s: any) => s.id === supplierId);
+  const supplierJSONStringfyed = selectedSupplier
+    ? JSON.stringify(selectedSupplier)
+    : "";
+
+  const selectedRefundSupplier = suppliers.find(
+    (s: any) => s.id === refundSupplierId
+  );
+  const refundSupplierJSONStringfyed = selectedRefundSupplier
+    ? JSON.stringify(selectedRefundSupplier)
+    : "";
+
+  const userJSONStringfyed = user
+    ? JSON.stringify(user)
+    : JSON.stringify({
+        err: "Informações de usuário do telegram não encontrado",
+      });
 
   const isFormValid =
     projectId !== null &&
     budgetItem !== null &&
     description.trim() !== "" &&
     paymentValue !== "0" &&
-    supplier.trim() !== "" &&
-    (!isRefund || refundSupplier.trim() !== "");
-
-  // Encontrar o fornecedor selecionado na lista (para enviar o objeto completo)
-  const selectedSupplier = suppliers.find((s: any) => s.id === supplier);
-
-  const projectJSONStringfyed = projectId ? JSON.stringify(projectId) : "";
-  const supplierJSONStringfyed = selectedSupplier
-    ? JSON.stringify(selectedSupplier)
-    : "";
-  const userJSONStringfyed = user
-    ? JSON.stringify(user)
-    : JSON.stringify({
-        err: "Informações de usuário do telegram não encontrado",
-      });
+    supplierId.trim() !== "" &&
+    (!isRefund || refundSupplierId.trim() !== "");
 
   return isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS) ? (
     <Form method="post" className="container">
@@ -117,7 +126,7 @@ export default function SolicitarPagamento() {
       />
       <SelectInput
         label="Projeto:"
-        name="project"
+        name="projectId"
         value={projectId}
         onChange={(e) => setProjectId(e.target.value)}
         options={projectOptions}
@@ -135,8 +144,8 @@ export default function SolicitarPagamento() {
       <GenericAutosuggest<Supplier>
         title="Fornecedor:"
         items={suppliers}
-        value={supplier}
-        onChange={setSupplier}
+        value={supplierId}
+        onChange={setSupplierId}
         getItemValue={(item) => item.name} // Certifique-se de que esse valor é único
         getItemLabel={(item) =>
           item.nickname ? `${item.nickname} (${item.name})` : item.name
@@ -154,8 +163,8 @@ export default function SolicitarPagamento() {
         <GenericAutosuggest<Supplier>
           title="Pessoa Reembolsada:"
           items={suppliers}
-          value={refundSupplier}
-          onChange={setRefundSupplier}
+          value={refundSupplierId}
+          onChange={setRefundSupplierId}
           getItemValue={(item) => item.name} // Certifique-se de que esse valor é único
           getItemLabel={(item) =>
             item.nickname ? `${item.nickname} (${item.name})` : item.name
@@ -182,14 +191,14 @@ export default function SolicitarPagamento() {
         fields={[
           { name: "telegramUsersInfo", value: userJSONStringfyed },
           { name: "project", value: projectJSONStringfyed },
-          { name: "budgetItem", value: budgetItem || "" },
-          { name: "description", value: description },
-          { name: "paymentValue", value: paymentValue },
           { name: "supplier", value: supplierJSONStringfyed },
-          { name: "transactionType", value: transactionType },
-          { name: "isRefund", value: JSON.stringify(isRefund) },
-          { name: "refundSupplier", value: refundSupplier },
-          { name: "paymentDate", value: paymentDate },
+          { name: "refundSupplier", value: refundSupplierJSONStringfyed },
+          // { name: "budgetItem", value: budgetItem || "" },
+          // { name: "description", value: description },
+          // { name: "paymentValue", value: paymentValue },
+          //{ name: "transactionType", value: transactionType },
+          //{ name: "isRefund", value: JSON.stringify(isRefund) },
+          //{ name: "paymentDate", value: paymentDate },
         ]}
       />
       <SubmitButton
