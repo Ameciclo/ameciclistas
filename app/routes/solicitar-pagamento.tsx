@@ -35,13 +35,15 @@ export default function SolicitarPagamento() {
   const [userPermissions, setUserPermissions] = useState(currentUserCategories);
   const [paymentDate, setPaymentDate] = useState(() => {
     const today = new Date();
-    return today.toISOString();
+    return today.toISOString().split("T")[0];
   });
   const [transactionType, setTransactionType] = useState("Solicitar Pagamento");
   const [projectId, setProjectId] = useState("");
   const [budgetItem, setBudgetItem] = useState("");
+  const [supplierInput, setSupplierInput] = useState("");
   const [supplierId, setSupplierId] = useState("");
   const [isRefund, setIsRefund] = useState(false);
+  const [refundSupplierInput, setRefundSupplierInput] = useState("");
   const [refundSupplierId, setRefundSupplierId] = useState("");
   const [description, setDescription] = useState("");
   const [paymentValue, setPaymentValue] = useState("0");
@@ -55,6 +57,13 @@ export default function SolicitarPagamento() {
       setUserPermissions([usersInfo[user.id].role as any]);
     }
   }, [user]);
+
+  useEffect(() => {
+    if (!isRefund) {
+      setRefundSupplierId("");
+      setRefundSupplierInput("");
+    }
+  }, [isRefund]);
 
   const projectOptions = projects
     .map((project) => ({
@@ -97,13 +106,14 @@ export default function SolicitarPagamento() {
       });
 
   const isFormValid =
+    paymentDate !== "" &&
+    transactionType !== "" &&
     projectId !== null &&
     budgetItem !== null &&
-    description.trim() !== "" &&
-    paymentValue !== "0" &&
     supplierId.trim() !== "" &&
-    (!isRefund || refundSupplierId.trim() !== "");
-
+    description.trim() !== "" &&
+    paymentValue !== "0";
+    
   return isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS) ? (
     <Form method="post" className="container">
       <FormTitle>💰 Solicitar Pagamento</FormTitle>
@@ -144,9 +154,17 @@ export default function SolicitarPagamento() {
       <GenericAutosuggest<Supplier>
         title="Fornecedor:"
         items={suppliers}
-        value={supplierId}
-        onChange={setSupplierId}
-        getItemValue={(item) => item.name} // Certifique-se de que esse valor é único
+        value={supplierInput}
+        onChange={setSupplierInput}
+        onSuggestionSelected={(_event, { suggestion }) => {
+          setSupplierId(suggestion.id);
+          setSupplierInput(
+            suggestion.nickname
+              ? `${suggestion.nickname} (${suggestion.name})`
+              : suggestion.name
+          );
+        }}
+        getItemValue={(item) => item.name}
         getItemLabel={(item) =>
           item.nickname ? `${item.nickname} (${item.name})` : item.name
         }
@@ -163,9 +181,17 @@ export default function SolicitarPagamento() {
         <GenericAutosuggest<Supplier>
           title="Pessoa Reembolsada:"
           items={suppliers}
-          value={refundSupplierId}
-          onChange={setRefundSupplierId}
-          getItemValue={(item) => item.name} // Certifique-se de que esse valor é único
+          value={refundSupplierInput}
+          onChange={setRefundSupplierInput}
+          onSuggestionSelected={(_event, { suggestion }) => {
+            setRefundSupplierId(suggestion.id);
+            setRefundSupplierInput(
+              suggestion.nickname
+                ? `${suggestion.nickname} (${suggestion.name})`
+                : suggestion.name
+            );
+          }}
+          getItemValue={(item) => item.name}
           getItemLabel={(item) =>
             item.nickname ? `${item.nickname} (${item.name})` : item.name
           }
@@ -193,12 +219,8 @@ export default function SolicitarPagamento() {
           { name: "project", value: projectJSONStringfyed },
           { name: "supplier", value: supplierJSONStringfyed },
           { name: "refundSupplier", value: refundSupplierJSONStringfyed },
-          // { name: "budgetItem", value: budgetItem || "" },
-          // { name: "description", value: description },
-          // { name: "paymentValue", value: paymentValue },
-          //{ name: "transactionType", value: transactionType },
-          //{ name: "isRefund", value: JSON.stringify(isRefund) },
-          //{ name: "paymentDate", value: paymentDate },
+          { name: "isRefund", value: JSON.stringify(isRefund) },
+          { name: "paymentDate", value: paymentDate },
         ]}
       />
       <SubmitButton
