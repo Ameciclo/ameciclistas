@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useLoaderData, Form, Link } from "@remix-run/react";
 
 // Componentes internos
-import AutosuggestInput from "~/components/Forms/SupplierSelect";
+import AutosuggestInput from "~/components/Forms/Inputs/GenericAutosuggest";
 import CurrenyValueInput from "~/components/Forms/Inputs/CurrencyValueInput";
 import LongTextInput from "~/components/Forms/Inputs/LongTextInput";
 import FormTitle from "~/components/Forms/FormTitle";
@@ -13,7 +13,7 @@ import SendToAction from "~/components/SendToAction";
 import SelectInput from "~/components/Forms/Inputs/SelectInput";
 
 // Utilitários e tipos
-import { UserCategory, UserData } from "../utils/types";
+import { Supplier, UserCategory, UserData } from "../utils/types";
 
 import { getTelegramUsersInfo } from "~/utils/users";
 import { isAuth } from "~/utils/isAuthorized";
@@ -23,6 +23,7 @@ import { action } from "~/handlers/actions/solicitar-pagamento";
 import { loader } from "~/handlers/loaders/solicitar-pagamento";
 import DateInput from "~/components/Forms/Inputs/DateInput";
 import Checkbox from "~/components/Forms/Inputs/CheckBoxI";
+import GenericAutosuggest from "~/components/Forms/Inputs/GenericAutosuggest";
 export { loader, action };
 
 export default function SolicitarPagamento() {
@@ -96,13 +97,11 @@ export default function SolicitarPagamento() {
   return isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS) ? (
     <Form method="post" className="container">
       <FormTitle>💰 Solicitar Pagamento</FormTitle>
-
       <DateInput
         label="Data do pagamento:"
         value={paymentDate}
         onChange={(e: any) => setPaymentDate(e.target.value)}
       />
-
       <SelectInput
         label="Tipo de Transação:"
         name="transactionType"
@@ -115,7 +114,6 @@ export default function SolicitarPagamento() {
           { value: "Agendar pagamento", label: "Agendar pagamento" },
         ]}
       />
-
       <SelectInput
         label="Projeto:"
         name="project"
@@ -123,7 +121,6 @@ export default function SolicitarPagamento() {
         onChange={(e) => setProjectId(e.target.value)}
         options={projectOptions}
       />
-
       {projectId && (
         <SelectInput
           label="Rubrica:"
@@ -134,36 +131,52 @@ export default function SolicitarPagamento() {
         />
       )}
 
-      <AutosuggestInput
-        suggestionsList={suppliers}
-        suggestion={supplier}
-        setSuggestion={setSupplier}
+      <GenericAutosuggest<Supplier>
+        title="Fornecedor:"
+        items={suppliers}
+        value={supplier}
+        onChange={setSupplier}
+        getItemValue={(item) => item.name} // Certifique-se de que esse valor é único
+        getItemLabel={(item) =>
+          item.nickname ? `${item.nickname} (${item.name})` : item.name
+        }
+        filterFunction={(item, query) =>
+          item.name.toLowerCase().includes(query.toLowerCase()) ||
+          (item.nickname
+            ? item.nickname.toLowerCase().includes(query.toLowerCase())
+            : false)
+        }
       />
 
       <Checkbox label="Reembolso" checked={isRefund} onChange={setIsRefund} />
       {isRefund && (
-        <div className="form-group">
-          <label className="form-label">Pessoa do Reembolso:</label>
-          <AutosuggestInput
-            suggestionsList={suppliers}
-            suggestion={refundSupplier}
-            setSuggestion={setRefundSupplier}
-          />
-        </div>
+        <GenericAutosuggest<Supplier>
+          title="Pessoa Reembolsada:"
+          items={suppliers}
+          value={supplier}
+          onChange={setSupplier}
+          getItemValue={(item) => item.name} // Certifique-se de que esse valor é único
+          getItemLabel={(item) =>
+            item.nickname ? `${item.nickname} (${item.name})` : item.name
+          }
+          filterFunction={(item, query) =>
+            item.name.toLowerCase().includes(query.toLowerCase()) ||
+            (item.nickname
+              ? item.nickname.toLowerCase().includes(query.toLowerCase())
+              : false)
+          }
+        />
       )}
-
       <LongTextInput
         title={"Descrição"}
         text={description}
         setText={setDescription}
       />
-
       <CurrenyValueInput
         name="paymentValue"
         currencyValue={paymentValue}
         setCurrencyValue={setPaymentValue}
       />
-
       <SendToAction
         fields={[
           { name: "telegramUsersInfo", value: userJSONStringfyed },
@@ -178,7 +191,6 @@ export default function SolicitarPagamento() {
           { name: "paymentDate", value: paymentDate },
         ]}
       />
-
       <button
         type="submit"
         className={isFormValid ? "button-full" : "button-full button-disabled"}
