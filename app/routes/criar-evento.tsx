@@ -143,7 +143,7 @@ export default function CriarEvento() {
         options={[
           {
             value: "",
-            label: "Selecione um GT",
+            label: "Selecione um Grupo",
           },
           {
             value: "-1001163972258",
@@ -170,8 +170,32 @@ export default function CriarEvento() {
             label: "Cultura",
           },
           {
+            value: "-1001383160179",
+            label: "Coordenacao",
+          },
+          {
             value: "-1001378328092",
-            label: "Algum dos Eixos",
+            label: "Secretaria",
+          },
+          {
+            value: "-1002230503739",
+            label: "Financeiro",
+          },
+          {
+            value: "-1001111602370",
+            label: "Captação",
+          },
+          {
+            value: "-1001443689418",
+            label: "Comunicação",
+          },
+          {
+            value: "-1001485248506",
+            label: "Tecnologia",
+          },
+          {
+            value: "-1001383160179",
+            label: "Conselho Político",
           },
         ]}
       />
