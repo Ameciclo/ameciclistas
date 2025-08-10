@@ -170,3 +170,122 @@ export async function updateFullUser(usersInfo, role) {
       });
   });
 }
+
+// Funções para Controle de Recursos Independentes
+export async function getProducts() {
+  const ref = db.ref("resources/products");
+  const snapshot = await ref.once("value");
+  return snapshot.val() || {};
+}
+
+export async function getSales() {
+  const ref = db.ref("resources/sales");
+  const snapshot = await ref.once("value");
+  return snapshot.val() || {};
+}
+
+export async function getDonations() {
+  const ref = db.ref("resources/donations");
+  const snapshot = await ref.once("value");
+  return snapshot.val() || {};
+}
+
+export async function saveSale(saleData) {
+  return new Promise((resolve, reject) => {
+    const ref = db.ref("resources/sales");
+    const key = ref.push().key;
+
+    if (!key) {
+      return reject(new Error("Falha ao gerar chave para a venda."));
+    }
+
+    saleData.id = key;
+    saleData.createdAt = new Date().toISOString();
+
+    ref
+      .child(key)
+      .update(saleData)
+      .then((snapshot) => {
+        resolve(snapshot);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export async function saveDonation(donationData) {
+  return new Promise((resolve, reject) => {
+    const ref = db.ref("resources/donations");
+    const key = ref.push().key;
+
+    if (!key) {
+      return reject(new Error("Falha ao gerar chave para a doação."));
+    }
+
+    donationData.id = key;
+    donationData.createdAt = new Date().toISOString();
+
+    ref
+      .child(key)
+      .update(donationData)
+      .then((snapshot) => {
+        resolve(snapshot);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export async function updateSaleStatus(saleId, status, additionalData = {}) {
+  return new Promise((resolve, reject) => {
+    const ref = db.ref(`resources/sales/${saleId}`);
+    
+    const updateData = {
+      status,
+      ...additionalData
+    };
+
+    if (status === "PAID") {
+      updateData.paidAt = new Date().toISOString();
+    } else if (status === "CONFIRMED") {
+      updateData.confirmedAt = new Date().toISOString();
+    }
+
+    ref
+      .update(updateData)
+      .then((snapshot) => {
+        resolve(snapshot);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export async function updateDonationStatus(donationId, status, additionalData = {}) {
+  return new Promise((resolve, reject) => {
+    const ref = db.ref(`resources/donations/${donationId}`);
+    
+    const updateData = {
+      status,
+      ...additionalData
+    };
+
+    if (status === "PAID") {
+      updateData.paidAt = new Date().toISOString();
+    } else if (status === "CONFIRMED") {
+      updateData.confirmedAt = new Date().toISOString();
+    }
+
+    ref
+      .update(updateData)
+      .then((snapshot) => {
+        resolve(snapshot);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}

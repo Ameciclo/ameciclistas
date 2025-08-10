@@ -44,6 +44,7 @@ export enum UserCategory {
   AMECICLISTAS = "AMECICLISTAS",
   PROJECT_COORDINATORS = "PROJECT_COORDINATORS",
   AMECICLO_COORDINATORS = "AMECICLO_COORDINATORS",
+  RESOURCES_COORDINATOR = "RESOURCES_COORDINATOR", // Para gerenciar recursos independentes
   DEVELOPMENT = "DEVELOPMENT",
 }
 
@@ -214,4 +215,69 @@ export interface GrupoTrabalho {
   imagem: string;
   link: string;
   categoria: string;
+}
+
+// Tipos para Controle de Recursos Independentes
+export interface Product {
+  id: string;
+  name: string;
+  category: ProductCategory;
+  price: number;
+  stock: number;
+  description?: string;
+  variants?: ProductVariant[];
+}
+
+export interface ProductVariant {
+  id: string;
+  name: string; // Ex: "P", "M", "G" para camisas ou "Azul", "Verde" para cores
+  stock: number;
+  price?: number; // Se diferente do produto principal
+}
+
+export enum ProductCategory {
+  LIQUIDOS = "LIQUIDOS", // Cervejas
+  CAMISAS = "CAMISAS",
+  BROCHES = "BROCHES",
+  PECAS_BICICLETA = "PECAS_BICICLETA",
+  LIVROS = "LIVROS",
+  SERVICOS = "SERVICOS"
+}
+
+export interface Sale {
+  id: string;
+  userId: number;
+  userName: string;
+  productId: string;
+  productName: string;
+  variantId?: string;
+  variantName?: string;
+  quantity: number;
+  unitPrice: number;
+  totalValue: number;
+  status: SaleStatus;
+  createdAt: string;
+  paidAt?: string;
+  confirmedAt?: string;
+  paymentProof?: string;
+}
+
+export enum SaleStatus {
+  PENDING = "PENDING", // Registrado, aguardando pagamento
+  PAID = "PAID", // Pago, aguardando confirmação
+  CONFIRMED = "CONFIRMED", // Confirmado pela coordenação
+  CANCELLED = "CANCELLED" // Cancelado
+}
+
+export interface Donation {
+  id: string;
+  userId: number;
+  userName: string;
+  value: number;
+  description?: string;
+  status: SaleStatus;
+  createdAt: string;
+  paidAt?: string;
+  confirmedAt?: string;
+  paymentProof?: string;
 }
