@@ -51,9 +51,10 @@ export const action: ActionFunction = async ({ request }) => {
     if (action === "updateStock") {
       const productId = formData.get("productId") as string;
       const newStock = parseInt(formData.get("newStock") as string);
-      const variantId = formData.get("variantId") as string || null;
+      const variantId = formData.get("variantId") as string | null;
+      const variantIdValue = variantId || null;
       
-      await updateProductStock(productId, newStock, variantId);
+      await updateProductStock(productId, newStock, variantIdValue);
       return json({ success: "Estoque atualizado com sucesso!" });
     }
     
