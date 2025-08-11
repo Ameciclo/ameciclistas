@@ -289,3 +289,88 @@ export async function updateDonationStatus(donationId, status, additionalData = 
       });
   });
 }
+
+// Funções para gerenciar produtos
+export async function saveProduct(productData) {
+  return new Promise((resolve, reject) => {
+    const ref = db.ref("resources/products");
+    const key = productData.id || ref.push().key;
+
+    if (!key) {
+      return reject(new Error("Falha ao gerar chave para o produto."));
+    }
+
+    productData.id = key;
+
+    ref
+      .child(key)
+      .update(productData)
+      .then((snapshot) => {
+        resolve(snapshot);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export async function updateProduct(productId, productData) {
+  return new Promise((resolve, reject) => {
+    const ref = db.ref(`resources/products/${productId}`);
+    
+    ref
+      .update(productData)
+      .then((snapshot) => {
+        resolve(snapshot);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export async function deleteProduct(productId) {
+  return new Promise((resolve, reject) => {
+    const ref = db.ref(`resources/products/${productId}`);
+    
+    ref
+      .remove()
+      .then((snapshot) => {
+        resolve(snapshot);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export async function updateProductStock(productId, newStock, variantId = null) {
+  return new Promise((resolve, reject) => {
+    const ref = variantId 
+      ? db.ref(`resources/products/${productId}/variants`)
+      : db.ref(`resources/products/${productId}`);
+    
+    if (variantId) {
+      // Atualizar estoque de variante específica
+      ref.once('value', (snapshot) => {
+        const variants = snapshot.val() || [];
+        const variantIndex = variants.findIndex(v => v.id === variantId);
+        
+        if (variantIndex !== -1) {
+          variants[variantIndex].stock = newStock;
+          ref.set(variants)
+            .then(resolve)
+            .catch(reject);
+        } else {
+          reject(new Error('Variante não encontrada'));
+        }
+      });
+    } else {
+      // Atualizar estoque do produto principal
+      ref
+        .update({ stock: newStock })
+        .then(resolve)
+        .catch(reject);
+    }
+  });
+}

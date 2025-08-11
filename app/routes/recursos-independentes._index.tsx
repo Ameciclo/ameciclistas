@@ -31,13 +31,19 @@ const resourcesLinks = [
     to: "/recursos-independentes/gerenciar",
     label: "Gerenciar Recursos",
     icon: "⚙️",
-    requiredPermission: UserCategory.RESOURCES_COORDINATOR,
+    requiredPermission: UserCategory.AMECICLISTAS,
+  },
+  {
+    to: "/recursos-independentes/estoque",
+    label: "Gerenciar Estoque",
+    icon: "📦",
+    requiredPermission: UserCategory.AMECICLISTAS,
   },
   {
     to: "/recursos-independentes/historico",
     label: "Histórico de Vendas",
     icon: "📊",
-    requiredPermission: UserCategory.RESOURCES_COORDINATOR,
+    requiredPermission: UserCategory.AMECICLISTAS,
   },
 ];
 
