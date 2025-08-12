@@ -27,9 +27,9 @@ export default function Biblioteca() {
 
   useEffect(() => {
     if (user?.id) {
-      // Em desenvolvimento, dar permissões de coordenador para testes
+      // Em desenvolvimento, usar ANY_USER para facilitar testes
       if (process.env.NODE_ENV === "development") {
-        setUserPermissions([UserCategory.PROJECT_COORDINATORS]);
+        setUserPermissions([UserCategory.ANY_USER]);
       } else {
         setUserPermissions([UserCategory.AMECICLISTAS]);
       }
@@ -60,7 +60,7 @@ export default function Biblioteca() {
           >
             Estatísticas
           </Link>
-          {user && isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS) && (
+          {user && (process.env.NODE_ENV === "development" || isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) && (
             <button
               onClick={() => setMostrarGestao(!mostrarGestao)}
               className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600"
@@ -89,13 +89,22 @@ export default function Biblioteca() {
               >
                 Buscar
               </button>
+              {busca && (
+                <button
+                  type="button"
+                  onClick={() => setBusca("")}
+                  className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
+                >
+                  Limpar
+                </button>
+              )}
             </div>
           </Form>
 
           <PaginacaoLivros 
             livros={livrosDisponiveis}
             onSolicitar={handleSolicitar}
-            userCanRequest={user && isAuth(userPermissions, UserCategory.AMECICLISTAS)}
+            userCanRequest={user && (process.env.NODE_ENV === "development" || isAuth(userPermissions, UserCategory.AMECICLISTAS))}
           />
         </>
       ) : (

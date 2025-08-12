@@ -20,26 +20,36 @@ export async function bibliotecaLoader({ request }: LoaderFunctionArgs) {
       (livro.author?.toLowerCase() || "").includes(busca.toLowerCase())
     );
 
-    // Mapear para estrutura esperada e criar exemplares baseados no register
-    const livrosComDisponibilidade = livrosFiltrados.map(livro => {
+    // Agrupar livros por título
+    const livrosAgrupados: { [key: string]: any } = {};
+    
+    livrosFiltrados.forEach(livro => {
+      const titulo = livro.title;
+      
+      if (!livrosAgrupados[titulo]) {
+        livrosAgrupados[titulo] = {
+          ...livro,
+          titulo: livro.title,
+          autor: livro.author,
+          codigo: livro.register,
+          ano: livro.year,
+          tipo: livro.type,
+          exemplares: []
+        };
+      }
+      
       const emprestado = emprestimos.some((emp: any) => 
         emp.subcodigo === livro.register && emp.status === 'emprestado'
       );
       
-      return {
-        ...livro,
-        titulo: livro.title,
-        autor: livro.author,
-        codigo: livro.register,
-        ano: livro.year,
-        tipo: livro.type,
-        exemplares: [{
-          subcodigo: livro.register,
-          disponivel: !emprestado,
-          consulta_local: false
-        }]
-      };
+      livrosAgrupados[titulo].exemplares.push({
+        subcodigo: livro.register,
+        disponivel: !emprestado,
+        consulta_local: false
+      });
     });
+    
+    const livrosComDisponibilidade = Object.values(livrosAgrupados);
 
     return json({ 
       livros: livrosComDisponibilidade, 

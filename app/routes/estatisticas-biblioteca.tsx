@@ -9,12 +9,12 @@ async function buscarBibliotecaFirebase(): Promise<any[]> {
     const ref = db.ref("library");
     const snapshot = await ref.once("value");
     const data = snapshot.val();
-    
+
     if (!data) return [];
-    
-    return Object.keys(data).map(key => ({
+
+    return Object.keys(data).map((key) => ({
       id: key,
-      ...data[key]
+      ...data[key],
     }));
   } catch (error) {
     console.error("Erro ao buscar biblioteca:", error);
@@ -27,12 +27,12 @@ async function buscarTodosEmprestimosFirebase(): Promise<any[]> {
     const ref = db.ref("loan_record");
     const snapshot = await ref.once("value");
     const data = snapshot.val();
-    
+
     if (!data) return [];
-    
-    return Object.keys(data).map(key => ({
+
+    return Object.keys(data).map((key) => ({
       id: key,
-      ...data[key]
+      ...data[key],
     }));
   } catch (error) {
     console.error("Erro ao buscar empréstimos:", error);
@@ -44,20 +44,31 @@ export async function loader({ request }: LoaderFunctionArgs) {
   try {
     const emprestimos = await buscarTodosEmprestimosFirebase();
     const biblioteca = await buscarBibliotecaFirebase();
-    
+
     const estatisticas = {
       total_emprestimos: emprestimos.length,
-      titulos_diferentes: new Set(emprestimos.map((emp: any) => emp.subcodigo?.split('.')[0] || emp.codigo)).size,
-      devolvidos: emprestimos.filter((emp: any) => emp.status === 'devolvido').length,
-      a_receber: emprestimos.filter((emp: any) => emp.status === 'emprestado').length,
-      pessoas_beneficiadas: new Set(emprestimos.map((emp: any) => emp.usuario_id)).size,
+      titulos_diferentes: new Set(
+        emprestimos.map(
+          (emp: any) => emp.subcodigo?.split(".")[0] || emp.codigo
+        )
+      ).size,
+      devolvidos: emprestimos.filter((emp: any) => emp.status === "devolvido")
+        .length,
+      a_receber: emprestimos.filter((emp: any) => emp.status === "emprestado")
+        .length,
+      pessoas_beneficiadas: new Set(
+        emprestimos.map((emp: any) => emp.usuario_id)
+      ).size,
       tempo_medio: getTempoMedio(emprestimos),
       tempo_minimo: getTempoMinimo(emprestimos),
       tempo_maximo: getTempoMaximo(emprestimos),
       livro_mais_querido: getLivroMaisQuerido(emprestimos, biblioteca),
       longo_pra_ler: getLongoPraLer(emprestimos, biblioteca),
-      livros_mais_emprestados: getLivrosMaisEmprestados(emprestimos, biblioteca),
-      emprestimos_por_mes: getEmprestimosPorMes(emprestimos)
+      livros_mais_emprestados: getLivrosMaisEmprestados(
+        emprestimos,
+        biblioteca
+      ),
+      emprestimos_por_mes: getEmprestimosPorMes(emprestimos),
     };
 
     return json({ estatisticas });
@@ -66,7 +77,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     // Fallback para dados locais em caso de erro
     const emprestimos = [];
     const biblioteca = [];
-    
+
     const estatisticas = {
       total_emprestimos: 0,
       titulos_diferentes: 0,
@@ -79,7 +90,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       livro_mais_querido: null,
       longo_pra_ler: null,
       livros_mais_emprestados: [],
-      emprestimos_por_mes: []
+      emprestimos_por_mes: [],
     };
 
     return json({ estatisticas });
@@ -88,28 +99,31 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 function getLivrosMaisEmprestados(emprestimos: any[], biblioteca: any[]) {
   const contagem: { [key: string]: { count: number; titulo: string } } = {};
-  
+
   emprestimos.forEach((emp: any) => {
-    const codigo = emp.subcodigo?.split('.')[0] || emp.codigo;
-    const livro = biblioteca.find((l: any) => l.codigo === codigo);
-    
-    if (livro) {
-      if (!contagem[codigo]) {
-        contagem[codigo] = { count: 0, titulo: livro.titulo };
-      }
-      contagem[codigo].count++;
+    const codigo = emp.subcodigo;
+    const livro = biblioteca.find(
+      (l: any) => l.register === codigo || l.id === codigo
+    );
+
+    const titulo = livro?.title || emp.titulo || "Título não encontrado";
+
+    // Agrupar por título, não por código individual
+    if (!contagem[titulo]) {
+      contagem[titulo] = { count: 0, titulo };
     }
+    contagem[titulo].count++;
   });
 
   return Object.entries(contagem)
-    .sort(([,a], [,b]) => b.count - a.count)
+    .sort(([, a], [, b]) => b.count - a.count)
     .slice(0, 10)
-    .map(([codigo, data]) => ({ codigo, ...data }));
+    .map(([titulo, data]) => ({ codigo: titulo, ...data }));
 }
 
 function getEmprestimosPorMes(emprestimos: any[]) {
   const meses: { [key: string]: number } = {};
-  
+
   emprestimos.forEach((emp: any) => {
     if (emp.data_saida) {
       const mes = emp.data_saida.substring(0, 7); // YYYY-MM
@@ -126,7 +140,7 @@ function getTempoMedio(emprestimos: any[]) {
   const tempos = emprestimos
     .filter((emp: any) => emp.tempo_emprestimo > 0)
     .map((emp: any) => emp.tempo_emprestimo);
-  
+
   if (tempos.length === 0) return 0;
   return Math.round(tempos.reduce((a, b) => a + b, 0) / tempos.length);
 }
@@ -135,7 +149,7 @@ function getTempoMinimo(emprestimos: any[]) {
   const tempos = emprestimos
     .filter((emp: any) => emp.tempo_emprestimo > 0)
     .map((emp: any) => emp.tempo_emprestimo);
-  
+
   return tempos.length > 0 ? Math.min(...tempos) : 0;
 }
 
@@ -143,7 +157,7 @@ function getTempoMaximo(emprestimos: any[]) {
   const tempos = emprestimos
     .filter((emp: any) => emp.tempo_emprestimo > 0)
     .map((emp: any) => emp.tempo_emprestimo);
-  
+
   return tempos.length > 0 ? Math.max(...tempos) : 0;
 }
 
@@ -156,16 +170,18 @@ function getLongoPraLer(emprestimos: any[], biblioteca: any[]) {
   const emprestimo = emprestimos
     .filter((emp: any) => emp.tempo_emprestimo > 0)
     .sort((a, b) => b.tempo_emprestimo - a.tempo_emprestimo)[0];
-  
+
   if (!emprestimo) return null;
-  
-  const codigo = emprestimo.subcodigo?.split('.')[0] || emprestimo.codigo;
-  const livro = biblioteca.find((l: any) => l.codigo === codigo);
-  
+
+  const codigo = emprestimo.subcodigo;
+  const livro = biblioteca.find(
+    (l: any) => l.register === codigo || l.id === codigo
+  );
+
   return {
     codigo,
-    titulo: livro?.titulo || emprestimo.titulo,
-    tempo: emprestimo.tempo_emprestimo
+    titulo: livro?.title || emprestimo.titulo,
+    tempo: emprestimo.tempo_emprestimo,
   };
 }
 
@@ -174,49 +190,75 @@ export default function BibliotecaEstatisticas() {
 
   return (
     <div className="container mx-auto py-8 px-4">
-      <h1 className="text-3xl font-bold text-teal-600 mb-6">Estatísticas da Biblioteca</h1>
+      <h1 className="text-3xl font-bold text-teal-600 mb-6">
+        Estatísticas da Biblioteca
+      </h1>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-6 mb-8">
         <div className="bg-white p-6 rounded-lg shadow-md text-center">
-          <h3 className="text-lg font-semibold text-gray-700">Total de Empréstimos</h3>
-          <p className="text-3xl font-bold text-teal-600">{estatisticas.total_emprestimos}</p>
+          <h3 className="text-lg font-semibold text-gray-700">
+            Total de Empréstimos
+          </h3>
+          <p className="text-3xl font-bold text-teal-600">
+            {estatisticas.total_emprestimos}
+          </p>
         </div>
-        
+
         <div className="bg-white p-6 rounded-lg shadow-md text-center">
-          <h3 className="text-lg font-semibold text-gray-700">Títulos Diferentes</h3>
-          <p className="text-3xl font-bold text-blue-600">{estatisticas.titulos_diferentes}</p>
+          <h3 className="text-lg font-semibold text-gray-700">
+            Títulos Diferentes
+          </h3>
+          <p className="text-3xl font-bold text-blue-600">
+            {estatisticas.titulos_diferentes}
+          </p>
         </div>
-        
+      </div>
+      <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-6 mb-8">
         <div className="bg-white p-6 rounded-lg shadow-md text-center">
           <h3 className="text-lg font-semibold text-gray-700">Devolvidos</h3>
-          <p className="text-3xl font-bold text-green-600">{estatisticas.devolvidos}</p>
+          <p className="text-3xl font-bold text-green-600">
+            {estatisticas.devolvidos}
+          </p>
         </div>
-        
+
         <div className="bg-white p-6 rounded-lg shadow-md text-center">
           <h3 className="text-lg font-semibold text-gray-700">À Receber</h3>
-          <p className="text-3xl font-bold text-orange-600">{estatisticas.a_receber}</p>
+          <p className="text-3xl font-bold text-orange-600">
+            {estatisticas.a_receber}
+          </p>
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-6 mb-8">
         <div className="bg-white p-6 rounded-lg shadow-md text-center">
-          <h3 className="text-lg font-semibold text-gray-700">Pessoas Beneficiadas</h3>
-          <p className="text-3xl font-bold text-purple-600">{estatisticas.pessoas_beneficiadas}</p>
+          <h3 className="text-lg font-semibold text-gray-700">
+            Pessoas Beneficiadas
+          </h3>
+          <p className="text-3xl font-bold text-purple-600">
+            {estatisticas.pessoas_beneficiadas}
+          </p>
         </div>
-        
+
         <div className="bg-white p-6 rounded-lg shadow-md text-center">
           <h3 className="text-lg font-semibold text-gray-700">Tempo Médio</h3>
-          <p className="text-3xl font-bold text-indigo-600">{estatisticas.tempo_medio} dias</p>
+          <p className="text-3xl font-bold text-indigo-600">
+            {estatisticas.tempo_medio} dias
+          </p>
         </div>
-        
+      </div>
+      <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-6 mb-8">
         <div className="bg-white p-6 rounded-lg shadow-md text-center">
           <h3 className="text-lg font-semibold text-gray-700">Tempo Mínimo</h3>
-          <p className="text-3xl font-bold text-cyan-600">{estatisticas.tempo_minimo} dias</p>
+          <p className="text-3xl font-bold text-cyan-600">
+            {estatisticas.tempo_minimo} dias
+          </p>
         </div>
-        
+
         <div className="bg-white p-6 rounded-lg shadow-md text-center">
           <h3 className="text-lg font-semibold text-gray-700">Tempo Máximo</h3>
-          <p className="text-3xl font-bold text-red-600">{estatisticas.tempo_maximo} dias</p>
+          <p className="text-3xl font-bold text-red-600">
+            {estatisticas.tempo_maximo} dias
+          </p>
         </div>
       </div>
 
@@ -225,20 +267,28 @@ export default function BibliotecaEstatisticas() {
           <h2 className="text-xl font-bold mb-4">Livro Mais Querido</h2>
           {estatisticas.livro_mais_querido ? (
             <div className="text-center">
-              <p className="text-lg font-semibold text-gray-800">{estatisticas.livro_mais_querido.titulo}</p>
-              <p className="text-sm text-gray-600 mt-2">{estatisticas.livro_mais_querido.count} empréstimos</p>
+              <p className="text-lg font-semibold text-gray-800">
+                {estatisticas.livro_mais_querido.titulo}
+              </p>
+              <p className="text-sm text-gray-600 mt-2">
+                {estatisticas.livro_mais_querido.count} empréstimos
+              </p>
             </div>
           ) : (
             <p className="text-gray-500">Nenhum dado disponível</p>
           )}
         </div>
-        
+
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-bold mb-4">Longo pra Ler</h2>
           {estatisticas.longo_pra_ler ? (
             <div className="text-center">
-              <p className="text-lg font-semibold text-gray-800">{estatisticas.longo_pra_ler.titulo}</p>
-              <p className="text-sm text-gray-600 mt-2">{estatisticas.longo_pra_ler.tempo} dias</p>
+              <p className="text-lg font-semibold text-gray-800">
+                {estatisticas.longo_pra_ler.titulo}
+              </p>
+              <p className="text-sm text-gray-600 mt-2">
+                {estatisticas.longo_pra_ler.tempo} dias
+              </p>
             </div>
           ) : (
             <p className="text-gray-500">Nenhum dado disponível</p>
@@ -246,21 +296,28 @@ export default function BibliotecaEstatisticas() {
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-8">
+      <div className="space-y-8">
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-bold mb-4">Livros Mais Emprestados</h2>
           <div className="space-y-3">
-            {estatisticas.livros_mais_emprestados.map((item: any, index: number) => (
-              <div key={item.codigo} className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                <div className="flex-1">
-                  <span className="font-semibold text-gray-700">#{index + 1}</span>
-                  <p className="text-sm text-gray-600 mt-1">{item.titulo}</p>
+            {estatisticas.livros_mais_emprestados.map(
+              (item: any, index: number) => (
+                <div
+                  key={item.codigo}
+                  className="flex justify-between items-center p-3 bg-gray-50 rounded"
+                >
+                  <div className="flex-1">
+                    <span className="font-semibold text-gray-700">
+                      #{index + 1}
+                    </span>
+                    <p className="text-sm text-gray-600 mt-1">{item.titulo}</p>
+                  </div>
+                  <span className="bg-teal-100 text-teal-800 px-3 py-1 rounded-full text-sm font-semibold">
+                    {item.count} empréstimos
+                  </span>
                 </div>
-                <span className="bg-teal-100 text-teal-800 px-3 py-1 rounded-full text-sm font-semibold">
-                  {item.count} empréstimos
-                </span>
-              </div>
-            ))}
+              )
+            )}
           </div>
         </div>
 
@@ -268,12 +325,25 @@ export default function BibliotecaEstatisticas() {
           <h2 className="text-xl font-bold mb-4">Empréstimos por Mês</h2>
           <div className="space-y-2">
             {estatisticas.emprestimos_por_mes.slice(-12).map((item: any) => (
-              <div key={item.mes} className="flex justify-between items-center p-2 border-b">
+              <div
+                key={item.mes}
+                className="flex justify-between items-center p-2 border-b"
+              >
                 <span className="text-gray-700">{item.mes}</span>
                 <div className="flex items-center">
-                  <div 
+                  <div
                     className="bg-teal-200 h-4 rounded mr-2"
-                    style={{ width: `${(item.count / Math.max(...estatisticas.emprestimos_por_mes.map((i: any) => i.count))) * 100}px` }}
+                    style={{
+                      width: `${
+                        (item.count /
+                          Math.max(
+                            ...estatisticas.emprestimos_por_mes.map(
+                              (i: any) => i.count
+                            )
+                          )) *
+                        100
+                      }px`,
+                    }}
                   ></div>
                   <span className="text-sm font-semibold">{item.count}</span>
                 </div>
@@ -284,8 +354,8 @@ export default function BibliotecaEstatisticas() {
       </div>
 
       <div className="mt-8 text-center">
-        <Link 
-          to="/biblioteca" 
+        <Link
+          to="/biblioteca"
           className="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 inline-block"
         >
           Voltar ao Acervo
