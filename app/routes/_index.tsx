@@ -22,6 +22,12 @@ const links = [
     requiredPermission: UserCategory.PROJECT_COORDINATORS,
   },
   {
+    to: "/biblioteca",
+    label: "Biblioteca",
+    icon: "📚",
+    requiredPermission: UserCategory.ANY_USER,
+  },
+  {
     to: "/links-uteis",
     label: "Lista de Links Úteis",
     icon: "🔗",

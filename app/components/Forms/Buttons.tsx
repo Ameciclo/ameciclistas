@@ -45,32 +45,39 @@ export const GenericButton: React.FC<GenericButtonProps> = ({
   userPermissions,
 }) => {
   const permitted = isAuth(
-    userPermissions,
+    userPermissions || [UserCategory.ANY_USER],
     requiredPermission || UserCategory.ANY_USER
   );
 
-  // Se o botão estiver marcado para "ocultar" quando sem permissão e o usuário não tiver acesso, não renderiza.
   if (hide && !permitted) {
     return null;
   }
 
-  const buttonClass = `button-full ${
-    !permitted ? "button-disabled" : ""
-  } ${className}`;
-
-  const buttonElement = (
-    <button
-      type={type}
-      className={buttonClass}
-      onClick={onClick}
-      disabled={!permitted}
-    >
+  const content = (
+    <>
       {icon && <span>{icon} </span>}
       {label}
-    </button>
+    </>
   );
 
-  return to ? <Link to={to}>{buttonElement}</Link> : buttonElement;
+  if (to && permitted) {
+    return (
+      <Link to={to} className="button-full" style={{ textDecoration: 'none' }}>
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <button
+      type={type}
+      className={`${permitted ? "button-full" : "button-disabled"} ${className}`}
+      onClick={permitted ? onClick : undefined}
+      disabled={!permitted}
+    >
+      {content}
+    </button>
+  );
 };
 
 // Props específicas para o SubmitButton

@@ -53,6 +53,60 @@ export interface TelegramUser {
   categories: UserCategory[];
 }
 
+// Biblioteca types
+export interface Exemplar {
+  subcodigo: string;
+  disponivel: boolean;
+  consulta_local: boolean;
+}
+
+export interface Livro {
+  codigo: string;
+  titulo: string;
+  autor: string;
+  ano: number;
+  tipo: string;
+  categoria: string;
+  exemplares: Exemplar[];
+  isbn?: string;
+  resumo?: string;
+  imagem?: string;
+}
+
+export interface Emprestimo {
+  id: string;
+  usuario_id: number;
+  subcodigo: string;
+  data_saida: string;
+  data_devolucao?: string;
+  status: 'emprestado' | 'devolvido' | 'solicitado';
+}
+
+export interface SolicitacaoEmprestimo {
+  id: string;
+  usuario_id: number;
+  subcodigo: string;
+  data_solicitacao: string;
+  status: 'pendente' | 'aprovada' | 'rejeitada';
+}
+
+export interface UsuarioComDados {
+  id: number;
+  name: string;
+  role: string;
+  telegram_user: {
+    first_name: string;
+    id: number;
+    is_bot: boolean;
+    language_code: string;
+    last_name?: string;
+  };
+  personal_data?: {
+    cpf?: string;
+    telefone?: string;
+  };
+}
+
 export { };
 
 declare global {
