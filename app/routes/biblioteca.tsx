@@ -22,7 +22,19 @@ export default function Biblioteca() {
 
   useEffect(() => {
     telegramInit();
-    setUser(getTelegramUsersInfo());
+    const userData = getTelegramUsersInfo();
+    
+    // Em desenvolvimento, simular usuário se não houver
+    if (process.env.NODE_ENV === "development" && !userData) {
+      setUser({
+        id: 123456789,
+        first_name: "João",
+        last_name: "Silva",
+        username: "joaosilva"
+      } as UserData);
+    } else {
+      setUser(userData);
+    }
   }, []);
 
   useEffect(() => {
@@ -104,7 +116,7 @@ export default function Biblioteca() {
           <PaginacaoLivros 
             livros={livrosDisponiveis}
             onSolicitar={handleSolicitar}
-            userCanRequest={user && (process.env.NODE_ENV === "development" || isAuth(userPermissions, UserCategory.AMECICLISTAS))}
+            userCanRequest={!!user && (process.env.NODE_ENV === "development" || isAuth(userPermissions, UserCategory.AMECICLISTAS))}
           />
         </>
       ) : (

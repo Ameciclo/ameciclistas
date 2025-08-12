@@ -21,22 +21,29 @@ export function BibliotecaGestao({ emprestimos, solicitacoes, livros }: Bibliote
   };
 
   const handleAprovarSolicitacao = (solicitacaoId: string) => {
-    const nome = nomeRetirada[solicitacaoId] || "";
-    if (!nome.trim()) {
-      alert("Por favor, informe o nome de quem está retirando o livro");
-      return;
-    }
-    
     const formData = new FormData();
     formData.append("action", "aprovar_solicitacao");
     formData.append("solicitacao_id", solicitacaoId);
-    formData.append("nome_retirada", nome);
+    if (nomeRetirada[solicitacaoId]) {
+      formData.append("nome_retirada", nomeRetirada[solicitacaoId]);
+    }
     submit(formData, { method: "post" });
   };
 
   const getLivroInfo = (subcodigo: string) => {
-    const codigo = subcodigo.split('.')[0];
-    return livros.find(l => l.codigo === codigo);
+    // Buscar livro pelo subcodigo exato ou pelo código base
+    return livros.find(l => 
+      l.exemplares?.some(ex => ex.subcodigo === subcodigo) ||
+      l.codigo === subcodigo ||
+      l.codigo === subcodigo.split('.')[0]
+    );
+  };
+
+  const handleRejeitarSolicitacao = (solicitacaoId: string) => {
+    const formData = new FormData();
+    formData.append("action", "rejeitar_solicitacao");
+    formData.append("solicitacao_id", solicitacaoId);
+    submit(formData, { method: "post" });
   };
 
   return (
@@ -79,19 +86,19 @@ export function BibliotecaGestao({ emprestimos, solicitacoes, livros }: Bibliote
               
               return (
                 <div key={emp.id} className="p-4 border rounded-lg">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-lg">{livro?.titulo}</h4>
-                      <p className="text-gray-600">Código: <strong>{emp.subcodigo}</strong></p>
-                      <p className="text-gray-600">Autor: {livro?.autor}</p>
-                      <p className="text-gray-600">Data de saída: {emp.data_saida}</p>
-                      <p className={`text-sm ${diasEmprestado > 30 ? 'text-red-600' : 'text-gray-600'}`}>
-                        {diasEmprestado} dias emprestado
-                      </p>
-                    </div>
+                  <div className="mb-3">
+                    <h4 className="font-semibold text-lg mb-2">{livro?.titulo || emp.titulo || 'Título não encontrado'}</h4>
+                    <p className="text-gray-600 mb-1">Código: <strong>{emp.subcodigo}</strong></p>
+                    <p className="text-gray-600 mb-1">Data de saída: {emp.data_saida}</p>
+                    <p className="text-gray-600 mb-1">Usuário ID: {emp.usuario_id}</p>
+                    <p className={`text-sm ${diasEmprestado > 30 ? 'text-red-600' : 'text-gray-600'}`}>
+                      {diasEmprestado} dias emprestado
+                    </p>
+                  </div>
+                  <div className="flex justify-center">
                     <button
                       onClick={() => handleRegistrarDevolucao(emp.id)}
-                      className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                      className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600"
                     >
                       Registrar Devolução
                     </button>
@@ -113,37 +120,37 @@ export function BibliotecaGestao({ emprestimos, solicitacoes, livros }: Bibliote
               
               return (
                 <div key={sol.id} className="p-4 border rounded-lg">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-lg">{livro?.titulo}</h4>
-                      <p className="text-gray-600">Código: <strong>{sol.subcodigo}</strong></p>
-                      <p className="text-gray-600">Autor: {livro?.autor}</p>
-                      <p className="text-gray-600">Data da solicitação: {sol.data_solicitacao}</p>
-                      <p className="text-gray-600">Usuário ID: {sol.usuario_id}</p>
-                    </div>
-                    <div className="ml-4 space-y-2">
-                      <input
-                        type="text"
-                        placeholder="Nome de quem retira"
-                        value={nomeRetirada[sol.id] || ""}
-                        onChange={(e) => setNomeRetirada(prev => ({
-                          ...prev,
-                          [sol.id]: e.target.value
-                        }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded"
-                      />
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleAprovarSolicitacao(sol.id)}
-                          className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-                        >
-                          Aprovar
-                        </button>
-                        <button className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
-                          Rejeitar
-                        </button>
-                      </div>
-                    </div>
+                  <div className="mb-3">
+                    <h4 className="font-semibold text-lg mb-2">{livro?.titulo || 'Título não encontrado'}</h4>
+                    <p className="text-gray-600 mb-1">Código: <strong>{sol.subcodigo}</strong></p>
+                    <p className="text-gray-600 mb-1">Data da solicitação: {sol.data_solicitacao}</p>
+                    <p className="text-gray-600 mb-1">Usuário ID: {sol.usuario_id}</p>
+                  </div>
+                  <div className="mb-3">
+                    <input
+                      type="text"
+                      placeholder="Nome de quem retira (opcional)"
+                      value={nomeRetirada[sol.id] || ""}
+                      onChange={(e) => setNomeRetirada(prev => ({
+                        ...prev,
+                        [sol.id]: e.target.value
+                      }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded"
+                    />
+                  </div>
+                  <div className="flex gap-2 justify-center">
+                    <button
+                      onClick={() => handleAprovarSolicitacao(sol.id)}
+                      className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600"
+                    >
+                      Aprovar
+                    </button>
+                    <button 
+                      onClick={() => handleRejeitarSolicitacao(sol.id)}
+                      className="bg-red-500 text-white px-6 py-2 rounded hover:bg-red-600"
+                    >
+                      Rejeitar
+                    </button>
                   </div>
                 </div>
               );

@@ -30,7 +30,73 @@ export async function bibliotecaAction({ request }: ActionFunctionArgs) {
       
 
     
-    // Outras ações podem ser implementadas aqui
+    if (action === "aprovar_solicitacao") {
+      const solicitacao_id = formData.get("solicitacao_id") as string;
+      
+      try {
+        // Atualizar status da solicitação
+        const solicitacaoRef = db.ref(`biblioteca_solicitacoes/${solicitacao_id}`);
+        await solicitacaoRef.update({
+          status: 'aprovada',
+          updated_at: new Date().toISOString()
+        });
+        
+        // Criar empréstimo
+        const emprestimoRef = db.ref("loan_record");
+        const solicitacaoSnapshot = await solicitacaoRef.once("value");
+        const solicitacao = solicitacaoSnapshot.val();
+        
+        if (solicitacao) {
+          await emprestimoRef.push({
+            usuario_id: solicitacao.usuario_id,
+            subcodigo: solicitacao.subcodigo,
+            data_saida: new Date().toISOString().split('T')[0],
+            status: 'emprestado',
+            created_at: new Date().toISOString()
+          });
+        }
+        
+        return json({ success: true, message: "Solicitação aprovada e empréstimo registrado!" });
+      } catch (error) {
+        console.error("Erro ao aprovar solicitação:", error);
+        return json({ success: false, error: "Erro ao aprovar solicitação" });
+      }
+    }
+    
+    if (action === "rejeitar_solicitacao") {
+      const solicitacao_id = formData.get("solicitacao_id") as string;
+      
+      try {
+        const solicitacaoRef = db.ref(`biblioteca_solicitacoes/${solicitacao_id}`);
+        await solicitacaoRef.update({
+          status: 'rejeitada',
+          updated_at: new Date().toISOString()
+        });
+        
+        return json({ success: true, message: "Solicitação rejeitada!" });
+      } catch (error) {
+        console.error("Erro ao rejeitar solicitação:", error);
+        return json({ success: false, error: "Erro ao rejeitar solicitação" });
+      }
+    }
+    
+    if (action === "registrar_devolucao") {
+      const emprestimo_id = formData.get("emprestimo_id") as string;
+      
+      try {
+        const emprestimoRef = db.ref(`loan_record/${emprestimo_id}`);
+        await emprestimoRef.update({
+          status: 'devolvido',
+          data_devolucao: new Date().toISOString().split('T')[0],
+          updated_at: new Date().toISOString()
+        });
+        
+        return json({ success: true, message: "Devolução registrada com sucesso!" });
+      } catch (error) {
+        console.error("Erro ao registrar devolução:", error);
+        return json({ success: false, error: "Erro ao registrar devolução" });
+      }
+    }
     
 
     

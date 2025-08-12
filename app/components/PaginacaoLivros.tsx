@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "@remix-run/react";
 import type { Livro } from "~/utils/types";
 
 interface PaginacaoLivrosProps {
@@ -70,8 +71,18 @@ export function PaginacaoLivros({ livros, onSolicitar, userCanRequest }: Paginac
               <div className="flex justify-between items-start">
                 <div className="flex-1">
                   <h3 className="text-xl font-semibold text-gray-800 mb-2">{livro.titulo}</h3>
-                  <p className="text-gray-600 mb-3">
-                    <strong>Disponíveis:</strong> {livroInfo.exemplares_disponiveis} de {livroInfo.total_exemplares}
+                  <p className="mb-3">
+                    <strong>Disponíveis:</strong> 
+                    <span className={`ml-1 font-semibold ${
+                      livroInfo.exemplares_disponiveis === 0 ? 'text-red-600' :
+                      livroInfo.exemplares_disponiveis === 1 ? 'text-orange-600' :
+                      'text-green-600'
+                    }`}>
+                      {livroInfo.exemplares_disponiveis === 1 && livroInfo.total_exemplares === 1 ? 
+                        'Disponível para leitura na sede' :
+                        `${livroInfo.exemplares_disponiveis} de ${livroInfo.total_exemplares}`
+                      }
+                    </span>
                   </p>
                   
                   {expandido && (
@@ -84,36 +95,29 @@ export function PaginacaoLivros({ livros, onSolicitar, userCanRequest }: Paginac
                     </div>
                   )}
                   
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      toggleExpandido(livro.codigo);
-                    }}
-                    className="text-teal-600 text-sm hover:underline mt-2 cursor-pointer"
-                    type="button"
-                  >
-                    {expandido ? "Ver menos" : "Ver mais"}
-                  </button>
+                  <div className="flex gap-3 mt-2">
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        toggleExpandido(livro.codigo);
+                      }}
+                      className="text-teal-600 text-sm hover:underline cursor-pointer"
+                      type="button"
+                    >
+                      {expandido ? "Ver menos" : "Ver mais"}
+                    </button>
+                    {userCanRequest && livroInfo.exemplares_disponiveis > 0 && (
+                      <Link
+                        to={`/solicitar-emprestimo?livro=${encodeURIComponent(livro.titulo)}&codigo=${livro.codigo}`}
+                        className="text-green-600 text-sm hover:underline cursor-pointer"
+                      >
+                        Solicitar empréstimo
+                      </Link>
+                    )}
+                  </div>
                 </div>
                 
-                <div className="ml-4">
-                  {livroInfo.exemplares_disponiveis > 0 && userCanRequest && (
-                    <button
-                      onClick={() => {
-                        const exemplaresDisponiveis = livro.exemplares.filter(ex => ex.disponivel && !ex.consulta_local);
-                        if (exemplaresDisponiveis.length > 0) {
-                          onSolicitar(exemplaresDisponiveis[0].subcodigo);
-                        }
-                      }}
-                      className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-                    >
-                      Solicitar
-                    </button>
-                  )}
-                  {livroInfo.exemplares_disponiveis === 0 && (
-                    <span className="text-red-500 font-semibold">Indisponível</span>
-                  )}
-                </div>
+
               </div>
             </div>
           );
