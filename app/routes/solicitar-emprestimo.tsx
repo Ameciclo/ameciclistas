@@ -11,6 +11,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const livroTitulo = url.searchParams.get("livro");
   const codigo = url.searchParams.get("codigo");
+  const userId = url.searchParams.get("userId"); // ID do telegram
   
   if (!livroTitulo || !codigo) {
     throw new Response("Parâmetros inválidos", { status: 400 });
@@ -23,10 +24,36 @@ export async function loader({ request }: LoaderFunctionArgs) {
     // Encontrar todos os exemplares do mesmo título
     const exemplaresTitulo = livros.filter(l => l.title === livroTitulo);
     
-    return json({ livroTitulo, exemplares: exemplaresTitulo });
+    // Buscar dados do usuário no Firebase
+    let userData = null;
+    let userRole = 'ANY_USER';
+    let hasLibraryRegister = false;
+    
+    if (userId) {
+      try {
+        const userRef = db.ref(`subscribers/${userId}`);
+        const userSnapshot = await userRef.once("value");
+        userData = userSnapshot.val();
+        
+        if (userData) {
+          userRole = userData.role || 'ANY_USER';
+          hasLibraryRegister = !!(userData.library_register || userData.ameciclo_register);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar dados do usuário:", error);
+      }
+    }
+    
+    return json({ 
+      livroTitulo, 
+      exemplares: exemplaresTitulo,
+      userData,
+      userRole,
+      hasLibraryRegister
+    });
   } catch (error) {
     console.error("Erro ao carregar dados:", error);
-    return json({ livroTitulo, exemplares: [] });
+    return json({ livroTitulo, exemplares: [], userData: null, userRole: 'ANY_USER', hasLibraryRegister: false });
   }
 }
 
@@ -72,27 +99,29 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function SolicitarEmprestimo() {
-  const { livroTitulo, exemplares } = useLoaderData<typeof loader>();
+  const { livroTitulo, exemplares, userData, userRole, hasLibraryRegister } = useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
   const actionData = useActionData<typeof action>();
   const [user, setUser] = useState<UserData | null>(null);
   const [dadosPessoais, setDadosPessoais] = useState({ cpf: "", telefone: "" });
   const [exemplaresDisponiveis, setExemplaresDisponiveis] = useState<any[]>([]);
   const [exemplarSelecionado, setExemplarSelecionado] = useState("");
+  const [solicitarParaOutraPessoa, setSolicitarParaOutraPessoa] = useState(false);
 
   useEffect(() => {
     telegramInit();
-    const userData = getTelegramUsersInfo();
-    setUser(userData);
+    const telegramUser = getTelegramUsersInfo();
     
     // Em desenvolvimento, simular dados do usuário
-    if (process.env.NODE_ENV === "development" && !userData) {
+    if (process.env.NODE_ENV === "development" && !telegramUser) {
       setUser({
         id: 123456789,
         first_name: "João",
         last_name: "Silva",
         username: "joaosilva"
       } as UserData);
+    } else {
+      setUser(telegramUser);
     }
   }, []);
 
@@ -117,6 +146,10 @@ export default function SolicitarEmprestimo() {
     }
   }, [user]);
 
+  // Verificar se usuário precisa completar cadastro
+  const needsLibraryRegister = user && !hasLibraryRegister && (userRole === 'ANY_USER' || userRole === 'AMECICLISTAS');
+  const canSolicitForOthers = userRole === 'PROJECT_COORDINATORS' || userRole === 'AMECICLO_COORDINATORS';
+
   if (actionData?.success) {
     return (
       <div className="container mx-auto py-8 px-4">
@@ -130,6 +163,33 @@ export default function SolicitarEmprestimo() {
     );
   }
 
+  // Se usuário precisa completar cadastro
+  if (needsLibraryRegister) {
+    return (
+      <div className="container mx-auto py-8 px-4">
+        <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-6">
+          <h2 className="text-lg font-semibold mb-2">Cadastro Incompleto</h2>
+          <p className="mb-4">Para solicitar empréstimos na biblioteca, você precisa completar seu cadastro com os dados necessários.</p>
+        </div>
+        
+        <div className="flex gap-4">
+          <Link 
+            to="/user" 
+            className="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700"
+          >
+            Completar Cadastro
+          </Link>
+          <Link 
+            to="/biblioteca" 
+            className="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600"
+          >
+            Voltar à Biblioteca
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto py-8 px-4">
       <h1 className="text-3xl font-bold text-teal-600 mb-6">Solicitar Empréstimo</h1>
@@ -138,6 +198,46 @@ export default function SolicitarEmprestimo() {
         <h2 className="text-xl font-semibold mb-4">Livro Selecionado</h2>
         <p className="text-lg text-gray-800">{livroTitulo}</p>
       </div>
+
+      {/* Opções para coordenadores */}
+      {canSolicitForOthers && (
+        <div className="bg-blue-50 p-6 rounded-lg shadow-md mb-6">
+          <h3 className="text-lg font-semibold mb-4">Opções de Solicitação</h3>
+          <div className="space-y-3">
+            <label className="flex items-center space-x-3">
+              <input
+                type="radio"
+                name="tipoSolicitacao"
+                checked={!solicitarParaOutraPessoa}
+                onChange={() => setSolicitarParaOutraPessoa(false)}
+                className="text-teal-600"
+              />
+              <span>Solicitar para mim</span>
+            </label>
+            <label className="flex items-center space-x-3">
+              <input
+                type="radio"
+                name="tipoSolicitacao"
+                checked={solicitarParaOutraPessoa}
+                onChange={() => setSolicitarParaOutraPessoa(true)}
+                className="text-teal-600"
+              />
+              <span>Solicitar para outra pessoa</span>
+            </label>
+          </div>
+          
+          {solicitarParaOutraPessoa && (
+            <div className="mt-4">
+              <Link 
+                to={`/registrar-usuario-biblioteca?livro=${encodeURIComponent(livroTitulo)}&codigo=${codigo}`}
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              >
+                Registrar Novo Usuário
+              </Link>
+            </div>
+          )}
+        </div>
+      )}
 
       <Form method="post" className="space-y-6">
         <input type="hidden" name="action" value="solicitar" />
@@ -232,7 +332,7 @@ export default function SolicitarEmprestimo() {
         <div className="flex gap-4">
           <button
             type="submit"
-            disabled={!exemplarSelecionado || exemplarSelecionado.endsWith('.1')}
+            disabled={!exemplarSelecionado || exemplarSelecionado.endsWith('.1') || solicitarParaOutraPessoa}
             className="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             Confirmar Solicitação

@@ -6,9 +6,10 @@ interface PaginacaoLivrosProps {
   livros: Livro[];
   onSolicitar: (subcodigo: string) => void;
   userCanRequest: boolean;
+  userId?: number | string;
 }
 
-export function PaginacaoLivros({ livros, onSolicitar, userCanRequest }: PaginacaoLivrosProps) {
+export function PaginacaoLivros({ livros, userCanRequest, userId }: PaginacaoLivrosProps) {
   const [paginaAtual, setPaginaAtual] = useState(1);
   const [itensPorPagina, setItensPorPagina] = useState(10);
   const [expandidos, setExpandidos] = useState<Set<string>>(new Set());
@@ -79,7 +80,7 @@ export function PaginacaoLivros({ livros, onSolicitar, userCanRequest }: Paginac
                       'text-green-600'
                     }`}>
                       {livroInfo.exemplares_disponiveis === 1 && livroInfo.total_exemplares === 1 ? 
-                        'Disponível para leitura na sede' :
+                        '1 para leitura na sede' :
                         `${livroInfo.exemplares_disponiveis} de ${livroInfo.total_exemplares}`
                       }
                     </span>
@@ -90,7 +91,6 @@ export function PaginacaoLivros({ livros, onSolicitar, userCanRequest }: Paginac
                       <p className="text-gray-600 mb-1"><strong>Autor:</strong> {livro.autor}</p>
                       <p className="text-gray-600 mb-1"><strong>Ano:</strong> {livro.ano}</p>
                       <p className="text-gray-600 mb-1"><strong>Tipo:</strong> {livro.tipo}</p>
-                      <p className="text-gray-600 mb-1"><strong>Categoria:</strong> {livro.categoria}</p>
                       <p className="text-gray-600 mb-1"><strong>Código:</strong> {livro.codigo}</p>
                     </div>
                   )}
@@ -106,9 +106,9 @@ export function PaginacaoLivros({ livros, onSolicitar, userCanRequest }: Paginac
                     >
                       {expandido ? "Ver menos" : "Ver mais"}
                     </button>
-                    {userCanRequest && livroInfo.exemplares_disponiveis > 0 && (
+                    {userCanRequest && livroInfo.exemplares_disponiveis >= 1 && (
                       <Link
-                        to={`/solicitar-emprestimo?livro=${encodeURIComponent(livro.titulo)}&codigo=${livro.codigo}`}
+                        to={`/solicitar-emprestimo?livro=${encodeURIComponent(livro.titulo)}&codigo=${livro.codigo}&userId=${userId || ''}`}
                         className="text-green-600 text-sm hover:underline cursor-pointer"
                       >
                         Solicitar empréstimo
