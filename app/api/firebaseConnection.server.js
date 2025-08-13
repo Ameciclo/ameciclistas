@@ -188,3 +188,207 @@ export async function getSolicitacoes() {
   const snapshot = await ref.once("value");
   return snapshot.val();
 }
+
+// Funções para Controle de Recursos Independentes
+export async function getProducts() {
+  const ref = db.ref("resources/products");
+  const snapshot = await ref.once("value");
+  return snapshot.val() || {};
+}
+
+export async function getSales() {
+  const ref = db.ref("resources/sales");
+  const snapshot = await ref.once("value");
+  return snapshot.val() || {};
+}
+
+export async function getDonations() {
+  const ref = db.ref("resources/donations");
+  const snapshot = await ref.once("value");
+  return snapshot.val() || {};
+}
+
+export async function saveSale(saleData) {
+  return new Promise((resolve, reject) => {
+    const ref = db.ref("resources/sales");
+    const key = ref.push().key;
+
+    if (!key) {
+      return reject(new Error("Falha ao gerar chave para a venda."));
+    }
+
+    saleData.id = key;
+    saleData.createdAt = new Date().toISOString();
+
+    ref
+      .child(key)
+      .update(saleData)
+      .then((snapshot) => {
+        resolve(snapshot);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export async function saveDonation(donationData) {
+  return new Promise((resolve, reject) => {
+    const ref = db.ref("resources/donations");
+    const key = ref.push().key;
+
+    if (!key) {
+      return reject(new Error("Falha ao gerar chave para a doação."));
+    }
+
+    donationData.id = key;
+    donationData.createdAt = new Date().toISOString();
+
+    ref
+      .child(key)
+      .update(donationData)
+      .then((snapshot) => {
+        resolve(snapshot);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export async function updateSaleStatus(saleId, status, additionalData = {}) {
+  return new Promise((resolve, reject) => {
+    const ref = db.ref(`resources/sales/${saleId}`);
+    
+    const updateData = {
+      status,
+      ...additionalData
+    };
+
+    if (status === "PAID") {
+      updateData.paidAt = new Date().toISOString();
+    } else if (status === "CONFIRMED") {
+      updateData.confirmedAt = new Date().toISOString();
+    }
+
+    ref
+      .update(updateData)
+      .then((snapshot) => {
+        resolve(snapshot);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export async function updateDonationStatus(donationId, status, additionalData = {}) {
+  return new Promise((resolve, reject) => {
+    const ref = db.ref(`resources/donations/${donationId}`);
+    
+    const updateData = {
+      status,
+      ...additionalData
+    };
+
+    if (status === "PAID") {
+      updateData.paidAt = new Date().toISOString();
+    } else if (status === "CONFIRMED") {
+      updateData.confirmedAt = new Date().toISOString();
+    }
+
+    ref
+      .update(updateData)
+      .then((snapshot) => {
+        resolve(snapshot);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+// Funções para gerenciar produtos
+export async function saveProduct(productData) {
+  return new Promise((resolve, reject) => {
+    const ref = db.ref("resources/products");
+    const key = productData.id || ref.push().key;
+
+    if (!key) {
+      return reject(new Error("Falha ao gerar chave para o produto."));
+    }
+
+    productData.id = key;
+
+    ref
+      .child(key)
+      .update(productData)
+      .then((snapshot) => {
+        resolve(snapshot);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export async function updateProduct(productId, productData) {
+  return new Promise((resolve, reject) => {
+    const ref = db.ref(`resources/products/${productId}`);
+    
+    ref
+      .update(productData)
+      .then((snapshot) => {
+        resolve(snapshot);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export async function deleteProduct(productId) {
+  return new Promise((resolve, reject) => {
+    const ref = db.ref(`resources/products/${productId}`);
+    
+    ref
+      .remove()
+      .then((snapshot) => {
+        resolve(snapshot);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export async function updateProductStock(productId, newStock, variantId = null) {
+  return new Promise((resolve, reject) => {
+    const ref = variantId 
+      ? db.ref(`resources/products/${productId}/variants`)
+      : db.ref(`resources/products/${productId}`);
+    
+    if (variantId) {
+      // Atualizar estoque de variante específica
+      ref.once('value', (snapshot) => {
+        const variants = snapshot.val() || [];
+        const variantIndex = variants.findIndex(v => v.id === variantId);
+        
+        if (variantIndex !== -1) {
+          variants[variantIndex].stock = newStock;
+          ref.set(variants)
+            .then(resolve)
+            .catch(reject);
+        } else {
+          reject(new Error('Variante não encontrada'));
+        }
+      });
+    } else {
+      // Atualizar estoque do produto principal
+      ref
+        .update({ stock: newStock })
+        .then(resolve)
+        .catch(reject);
+    }
+  });
+}

@@ -28,6 +28,12 @@ const links = [
     requiredPermission: UserCategory.ANY_USER,
   },
   {
+    to: "/recursos-independentes",
+    label: "Controle de Recursos Independentes",
+    icon: "🏪",
+    requiredPermission: UserCategory.AMECICLISTAS,
+  },
+  {
     to: "/links-uteis",
     label: "Lista de Links Úteis",
     icon: "🔗",
