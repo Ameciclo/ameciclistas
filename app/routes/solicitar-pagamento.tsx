@@ -23,6 +23,8 @@ import { Supplier, UserCategory, UserData } from "../utils/types";
 
 interface PaymentItem {
   id: string;
+  transactionType: string;
+  paymentDate: string;
   projectId: string;
   budgetItem: string;
   supplierId: string;
@@ -51,13 +53,10 @@ export default function SolicitarPagamento() {
 
   const [user, setUser] = useState<UserData | null>(null);
   const [userPermissions, setUserPermissions] = useState(currentUserCategories);
-  const [paymentDate, setPaymentDate] = useState(() => {
-    const today = new Date();
-    return today.toISOString().split("T")[0];
-  });
-  const [transactionType, setTransactionType] = useState("Solicitar Pagamento");
   const [paymentItems, setPaymentItems] = useState<PaymentItem[]>([{
     id: crypto.randomUUID(),
+    transactionType: "Solicitar Pagamento",
+    paymentDate: new Date().toISOString().split("T")[0],
     projectId: "",
     budgetItem: "",
     supplierId: "",
@@ -71,7 +70,7 @@ export default function SolicitarPagamento() {
     unitValue: "0",
     totalValue: "0"
   }]);
-  const [lastSupplierId, setLastSupplierId] = useState("");
+
 
   useEffect(() => {
     setUser(() => getTelegramUsersInfo());
@@ -86,10 +85,12 @@ export default function SolicitarPagamento() {
   const addPaymentItem = () => {
     const newItem: PaymentItem = {
       id: crypto.randomUUID(),
+      transactionType: "Solicitar Pagamento",
+      paymentDate: new Date().toISOString().split("T")[0],
       projectId: "",
       budgetItem: "",
-      supplierId: lastSupplierId,
-      supplierInput: lastSupplierId ? getSupplierDisplayName(lastSupplierId) : "",
+      supplierId: "",
+      supplierInput: "",
       isRefund: false,
       refundSupplierId: "",
       refundSupplierInput: "",
@@ -117,19 +118,14 @@ export default function SolicitarPagamento() {
           const unitVal = field === 'unitValue' ? value : updated.unitValue;
           updated.totalValue = (qty * parseFloat(unitVal.replace(/\D/g, '') || '0')).toString();
         }
-        if (field === 'supplierId' && value) {
-          setLastSupplierId(value);
-        }
+
         return updated;
       }
       return item;
     }));
   };
 
-  const getSupplierDisplayName = (supplierId: string) => {
-    const supplier = suppliers.find((s: any) => (s.id_number || s.id) === supplierId);
-    return supplier ? (supplier.nickname ? `${supplier.nickname} (${supplier.name})` : supplier.name) : "";
-  };
+
 
   const calculateTotalValue = () => {
     return paymentItems.reduce((total, item) => {
@@ -151,49 +147,47 @@ export default function SolicitarPagamento() {
         err: "Informações de usuário do telegram não encontrado",
       });
 
-  const isFormValid = paymentDate !== "" && 
-    transactionType !== "" && 
-    paymentItems.every(item => 
-      item.projectId !== "" &&
-      item.budgetItem !== "" &&
-      item.supplierId.trim() !== "" &&
-      item.description.trim() !== "" &&
-      parseFloat(item.totalValue) > 0 &&
-      (!item.isRefund || item.refundSupplierId.trim() !== "")
-    );
+  const validateDate = (item: PaymentItem) => {
+    const today = new Date().toISOString().split("T")[0];
+    if (item.transactionType === "Solicitar Pagamento" && item.paymentDate !== today) return false;
+    if (item.transactionType === "Agendar pagamento" && item.paymentDate <= today) return false;
+    return true;
+  };
+
+  const getItemErrors = (item: PaymentItem) => {
+    const errors = [];
+    if (!item.transactionType) errors.push("Tipo de Transação");
+    if (!item.paymentDate) errors.push("Data do pagamento");
+    if (!validateDate(item)) errors.push("Data inválida para o tipo");
+    if (!item.projectId) errors.push("Projeto");
+    if (!item.budgetItem) errors.push("Rubrica");
+    if (!item.supplierId.trim()) errors.push("Fornecedor");
+    if (!item.description.trim()) errors.push("Descrição");
+    if (parseFloat(item.totalValue) <= 0) errors.push("Valor deve ser maior que zero");
+    if (item.isRefund && !item.refundSupplierId.trim()) errors.push("Pessoa Reembolsada");
+    return errors;
+  };
+
+  const isFormValid = paymentItems.every(item => getItemErrors(item).length === 0);
 
   return isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS) ? (
     <Form method="post" className="container">
       <FormTitle>💰 Solicitar Pagamentos</FormTitle>
-      <DateInput
-        label="Data do pagamento:"
-        value={paymentDate}
-        onChange={(e: any) => setPaymentDate(e.target.value)}
-      />
-      <SelectInput
-        label="Tipo de Transação:"
-        name="transactionType"
-        value={transactionType}
-        onChange={(e) => setTransactionType(e.target.value)}
-        options={[
-          { value: "Solicitar Pagamento", label: "Solicitar Pagamento" },
-          { value: "Registrar pagamento", label: "Registrar pagamento" },
-          { value: "Registrar Caixa Físico", label: "Registrar Caixa Físico" },
-          { value: "Agendar pagamento", label: "Agendar pagamento" },
-        ]}
-      />
+
       
       {paymentItems.map((item, index) => {
         const selectedProject = projects.find(p => p.spreadsheet_id === item.projectId);
         const budgetOptions = selectedProject
-          ? selectedProject.budget_items.sort((a, b) => a.localeCompare(b)).map(budgetItem => ({ value: budgetItem, label: budgetItem }))
+          ? [{ value: "", label: "Selecione uma rubrica" }, ...selectedProject.budget_items.sort((a, b) => a.localeCompare(b)).map(budgetItem => ({ value: budgetItem, label: budgetItem }))]
           : [{ value: "", label: "Selecione uma rubrica" }];
-        const isSameSupplier = lastSupplierId && item.supplierId === lastSupplierId && index > 0;
+        
+        const itemErrors = getItemErrors(item);
+        const hasErrors = itemErrors.length > 0;
         
         return (
-          <div key={item.id} className="border p-4 mb-4 rounded">
+          <div key={item.id} className={`border p-4 mb-4 rounded ${hasErrors ? 'border-red-300 bg-red-50' : ''}`}>
             <div className="flex justify-between items-center mb-2">
-              <h3 className="text-lg font-semibold">Pagamento {index + 1}</h3>
+              <h3 className="text-lg font-semibold">Pagamento {index + 1} {hasErrors && '⚠️'}</h3>
               {paymentItems.length > 1 && (
                 <button
                   type="button"
@@ -205,11 +199,45 @@ export default function SolicitarPagamento() {
               )}
             </div>
             
-            {isSameSupplier && (
-              <div className="bg-green-100 p-2 mb-3 rounded text-green-800">
-                ✅ Mesmo fornecedor do pagamento anterior
+            {hasErrors && (
+              <div className="bg-red-100 p-2 mb-3 rounded text-red-800">
+                <strong>Campos obrigatórios:</strong> {itemErrors.join(', ')}
               </div>
             )}
+            
+            <SelectInput
+              label="Tipo de Transação:"
+              name={`transactionType_${item.id}`}
+              value={item.transactionType}
+              onChange={(e) => updatePaymentItem(item.id, 'transactionType', e.target.value)}
+              options={[
+                { value: "Solicitar Pagamento", label: "Solicitar Pagamento" },
+                { value: "Registrar pagamento", label: "Registrar pagamento" },
+                { value: "Registrar Caixa Físico", label: "Registrar Caixa Físico" },
+                { value: "Registro Caixa Digital", label: "Registro Caixa Digital" },
+                { value: "Agendar pagamento", label: "Agendar pagamento" },
+              ]}
+            />
+            
+            <DateInput
+              label="Data do pagamento:"
+              value={item.paymentDate}
+              onChange={(e: any) => updatePaymentItem(item.id, 'paymentDate', e.target.value)}
+            />
+            
+            {item.transactionType === "Solicitar Pagamento" && item.paymentDate !== new Date().toISOString().split("T")[0] && (
+              <div className="bg-red-100 p-2 mb-3 rounded text-red-800">
+                ⚠️ Solicitações de pagamento devem ser para hoje
+              </div>
+            )}
+            
+            {item.transactionType === "Agendar pagamento" && item.paymentDate <= new Date().toISOString().split("T")[0] && (
+              <div className="bg-red-100 p-2 mb-3 rounded text-red-800">
+                ⚠️ Agendamentos devem ser para datas futuras
+              </div>
+            )}
+            
+
             
             <SelectInput
               label="Projeto:"
@@ -300,11 +328,20 @@ export default function SolicitarPagamento() {
                 onChange={(e) => updatePaymentItem(item.id, 'unitName', e.target.value)}
                 placeholder="unidade"
               />
-              <CurrenyValueInput
-                name={`unitValue_${item.id}`}
-                currencyValue={item.unitValue}
-                setCurrencyValue={(value) => updatePaymentItem(item.id, 'unitValue', value)}
-              />
+              <div className="form-group">
+                <label className="form-label">Valor Unitário:</label>
+                <input
+                  type="text"
+                  name={`unitValue_${item.id}`}
+                  value={`R$ ${(parseFloat(item.unitValue || '0') / 100).toFixed(2).replace('.', ',')}`}
+                  onChange={(e) => {
+                    const numericValue = e.target.value.replace(/\D/g, "");
+                    updatePaymentItem(item.id, 'unitValue', numericValue);
+                  }}
+                  placeholder="R$ 0,00"
+                  className="form-input"
+                />
+              </div>
             </div>
             
             <div className="mt-2 text-lg font-semibold">
@@ -325,18 +362,23 @@ export default function SolicitarPagamento() {
       <div className="text-xl font-bold mb-4">
         Valor Total Geral: R$ {(calculateTotalValue() / 100).toFixed(2).replace('.', ',')}
       </div>
+      
+      {!isFormValid && (
+        <div className="bg-yellow-100 p-3 mb-4 rounded text-yellow-800">
+          ⚠️ Verifique os campos obrigatórios nos pagamentos marcados
+        </div>
+      )}
       <SendToAction
         fields={[
           { name: "telegramUsersInfo", value: userJSONStringfyed },
           { name: "paymentItems", value: JSON.stringify(paymentItems) },
-          { name: "paymentDate", value: paymentDate },
           { name: "projects", value: JSON.stringify(projects) },
           { name: "suppliers", value: JSON.stringify(suppliers) },
         ]}
       />
       <SubmitButton
         isEnabled={isFormValid}
-        label={`🤞 Enviar ${paymentItems.length} Solicitação${paymentItems.length > 1 ? 'ões' : ''}`}
+        label={`🤞 Enviar ${paymentItems.length} Solicitaç${paymentItems.length > 1 ? 'ões' : 'ão'}`}
         userPermissions={userPermissions}
         requiredPermission={UserCategory.PROJECT_COORDINATORS}
       />

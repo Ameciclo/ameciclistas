@@ -78,10 +78,7 @@ export interface SubmitButtonProps extends Omit<GenericButtonProps, "type"> {
   isEnabled: boolean;
 }
 
-/**
- * Botão de submissão que utiliza o GenericButton com type="submit".
- * Além disso, permite configurar se o botão está habilitado.
- */
+
 export const SubmitButton: React.FC<SubmitButtonProps> = ({
   isEnabled,
   onClick,
@@ -91,20 +88,25 @@ export const SubmitButton: React.FC<SubmitButtonProps> = ({
   requiredPermission,
   ...rest
 }) => {
-  const buttonClass = isEnabled
+  const permitted = isAuth(
+    userPermissions,
+    requiredPermission || UserCategory.ANY_USER
+  );
+  
+  const finalEnabled = isEnabled && permitted;
+  const buttonClass = finalEnabled
     ? `button-full ${className}`
     : `button-full button-disabled ${className}`;
 
   return (
-    <GenericButton
+    <button
       type="submit"
-      label={label}
-      onClick={onClick}
       className={buttonClass}
-      userPermissions={userPermissions}
-      requiredPermission={requiredPermission}
-      {...rest}
-    />
+      onClick={onClick}
+      disabled={!finalEnabled}
+    >
+      {label}
+    </button>
   );
 };
 

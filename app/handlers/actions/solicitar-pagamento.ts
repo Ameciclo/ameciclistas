@@ -5,6 +5,8 @@ import { formatDate } from "~/utils/format";
 
 interface PaymentItem {
   id: string;
+  transactionType: string;
+  paymentDate: string;
   projectId: string;
   budgetItem: string;
   supplierId: string;
@@ -20,8 +22,6 @@ interface PaymentItem {
 }
 
 const createPaymentRequests = (formData: FormData) => {
-  const paymentDate = formData.get("paymentDate")?.toString() || null;
-  const transactionType = formData.get("transactionType");
   const from = JSON.parse(formData.get("telegramUsersInfo") as string);
   const paymentItems: PaymentItem[] = JSON.parse(formData.get("paymentItems") as string);
   const projects = JSON.parse(formData.get("projects") as string);
@@ -34,19 +34,21 @@ const createPaymentRequests = (formData: FormData) => {
       ? suppliers.find((s: any) => (s.id_number || s.id) === item.refundSupplierId)
       : null;
 
-    const description = `${item.description} (${item.quantity} ${item.unitName}${item.quantity > 1 ? 's' : ''} × R$ ${(parseFloat(item.unitValue) / 100).toFixed(2).replace('.', ',')})`;
+    const unitValueFormatted = (parseFloat(item.unitValue || '0') / 100).toFixed(2).replace('.', ',');
+    const totalValueFormatted = `R$ ${(parseFloat(item.totalValue || '0') / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    const description = `${item.description} (${item.quantity} ${item.unitName}${item.quantity > 1 ? 's' : ''} × R$ ${unitValueFormatted})`;
 
     return {
       from,
-      paymentDate,
-      transactionType,
+      paymentDate: item.paymentDate,
+      transactionType: item.transactionType,
       project,
       budgetItem: item.budgetItem,
       supplier,
       isRefund: item.isRefund,
       refundSupplier: refundSupplier || "",
       description,
-      value: item.totalValue,
+      value: totalValueFormatted,
       from_chat_id: 0,
       group_message_id: 0,
       invoice_url: "",
@@ -61,9 +63,20 @@ export const action: ActionFunction = async ({ request }) => {
     const paymentRequests = createPaymentRequests(formData);
     console.log(`Processando ${paymentRequests.length} solicitações:`, paymentRequests);
     
-    // Salva todas as solicitações
-    for (const paymentRequest of paymentRequests) {
-      await savePaymentRequest(paymentRequest);
+    // Em desenvolvimento, apenas mostra no console
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🚧 MODO DESENVOLVIMENTO - Não enviando para Firebase');
+      console.log('📋 Solicitações que seriam enviadas:');
+      paymentRequests.forEach((request, i) => {
+        console.log(`\n📄 Solicitação ${i + 1}:`, JSON.stringify(request, null, 2));
+      });
+    } else {
+      // Salva todas as solicitações uma a uma
+      for (let i = 0; i < paymentRequests.length; i++) {
+        console.log(`Salvando solicitação ${i + 1} de ${paymentRequests.length}`);
+        await savePaymentRequest(paymentRequests[i]);
+        console.log(`Solicitação ${i + 1} salva com sucesso`);
+      }
     }
     
     return redirect(`/sucesso/solicitar-pagamento?count=${paymentRequests.length}`);
