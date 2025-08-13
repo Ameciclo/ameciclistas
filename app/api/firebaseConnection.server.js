@@ -273,12 +273,17 @@ export async function saveSale(saleData) {
       return reject(new Error("Falha ao gerar chave para a venda."));
     }
 
-    saleData.id = key;
-    saleData.createdAt = new Date().toISOString();
+    // Limpar campos undefined antes de salvar
+    const cleanSaleData = Object.fromEntries(
+      Object.entries(saleData).filter(([_, value]) => value !== undefined)
+    );
+
+    cleanSaleData.id = key;
+    cleanSaleData.createdAt = new Date().toISOString();
 
     ref
       .child(key)
-      .update(saleData)
+      .update(cleanSaleData)
       .then((snapshot) => {
         resolve(snapshot);
       })
@@ -297,12 +302,17 @@ export async function saveDonation(donationData) {
       return reject(new Error("Falha ao gerar chave para a doação."));
     }
 
-    donationData.id = key;
-    donationData.createdAt = new Date().toISOString();
+    // Limpar campos undefined antes de salvar
+    const cleanDonationData = Object.fromEntries(
+      Object.entries(donationData).filter(([_, value]) => value !== undefined)
+    );
+
+    cleanDonationData.id = key;
+    cleanDonationData.createdAt = new Date().toISOString();
 
     ref
       .child(key)
-      .update(donationData)
+      .update(cleanDonationData)
       .then((snapshot) => {
         resolve(snapshot);
       })
@@ -342,6 +352,19 @@ export async function updateDonationStatus(donationId, status, additionalData = 
   return new Promise((resolve, reject) => {
     const ref = db.ref(`resources/donations/${donationId}`);
     
+    // Se for cancelamento, remove o registro
+    if (status === "CANCELLED") {
+      ref
+        .remove()
+        .then((snapshot) => {
+          resolve(snapshot);
+        })
+        .catch((err) => {
+          reject(err);
+        });
+      return;
+    }
+    
     const updateData = {
       status,
       ...additionalData
@@ -368,17 +391,22 @@ export async function updateDonationStatus(donationId, status, additionalData = 
 export async function saveProduct(productData) {
   return new Promise((resolve, reject) => {
     const ref = db.ref("resources/products");
-    const key = productData.id || ref.push().key;
+    const key = ref.push().key;
 
     if (!key) {
       return reject(new Error("Falha ao gerar chave para o produto."));
     }
 
-    productData.id = key;
+    // Limpar campos undefined antes de salvar
+    const cleanProductData = Object.fromEntries(
+      Object.entries(productData).filter(([_, value]) => value !== undefined)
+    );
+
+    cleanProductData.id = key;
 
     ref
       .child(key)
-      .update(productData)
+      .update(cleanProductData)
       .then((snapshot) => {
         resolve(snapshot);
       })
@@ -392,8 +420,13 @@ export async function updateProduct(productId, productData) {
   return new Promise((resolve, reject) => {
     const ref = db.ref(`resources/products/${productId}`);
     
+    // Limpar campos undefined antes de salvar
+    const cleanProductData = Object.fromEntries(
+      Object.entries(productData).filter(([_, value]) => value !== undefined)
+    );
+    
     ref
-      .update(productData)
+      .update(cleanProductData)
       .then((snapshot) => {
         resolve(snapshot);
       })

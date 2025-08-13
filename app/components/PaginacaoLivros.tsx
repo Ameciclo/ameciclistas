@@ -33,7 +33,9 @@ export function PaginacaoLivros({ livros, userCanRequest, userId }: PaginacaoLiv
   const getLivroComDisponibilidade = (livro: Livro) => ({
     ...livro,
     exemplares_disponiveis: livro.exemplares.filter(ex => ex.disponivel && !ex.consulta_local).length,
-    total_exemplares: livro.exemplares.filter(ex => !ex.consulta_local).length
+    exemplares_sede: livro.exemplares.filter(ex => ex.disponivel && ex.consulta_local).length,
+    total_exemplares: livro.exemplares.filter(ex => !ex.consulta_local).length,
+    apenas_sede: livro.exemplares.filter(ex => ex.disponivel && !ex.consulta_local).length === 0 && livro.exemplares.filter(ex => ex.disponivel && ex.consulta_local).length > 0
   });
 
   return (
@@ -75,14 +77,19 @@ export function PaginacaoLivros({ livros, userCanRequest, userId }: PaginacaoLiv
                   <p className="mb-3">
                     <strong>Disponíveis:</strong> 
                     <span className={`ml-1 font-semibold ${
-                      livroInfo.exemplares_disponiveis === 0 ? 'text-red-600' :
-                      livroInfo.exemplares_disponiveis === 1 ? 'text-orange-600' :
+                      livroInfo.exemplares_disponiveis === 0 && livroInfo.exemplares_sede === 0 ? 'text-red-600' :
+                      livroInfo.apenas_sede ? 'text-orange-600' :
                       'text-green-600'
                     }`}>
-                      {livroInfo.exemplares_disponiveis === 1 && livroInfo.total_exemplares === 1 ? 
-                        '1 para leitura na sede' :
-                        `${livroInfo.exemplares_disponiveis} de ${livroInfo.total_exemplares}`
+                      {livroInfo.apenas_sede ? 
+                        `${livroInfo.exemplares_sede} apenas para leitura na sede` :
+                        livroInfo.exemplares_disponiveis === 0 && livroInfo.exemplares_sede === 0 ?
+                        'Nenhum disponível' :
+                        `${livroInfo.exemplares_disponiveis} de ${livroInfo.total_exemplares} para locação`
                       }
+                      {livroInfo.exemplares_sede > 0 && !livroInfo.apenas_sede && (
+                        <span className="text-orange-600"> + {livroInfo.exemplares_sede} na sede</span>
+                      )}
                     </span>
                   </p>
                   
@@ -106,7 +113,7 @@ export function PaginacaoLivros({ livros, userCanRequest, userId }: PaginacaoLiv
                     >
                       {expandido ? "Ver menos" : "Ver mais"}
                     </button>
-                    {userCanRequest && livroInfo.exemplares_disponiveis >= 1 && (
+                    {userCanRequest && livroInfo.exemplares_disponiveis >= 1 && !livroInfo.apenas_sede && (
                       <Link
                         to={`/solicitar-emprestimo?livro=${encodeURIComponent(livro.titulo)}&codigo=${livro.codigo}&userId=${userId || ''}`}
                         className="text-green-600 text-sm hover:underline cursor-pointer"

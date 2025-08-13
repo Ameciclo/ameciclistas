@@ -1,4 +1,4 @@
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData, Link } from "@remix-run/react";
 import { UserCategory, UserData } from "~/utils/types";
 import { useEffect, useState } from "react";
 import { getTelegramUsersInfo } from "~/utils/users";
@@ -65,6 +65,12 @@ export default function RecursosIndependentesIndex() {
 
   return (
     <>
+      <div className="mb-4">
+        <Link to="/" className="text-teal-600 hover:text-teal-700">
+          ← Voltar ao Menu Principal
+        </Link>
+      </div>
+      
       <h1 className="text-3xl font-bold text-teal-600 text-center mb-2">
         Controle de Recursos Independentes
       </h1>

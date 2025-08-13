@@ -6,9 +6,23 @@ interface BibliotecaGestaoProps {
   emprestimos: Emprestimo[];
   solicitacoes: SolicitacaoEmprestimo[];
   livros: Livro[];
+  users: any;
 }
 
-export function BibliotecaGestao({ emprestimos, solicitacoes, livros }: BibliotecaGestaoProps) {
+export function BibliotecaGestao({ emprestimos, solicitacoes, livros, users }: BibliotecaGestaoProps) {
+  const getUserName = (userId: string) => {
+    const user = users[userId];
+    if (user?.telegram_user) {
+      return `${user.telegram_user.first_name} ${user.telegram_user.last_name || ''}`.trim();
+    }
+    if (user?.library_register?.nome) {
+      return user.library_register.nome;
+    }
+    if (user?.ameciclo_register?.nome) {
+      return user.ameciclo_register.nome;
+    }
+    return user?.name || `Usuário ${userId}`;
+  };
   const [activeTab, setActiveTab] = useState<'emprestados' | 'solicitacoes'>('emprestados');
   const [nomeRetirada, setNomeRetirada] = useState<{[key: string]: string}>({});
   const submit = useSubmit();
@@ -90,7 +104,7 @@ export function BibliotecaGestao({ emprestimos, solicitacoes, livros }: Bibliote
                     <h4 className="font-semibold text-lg mb-2">{livro?.titulo || emp.titulo || 'Título não encontrado'}</h4>
                     <p className="text-gray-600 mb-1">Código: <strong>{emp.subcodigo}</strong></p>
                     <p className="text-gray-600 mb-1">Data de saída: {emp.data_saida}</p>
-                    <p className="text-gray-600 mb-1">Usuário ID: {emp.usuario_id}</p>
+                    <p className="text-gray-600 mb-1">Solicitante: <strong>{getUserName(emp.usuario_id)}</strong></p>
                     <p className={`text-sm ${diasEmprestado > 30 ? 'text-red-600' : 'text-gray-600'}`}>
                       {diasEmprestado} dias emprestado
                     </p>
@@ -124,7 +138,7 @@ export function BibliotecaGestao({ emprestimos, solicitacoes, livros }: Bibliote
                     <h4 className="font-semibold text-lg mb-2">{livro?.titulo || 'Título não encontrado'}</h4>
                     <p className="text-gray-600 mb-1">Código: <strong>{sol.subcodigo}</strong></p>
                     <p className="text-gray-600 mb-1">Data da solicitação: {sol.data_solicitacao}</p>
-                    <p className="text-gray-600 mb-1">Usuário ID: {sol.usuario_id}</p>
+                    <p className="text-gray-600 mb-1">Solicitante: <strong>{getUserName(sol.usuario_id)}</strong></p>
                   </div>
                   <div className="mb-3">
                     <input

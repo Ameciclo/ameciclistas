@@ -180,6 +180,64 @@ export default function HistoricoVendas() {
             </div>
           </div>
 
+          {/* Histórico de Vendas */}
+          <div className="bg-white p-6 rounded-lg shadow border">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Últimas Vendas</h3>
+            {filteredSales.length === 0 ? (
+              <p className="text-gray-600">Nenhuma venda no período selecionado.</p>
+            ) : (
+              <div className="space-y-3 max-h-64 overflow-y-auto">
+                {filteredSales.slice(0, 10).map((sale) => (
+                  <div key={sale.id} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
+                    <div>
+                      <p className="font-medium text-gray-900">
+                        {sale.productName}
+                        {sale.variantName && ` (${sale.variantName})`}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        {sale.userName} • {sale.quantity} unidades
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-blue-600">R$ {sale.totalValue.toFixed(2)}</p>
+                      <p className="text-xs text-gray-500">
+                        {sale.confirmedAt ? formatDate(sale.confirmedAt) : "N/A"}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Histórico de Doações */}
+          <div className="bg-white p-6 rounded-lg shadow border">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Últimas Doações</h3>
+            {filteredDonations.length === 0 ? (
+              <p className="text-gray-600">Nenhuma doação no período selecionado.</p>
+            ) : (
+              <div className="space-y-3 max-h-64 overflow-y-auto">
+                {filteredDonations.slice(0, 10).map((donation) => (
+                  <div key={donation.id} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
+                    <div>
+                      <p className="font-medium text-gray-900">Doação</p>
+                      <p className="text-sm text-gray-600">
+                        {donation.userName}
+                        {donation.description && ` • ${donation.description}`}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-green-600">R$ {donation.value.toFixed(2)}</p>
+                      <p className="text-xs text-gray-500">
+                        {donation.confirmedAt ? formatDate(donation.confirmedAt) : "N/A"}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Vendas por Categoria */}
           {Object.keys(salesByCategory).length > 0 && (
             <div className="bg-white p-6 rounded-lg shadow border">

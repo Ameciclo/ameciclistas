@@ -4,6 +4,8 @@ import { json, type ActionFunctionArgs } from "@remix-run/node";
 import { UserCategory, UserData } from "~/utils/types";
 import { getTelegramUsersInfo } from "~/utils/users";
 import { BackButton } from "~/components/Forms/Buttons";
+import { formatCPF, formatPhone } from "~/utils/format";
+import { validateCPF } from "~/utils/idNumber";
 import db from "~/api/firebaseAdmin.server.js";
 
 import { loader } from "~/handlers/loaders/user";
@@ -129,28 +131,24 @@ export default function User() {
     }
   }, [user, usersInfo]);
 
-  const formatarCPF = (valor: string) => {
-    const numeros = valor.replace(/\D/g, "");
-    return numeros.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
-  };
-
-  const formatarTelefone = (valor: string) => {
-    const numeros = valor.replace(/\D/g, "");
-    if (numeros.length <= 10) {
-      return numeros.replace(/(\d{2})(\d{4})(\d{4})/, "($1) $2-$3");
+  // Resetar formulário após sucesso
+  useEffect(() => {
+    if (actionData?.success) {
+      setShowPersonalForm(false);
     }
-    return numeros.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
-  };
+  }, [actionData]);
 
   const handlePersonalInfoChange = (field: string, value: string) => {
     let formattedValue = value;
     if (field === "cpf") {
-      formattedValue = formatarCPF(value);
+      formattedValue = formatCPF(value);
     } else if (field === "telefone") {
-      formattedValue = formatarTelefone(value);
+      formattedValue = formatPhone(value);
     }
     setPersonalInfo(prev => ({ ...prev, [field]: formattedValue }));
   };
+
+  const isCPFValid = personalInfo.cpf ? validateCPF(personalInfo.cpf) : true;
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -253,8 +251,15 @@ export default function User() {
                     onChange={(e) => handlePersonalInfoChange("cpf", e.target.value)}
                     placeholder="000.000.000-00"
                     maxLength={14}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:border-transparent ${
+                      personalInfo.cpf && !isCPFValid
+                        ? "border-red-300 focus:ring-red-500"
+                        : "border-gray-300 focus:ring-teal-500"
+                    }`}
                   />
+                  {personalInfo.cpf && !isCPFValid && (
+                    <span className="text-red-500 text-sm mt-1">CPF inválido</span>
+                  )}
                 </div>
                 
                 <div>
@@ -283,7 +288,12 @@ export default function User() {
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700"
+                    disabled={personalInfo.cpf && !isCPFValid}
+                    className={`flex-1 px-4 py-2 rounded-lg ${
+                      personalInfo.cpf && !isCPFValid
+                        ? "bg-gray-400 text-white cursor-not-allowed"
+                        : "bg-teal-600 text-white hover:bg-teal-700"
+                    }`}
                   >
                     Salvar Informações
                   </button>

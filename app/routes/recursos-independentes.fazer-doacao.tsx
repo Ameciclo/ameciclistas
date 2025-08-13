@@ -10,13 +10,19 @@ export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
   
   try {
+    const description = formData.get("description") as string;
+    
     const donationData = {
       userId: parseInt(formData.get("userId") as string),
       userName: formData.get("userName") as string,
       value: parseFloat(formData.get("value") as string),
-      description: formData.get("description") as string || undefined,
       status: SaleStatus.PENDING,
     };
+    
+    // Apenas adicionar description se tiver valor válido
+    if (description && description.trim() !== "") {
+      donationData.description = description.trim();
+    }
 
     await saveDonation(donationData);
     return redirect("/recursos-independentes/meus-consumos?success=donation");

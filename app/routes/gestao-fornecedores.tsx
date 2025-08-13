@@ -155,10 +155,11 @@ export default function GestaoFornecedores() {
   };
 
   const filteredSuppliers = suppliers ? Object.entries(suppliers).filter(([_, supplier]: [string, any]) => {
+    if (!supplier) return false;
     const searchLower = searchTerm.toLowerCase();
-    return supplier.name?.toLowerCase().includes(searchLower) ||
-           supplier.nickname?.toLowerCase().includes(searchLower) ||
-           supplier.id_number?.includes(searchTerm);
+    return (supplier.name && supplier.name.toLowerCase().includes(searchLower)) ||
+           (supplier.nickname && supplier.nickname.toLowerCase().includes(searchLower)) ||
+           (supplier.id_number && supplier.id_number.includes(searchTerm));
   }) : [];
 
   const getMissingFields = () => {

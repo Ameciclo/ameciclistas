@@ -1,6 +1,6 @@
 import { LoaderFunction, ActionFunction, json } from "@remix-run/node";
 import { Form, useLoaderData, useActionData, Link } from "@remix-run/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getProducts, saveProduct, updateProduct, deleteProduct, updateProductStock } from "~/api/firebaseConnection.server";
 import { Product, ProductCategory } from "~/utils/types";
 
@@ -15,14 +15,19 @@ export const action: ActionFunction = async ({ request }) => {
   
   try {
     if (action === "create") {
+      const description = formData.get("description") as string;
+      
       const productData = {
-        id: formData.get("id") as string,
         name: formData.get("name") as string,
         category: formData.get("category") as ProductCategory,
         price: parseFloat(formData.get("price") as string),
         stock: parseInt(formData.get("stock") as string),
-        description: formData.get("description") as string || undefined,
       };
+      
+      // Apenas adicionar description se tiver valor válido
+      if (description && description.trim() !== "") {
+        productData.description = description.trim();
+      }
       
       await saveProduct(productData);
       return json({ success: "Produto criado com sucesso!" });
@@ -30,13 +35,19 @@ export const action: ActionFunction = async ({ request }) => {
     
     if (action === "update") {
       const productId = formData.get("productId") as string;
+      const description = formData.get("description") as string;
+      
       const productData = {
         name: formData.get("name") as string,
         category: formData.get("category") as ProductCategory,
         price: parseFloat(formData.get("price") as string),
         stock: parseInt(formData.get("stock") as string),
-        description: formData.get("description") as string || undefined,
       };
+      
+      // Apenas adicionar description se tiver valor válido
+      if (description && description.trim() !== "") {
+        productData.description = description.trim();
+      }
       
       await updateProduct(productId, productData);
       return json({ success: "Produto atualizado com sucesso!" });
@@ -88,6 +99,14 @@ export default function GerenciarEstoque() {
     setEditingProduct(product);
     setActiveTab("edit");
   };
+
+  // Fechar aba de edição após sucesso
+  useEffect(() => {
+    if (actionData?.success && activeTab === "edit") {
+      setEditingProduct(null);
+      setActiveTab("list");
+    }
+  }, [actionData, activeTab]);
 
   return (
     <>
@@ -267,17 +286,6 @@ export default function GerenciarEstoque() {
         <Form method="post" className="max-w-md mx-auto space-y-4">
           <input type="hidden" name="action" value="create" />
           
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">ID do Produto</label>
-            <input
-              type="text"
-              name="id"
-              required
-              placeholder="ex: cerveja-lata-350ml"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
-            />
-          </div>
-
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Nome</label>
             <input

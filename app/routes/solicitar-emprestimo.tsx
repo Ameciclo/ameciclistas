@@ -229,7 +229,7 @@ export default function SolicitarEmprestimo() {
           {solicitarParaOutraPessoa && (
             <div className="mt-4">
               <Link 
-                to={`/registrar-usuario-biblioteca?livro=${encodeURIComponent(livroTitulo)}&codigo=${codigo}`}
+                to={`/registrar-usuario-biblioteca?livro=${encodeURIComponent(livroTitulo)}&codigo=${searchParams.get("codigo") || ""}`}
                 className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
               >
                 Registrar Novo Usuário

@@ -1,5 +1,5 @@
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
-import { getBiblioteca, getEmprestimos, getSolicitacoes } from "~/api/firebaseConnection.server";
+import { getBiblioteca, getEmprestimos, getSolicitacoes, getUsersFirebase } from "~/api/firebaseConnection.server";
 import type { Livro, Emprestimo } from "~/utils/types";
 
 export async function bibliotecaLoader({ request }: LoaderFunctionArgs) {
@@ -10,6 +10,7 @@ export async function bibliotecaLoader({ request }: LoaderFunctionArgs) {
     const bibliotecaData = await getBiblioteca();
     const emprestimosData = await getEmprestimos();
     const solicitacoesData = await getSolicitacoes();
+    const usersData = await getUsersFirebase();
     
     const biblioteca: Livro[] = bibliotecaData ? Object.keys(bibliotecaData).map(key => ({ id: key, ...bibliotecaData[key] })) : [];
     const emprestimos: Emprestimo[] = emprestimosData ? Object.keys(emprestimosData).map(key => ({ id: key, ...emprestimosData[key] })) : [];
@@ -54,10 +55,11 @@ export async function bibliotecaLoader({ request }: LoaderFunctionArgs) {
     return json({ 
       livros: livrosComDisponibilidade, 
       emprestimos: emprestimos.filter((emp: any) => emp.status === 'emprestado'),
-      solicitacoes: solicitacoes.filter((sol: any) => sol.status === 'pendente')
+      solicitacoes: solicitacoes.filter((sol: any) => sol.status === 'pendente'),
+      users: usersData || {}
     });
   } catch (error) {
     console.error("Erro ao carregar dados da biblioteca do Firebase:", error);
-    return json({ livros: [], emprestimos: [], solicitacoes: [] });
+    return json({ livros: [], emprestimos: [], solicitacoes: [], users: {} });
   }
 }

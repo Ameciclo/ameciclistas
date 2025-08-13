@@ -207,7 +207,7 @@ export default function MeusConsumos() {
                       
                       <div className="mb-3">
                         <p className="text-sm font-medium text-gray-700 mb-2">
-                          PIX: <span className="font-mono bg-gray-200 px-2 py-1 rounded">ameciclo@gmail.com</span>
+                          PIX: <span className="font-mono bg-gray-200 px-2 py-1 rounded">doe@ameciclo.org</span>
                         </p>
                         <p className="text-sm text-gray-600 mb-2">
                           Valor: R$ {sale.totalValue.toFixed(2)}
@@ -327,7 +327,7 @@ export default function MeusConsumos() {
                       
                       <div className="mb-3">
                         <p className="text-sm font-medium text-gray-700 mb-2">
-                          PIX: <span className="font-mono bg-gray-200 px-2 py-1 rounded">ameciclo@gmail.com</span>
+                          PIX: <span className="font-mono bg-gray-200 px-2 py-1 rounded">doe@ameciclo.org</span>
                         </p>
                         <p className="text-sm text-gray-600 mb-2">
                           Valor: R$ {donation.value.toFixed(2)}

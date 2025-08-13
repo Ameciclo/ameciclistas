@@ -13,7 +13,7 @@ export const loader = bibliotecaLoader;
 export const action = bibliotecaAction;
 
 export default function Biblioteca() {
-  const { livros, emprestimos, solicitacoes } = useLoaderData<typeof loader>();
+  const { livros, emprestimos, solicitacoes, users } = useLoaderData<typeof loader>();
   const [user, setUser] = useState<UserData | null>(null);
   const [busca, setBusca] = useState("");
   const [mostrarGestao, setMostrarGestao] = useState(false);
@@ -54,6 +54,7 @@ export default function Biblioteca() {
   const livrosComDisponibilidade = livros.map((livro: Livro) => ({
     ...livro,
     exemplares_disponiveis: livro.exemplares.filter(ex => ex.disponivel && !ex.consulta_local).length,
+    exemplares_sede: livro.exemplares.filter(ex => ex.disponivel && ex.consulta_local).length,
     total_exemplares: livro.exemplares.filter(ex => !ex.consulta_local).length
   }));
 
@@ -61,7 +62,8 @@ export default function Biblioteca() {
   const livrosFiltrados = livrosComDisponibilidade.filter((livro: any) => {
     // Filtro por disponibilidade
     if (filtroDisponibilidade === "disponiveis" && livro.exemplares_disponiveis === 0) return false;
-    if (filtroDisponibilidade === "indisponiveis" && livro.exemplares_disponiveis > 0) return false;
+    if (filtroDisponibilidade === "sede" && livro.exemplares_sede === 0) return false;
+    if (filtroDisponibilidade === "indisponiveis" && (livro.exemplares_disponiveis > 0 || livro.exemplares_sede > 0)) return false;
     
     // Filtro por tipo
     if (filtroTipo && livro.tipo !== filtroTipo) return false;
@@ -155,7 +157,8 @@ export default function Biblioteca() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                   >
                     <option value="todos">Todos</option>
-                    <option value="disponiveis">Disponíveis</option>
+                    <option value="disponiveis">Disponíveis para locação</option>
+                    <option value="sede">Disponíveis apenas na sede</option>
                     <option value="indisponiveis">Indisponíveis</option>
                   </select>
                 </div>
@@ -216,6 +219,7 @@ export default function Biblioteca() {
           emprestimos={emprestimos.filter((emp: Emprestimo) => emp.status === 'emprestado')}
           solicitacoes={solicitacoes}
           livros={livrosComDisponibilidade}
+          users={users}
         />
       )}
     </div>

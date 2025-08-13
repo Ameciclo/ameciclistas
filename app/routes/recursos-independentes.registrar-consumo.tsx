@@ -15,18 +15,27 @@ export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
   
   try {
+    const variantId = formData.get("variantId") as string;
+    const variantName = formData.get("variantName") as string;
+    
     const saleData = {
       userId: parseInt(formData.get("userId") as string),
       userName: formData.get("userName") as string,
       productId: formData.get("productId") as string,
       productName: formData.get("productName") as string,
-      variantId: formData.get("variantId") as string || undefined,
-      variantName: formData.get("variantName") as string || undefined,
       quantity: parseInt(formData.get("quantity") as string),
       unitPrice: parseFloat(formData.get("unitPrice") as string),
       totalValue: parseFloat(formData.get("totalValue") as string),
       status: SaleStatus.PENDING,
     };
+    
+    // Apenas adicionar variantId e variantName se tiverem valores válidos
+    if (variantId && variantId !== "" && variantId !== "undefined") {
+      saleData.variantId = variantId;
+    }
+    if (variantName && variantName !== "" && variantName !== "undefined") {
+      saleData.variantName = variantName;
+    }
 
     await saveSale(saleData);
     return redirect("/recursos-independentes/meus-consumos?success=true");
@@ -139,9 +148,11 @@ export default function RegistrarConsumo() {
                 </option>
               ))}
             </select>
-            <input type="hidden" name="variantName" value={
-              selectedProduct.variants.find(v => v.id === selectedVariant)?.name || ""
-            } />
+            {selectedVariant && (
+              <input type="hidden" name="variantName" value={
+                selectedProduct.variants.find(v => v.id === selectedVariant)?.name || ""
+              } />
+            )}
           </div>
         )}
 
