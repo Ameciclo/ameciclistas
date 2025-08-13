@@ -29,6 +29,7 @@ interface PaymentItem {
   budgetItem: string;
   supplierId: string;
   supplierInput: string;
+  paymentMethod: string;
   isRefund: boolean;
   refundSupplierId: string;
   refundSupplierInput: string;
@@ -61,6 +62,7 @@ export default function SolicitarPagamento() {
     budgetItem: "",
     supplierId: "",
     supplierInput: "",
+    paymentMethod: "",
     isRefund: false,
     refundSupplierId: "",
     refundSupplierInput: "",
@@ -91,6 +93,7 @@ export default function SolicitarPagamento() {
       budgetItem: "",
       supplierId: "",
       supplierInput: "",
+      paymentMethod: "",
       isRefund: false,
       refundSupplierId: "",
       refundSupplierInput: "",
@@ -117,6 +120,12 @@ export default function SolicitarPagamento() {
           const qty = field === 'quantity' ? value : updated.quantity;
           const unitVal = field === 'unitValue' ? value : updated.unitValue;
           updated.totalValue = (qty * parseFloat(unitVal.replace(/\D/g, '') || '0')).toString();
+        }
+        if (field === 'supplierId' && value) {
+          const supplier = suppliers.find((s: any) => (s.id_number || s.id) === value);
+          if (supplier && supplier.payment_methods && supplier.payment_methods.length > 0) {
+            updated.paymentMethod = supplier.payment_methods[0].value || '';
+          }
         }
 
         return updated;
@@ -162,6 +171,7 @@ export default function SolicitarPagamento() {
     if (!item.projectId) errors.push("Projeto");
     if (!item.budgetItem) errors.push("Rubrica");
     if (!item.supplierId.trim()) errors.push("Fornecedor");
+    if (item.supplierId && !item.paymentMethod) errors.push("Método de Pagamento");
     if (!item.description.trim()) errors.push("Descrição");
     if (parseFloat(item.totalValue) <= 0) errors.push("Valor deve ser maior que zero");
     if (item.isRefund && !item.refundSupplierId.trim()) errors.push("Pessoa Reembolsada");
@@ -278,6 +288,23 @@ export default function SolicitarPagamento() {
                 (supplier.nickname ? supplier.nickname.toLowerCase().includes(query.toLowerCase()) : false)
               }
             />
+            
+            {item.supplierId && (() => {
+              const selectedSupplier = suppliers.find((s: any) => (s.id_number || s.id) === item.supplierId);
+              const paymentMethods = selectedSupplier?.payment_methods || [];
+              return paymentMethods.length > 0 ? (
+                <SelectInput
+                  label="Método de Pagamento:"
+                  name={`paymentMethod_${item.id}`}
+                  value={item.paymentMethod}
+                  onChange={(e) => updatePaymentItem(item.id, 'paymentMethod', e.target.value)}
+                  options={paymentMethods.map((method: any) => ({
+                    value: method.value,
+                    label: `${method.type}: ${method.value}`
+                  }))}
+                />
+              ) : null;
+            })()}
 
             <Checkbox 
               label="Reembolso" 

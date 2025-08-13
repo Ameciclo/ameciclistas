@@ -11,6 +11,7 @@ interface PaymentItem {
   budgetItem: string;
   supplierId: string;
   supplierInput: string;
+  paymentMethod: string;
   isRefund: boolean;
   refundSupplierId: string;
   refundSupplierInput: string;
@@ -45,6 +46,7 @@ const createPaymentRequests = (formData: FormData) => {
       project,
       budgetItem: item.budgetItem,
       supplier,
+      paymentMethod: item.paymentMethod,
       isRefund: item.isRefund,
       refundSupplier: refundSupplier || "",
       description,
