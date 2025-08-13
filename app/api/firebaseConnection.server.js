@@ -170,3 +170,21 @@ export async function updateFullUser(usersInfo, role) {
       });
   });
 }
+
+export async function getBiblioteca() {
+  const ref = db.ref("library");
+  const snapshot = await ref.once("value");
+  return snapshot.val();
+}
+
+export async function getEmprestimos() {
+  const ref = db.ref("loan_record");
+  const snapshot = await ref.once("value");
+  return snapshot.val();
+}
+
+export async function getSolicitacoes() {
+  const ref = db.ref("biblioteca_solicitacoes");
+  const snapshot = await ref.once("value");
+  return snapshot.val();
+}
