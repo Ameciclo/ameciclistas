@@ -1,15 +1,19 @@
 import { LoaderFunction, ActionFunction, json } from "@remix-run/node";
 import { Form, useLoaderData, useActionData, Link } from "@remix-run/react";
-import { useState } from "react";
-import { getSales, getDonations, updateSaleStatus, updateDonationStatus } from "~/api/firebaseConnection.server";
-import { Sale, Donation, SaleStatus } from "~/utils/types";
+import { useState, useEffect } from "react";
+import { getSales, getDonations, updateSaleStatus, updateDonationStatus, getUsersFirebase } from "~/api/firebaseConnection.server";
+import { Sale, Donation, SaleStatus, UserCategory, UserData } from "~/utils/types";
+import { isAuth } from "~/utils/isAuthorized";
+import { getTelegramUsersInfo } from "~/utils/users";
+import telegramInit from "~/utils/telegramInit";
 
 export const loader: LoaderFunction = async () => {
-  const [sales, donations] = await Promise.all([
+  const [sales, donations, users] = await Promise.all([
     getSales(),
-    getDonations()
+    getDonations(),
+    getUsersFirebase()
   ]);
-  return json({ sales, donations });
+  return json({ sales, donations, users });
 };
 
 export const action: ActionFunction = async ({ request }) => {
@@ -48,9 +52,22 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 export default function GerenciarRecursos() {
-  const { sales, donations } = useLoaderData<typeof loader>();
+  const { sales, donations, users } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const [activeTab, setActiveTab] = useState<"pending" | "confirmed">("pending");
+  const [user, setUser] = useState<UserData | null>(null);
+  const [userPermissions, setUserPermissions] = useState<string[]>([]);
+
+  useEffect(() => {
+    telegramInit();
+    const userData = getTelegramUsersInfo();
+    setUser(userData);
+    
+    if (userData?.id && users[userData.id]) {
+      const userRole = users[userData.id].role;
+      setUserPermissions([userRole]);
+    }
+  }, [users]);
 
   const salesList = sales ? Object.values(sales) as Sale[] : [];
   const donationsList = donations ? Object.values(donations) as Donation[] : [];
@@ -79,6 +96,21 @@ export default function GerenciarRecursos() {
       minute: "2-digit"
     });
   };
+
+  if (!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) {
+    return (
+      <>
+        <div className="mb-4">
+          <Link to="/recursos-independentes" className="text-teal-600 hover:text-teal-700">
+            ← Voltar ao Menu
+          </Link>
+        </div>
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          <strong>Acesso Negado:</strong> Você precisa ser Coordenador de Projeto para acessar esta página.
+        </div>
+      </>
+    );
+  }
 
   return (
     <>

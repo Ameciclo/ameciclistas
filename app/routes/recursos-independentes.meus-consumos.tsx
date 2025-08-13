@@ -3,15 +3,17 @@ import { Form, useLoaderData, useSearchParams, Link } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import { getTelegramUsersInfo } from "~/utils/users";
 import telegramInit from "~/utils/telegramInit";
-import { getSales, getDonations, updateSaleStatus, updateDonationStatus } from "~/api/firebaseConnection.server";
-import { Sale, Donation, SaleStatus, UserData } from "~/utils/types";
+import { getSales, getDonations, updateSaleStatus, updateDonationStatus, getUsersFirebase } from "~/api/firebaseConnection.server";
+import { Sale, Donation, SaleStatus, UserData, UserCategory } from "~/utils/types";
+import { isAuth } from "~/utils/isAuthorized";
 
 export const loader: LoaderFunction = async () => {
-  const [sales, donations] = await Promise.all([
+  const [sales, donations, users] = await Promise.all([
     getSales(),
-    getDonations()
+    getDonations(),
+    getUsersFirebase()
   ]);
-  return json({ sales, donations });
+  return json({ sales, donations, users });
 };
 
 export const action: ActionFunction = async ({ request }) => {
@@ -50,16 +52,23 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 export default function MeusConsumos() {
-  const { sales, donations } = useLoaderData<typeof loader>();
+  const { sales, donations, users } = useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
   const [user, setUser] = useState<UserData | null>(null);
   const [showPaymentForm, setShowPaymentForm] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"sales" | "donations">("sales");
+  const [userPermissions, setUserPermissions] = useState<string[]>([]);
 
   useEffect(() => {
     telegramInit();
-    setUser(getTelegramUsersInfo());
-  }, []);
+    const userData = getTelegramUsersInfo();
+    setUser(userData);
+    
+    if (userData?.id && users[userData.id]) {
+      const userRole = users[userData.id].role;
+      setUserPermissions([userRole]);
+    }
+  }, [users]);
 
   const userSales = sales && user ? 
     Object.values(sales).filter((sale: any) => sale.userId === user.id) as Sale[] : [];
@@ -85,6 +94,21 @@ export default function MeusConsumos() {
       minute: "2-digit"
     });
   };
+
+  if (!isAuth(userPermissions, UserCategory.AMECICLISTAS)) {
+    return (
+      <div className="container mx-auto py-8 px-4">
+        <div className="mb-4">
+          <Link to="/recursos-independentes" className="text-teal-600 hover:text-teal-700">
+            ← Voltar ao Menu
+          </Link>
+        </div>
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          <strong>Acesso Negado:</strong> Você precisa ser Ameciclista para acessar esta página.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-8 px-4">

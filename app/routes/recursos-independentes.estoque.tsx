@@ -1,12 +1,18 @@
 import { LoaderFunction, ActionFunction, json } from "@remix-run/node";
 import { Form, useLoaderData, useActionData, Link } from "@remix-run/react";
 import { useState, useEffect } from "react";
-import { getProducts, saveProduct, updateProduct, deleteProduct, updateProductStock } from "~/api/firebaseConnection.server";
-import { Product, ProductCategory } from "~/utils/types";
+import { getProducts, saveProduct, updateProduct, deleteProduct, updateProductStock, getUsersFirebase } from "~/api/firebaseConnection.server";
+import { Product, ProductCategory, UserCategory, UserData } from "~/utils/types";
+import { isAuth } from "~/utils/isAuthorized";
+import { getTelegramUsersInfo } from "~/utils/users";
+import telegramInit from "~/utils/telegramInit";
 
 export const loader: LoaderFunction = async () => {
-  const products = await getProducts();
-  return json({ products });
+  const [products, users] = await Promise.all([
+    getProducts(),
+    getUsersFirebase()
+  ]);
+  return json({ products, users });
 };
 
 export const action: ActionFunction = async ({ request }) => {
@@ -90,10 +96,23 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 export default function GerenciarEstoque() {
-  const { products } = useLoaderData<typeof loader>();
+  const { products, users } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const [activeTab, setActiveTab] = useState<"list" | "create" | "edit">("list");
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [user, setUser] = useState<UserData | null>(null);
+  const [userPermissions, setUserPermissions] = useState<string[]>([]);
+
+  useEffect(() => {
+    telegramInit();
+    const userData = getTelegramUsersInfo();
+    setUser(userData);
+    
+    if (userData?.id && users[userData.id]) {
+      const userRole = users[userData.id].role;
+      setUserPermissions([userRole]);
+    }
+  }, [users]);
 
   const productsList = products ? Object.values(products) as Product[] : [];
 
@@ -121,6 +140,21 @@ export default function GerenciarEstoque() {
       setActiveTab("list");
     }
   }, [actionData, activeTab]);
+
+  if (!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) {
+    return (
+      <>
+        <div className="mb-4">
+          <Link to="/recursos-independentes" className="text-teal-600 hover:text-teal-700">
+            ← Voltar ao Menu
+          </Link>
+        </div>
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          <strong>Acesso Negado:</strong> Você precisa ser Coordenador de Projeto para acessar esta página.
+        </div>
+      </>
+    );
+  }
 
   return (
     <>

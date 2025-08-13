@@ -32,5 +32,5 @@ export const isAuth = (
   };
   return accessHierarchy[category]?.some((allowedCategory) =>
     currentUserCategories?.includes(allowedCategory)
-  ) || true;
+  ) || false;
 };

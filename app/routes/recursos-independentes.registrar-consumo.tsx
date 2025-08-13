@@ -59,16 +59,18 @@ export default function RegistrarConsumo() {
   const [customerName, setCustomerName] = useState("");
   const [customerSearch, setCustomerSearch] = useState("");
   const [showCustomerForm, setShowCustomerForm] = useState(false);
+  const [userPermissions, setUserPermissions] = useState<string[]>([]);
 
   useEffect(() => {
     telegramInit();
     const userData = getTelegramUsersInfo();
     setUser(userData);
     
-    // Verificar se é coordenador
+    // Verificar se é coordenador e definir permissões
     if (userData?.id && users[userData.id]) {
       const userRole = users[userData.id].role;
       setIsCoordinator(userRole === UserCategory.PROJECT_COORDINATORS);
+      setUserPermissions([userRole]);
     }
   }, [users]);
 
@@ -87,6 +89,21 @@ export default function RegistrarConsumo() {
     };
     return labels[category] || category;
   };
+
+  if (!isAuth(userPermissions, UserCategory.AMECICLISTAS)) {
+    return (
+      <div className="container mx-auto py-8 px-4">
+        <div className="mb-4">
+          <Link to="/recursos-independentes" className="text-teal-600 hover:text-teal-700">
+            ← Voltar ao Menu
+          </Link>
+        </div>
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          <strong>Acesso Negado:</strong> Você precisa ser Ameciclista para acessar esta página.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-8 px-4">

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { getTelegramUsersInfo } from "~/utils/users";
 import telegramInit from "~/utils/telegramInit";
 import { ButtonsListWithPermissions } from "~/components/Forms/Buttons";
+import { isAuth } from "~/utils/isAuthorized";
 
 import { loader } from "~/handlers/loaders/_index";
 export { loader };
@@ -62,6 +63,21 @@ export default function RecursosIndependentesIndex() {
       setUserPermissions([usersInfo[user.id].role as UserCategory]);
     }
   }, [user]);
+
+  if (!isAuth(userPermissions, UserCategory.AMECICLISTAS)) {
+    return (
+      <>
+        <div className="mb-4">
+          <Link to="/" className="text-teal-600 hover:text-teal-700">
+            ← Voltar ao Menu Principal
+          </Link>
+        </div>
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          <strong>Acesso Negado:</strong> Você precisa ser Ameciclista para acessar o Controle de Recursos Independentes.
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
