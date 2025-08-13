@@ -125,7 +125,7 @@ export default function GestaoFornecedores() {
     setPaymentMethods(updatedPaymentMethods);
   };
 
-  const loadSupplierData = (supplier: any) => {
+  const loadSupplierData = (supplier: any, firebaseKey: string) => {
     setPersonType(supplier.type === "Pessoa Física" ? "fisica" : "juridica");
     setName(supplier.nickname || "");
     setFullName(supplier.name || "");
@@ -134,8 +134,10 @@ export default function GestaoFornecedores() {
     setContacts(supplier.contacts || [{ type: "E-mail", value: "" }]);
     setPaymentMethods(supplier.payment_methods || [{ type: "PIX", value: "" }]);
     setIsInternational(supplier.is_international || false);
-    setSelectedSupplierId(supplier.id);
+    // Usa a chave do Firebase se o supplier.id não existir
+    setSelectedSupplierId(supplier.id || firebaseKey);
     setIsEditing(true);
+    console.log("Supplier ID definido como:", supplier.id || firebaseKey);
   };
 
   const resetForm = () => {
@@ -191,16 +193,19 @@ export default function GestaoFornecedores() {
         
         {searchTerm && filteredSuppliers.length > 0 && (
           <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-md">
-            {filteredSuppliers.map(([id, supplier]: [string, any]) => (
+            {filteredSuppliers.map(([firebaseKey, supplier]: [string, any]) => (
               <button
-                key={id}
+                key={firebaseKey}
                 type="button"
                 className="w-full text-left p-2 hover:bg-blue-50 border-b border-gray-200"
-                onClick={() => loadSupplierData(supplier)}
+                onClick={() => loadSupplierData(supplier, firebaseKey)}
               >
                 <div className="font-medium">{supplier.name}</div>
                 <div className="text-sm text-gray-600">
                   {supplier.nickname} - {supplier.id_number}
+                  <span className="text-xs text-gray-400 ml-2">
+                    (ID: {supplier.id || firebaseKey})
+                  </span>
                 </div>
               </button>
             ))}
@@ -208,27 +213,33 @@ export default function GestaoFornecedores() {
         )}
         
         {isEditing && (
-          <div className="mt-2 flex gap-2">
-            <button
-              type="button"
-              className="px-4 py-2 bg-gray-500 text-white rounded-md"
-              onClick={resetForm}
-            >
-              Cancelar edição / Adicionar novo
-            </button>
-            <button
-              type="submit"
-              name="_action"
-              value="remove"
-              className="px-4 py-2 bg-red-500 text-white rounded-md"
-              onClick={(e) => {
-                if (!confirm("Tem certeza que deseja remover este fornecedor?")) {
-                  e.preventDefault();
-                }
-              }}
-            >
-              🗑️ Remover Fornecedor
-            </button>
+          <div className="mt-2">
+            <div className="text-xs text-gray-500 mb-2">
+              ID do fornecedor: {selectedSupplierId}
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                className="px-4 py-2 bg-gray-500 text-white rounded-md"
+                onClick={resetForm}
+              >
+                Cancelar edição / Adicionar novo
+              </button>
+              <button
+                type="submit"
+                name="_action"
+                value="remove"
+                className="px-4 py-2 bg-red-500 text-white rounded-md"
+                onClick={(e) => {
+                  console.log("Tentando remover fornecedor ID:", selectedSupplierId);
+                  if (!confirm(`Tem certeza que deseja remover este fornecedor?\nID: ${selectedSupplierId}`)) {
+                    e.preventDefault();
+                  }
+                }}
+              >
+                🗑️ Remover Fornecedor
+              </button>
+            </div>
           </div>
         )}
       </div>

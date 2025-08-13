@@ -114,13 +114,25 @@ export async function removeSupplierFromDatabase(supplierId) {
       return reject(new Error("ID do fornecedor é obrigatório."));
     }
 
-    ref
-      .child(supplierId)
-      .remove()
+    console.log("Tentando remover fornecedor do Firebase com ID:", supplierId);
+    
+    // Primeiro verifica se o fornecedor existe
+    ref.child(supplierId).once("value")
+      .then((snapshot) => {
+        if (!snapshot.exists()) {
+          console.log("Fornecedor não encontrado no banco:", supplierId);
+          return reject(new Error("Fornecedor não encontrado."));
+        }
+        
+        console.log("Fornecedor encontrado, removendo...");
+        return ref.child(supplierId).remove();
+      })
       .then(() => {
+        console.log("Fornecedor removido com sucesso do Firebase");
         resolve(true);
       })
       .catch((err) => {
+        console.error("Erro ao remover fornecedor:", err);
         reject(err);
       });
   });

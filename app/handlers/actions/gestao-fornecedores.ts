@@ -13,6 +13,24 @@ export async function action({ request }: { request: Request }) {
   const contactsJson = formData.get("contacts")?.toString(); // Contatos em JSON
   const paymentMethodsJson = formData.get("paymentMethods")?.toString(); // Métodos de pagamento em JSON
   const isInternational = formData.get("isInternational")?.toString() === "true";
+  
+  // Verifica ação a ser executada
+  const supplierId = formData.get("supplierId")?.toString();
+  const action = formData.get("_action")?.toString();
+  const isEditing = supplierId && supplierId !== "" && supplierId !== "undefined";
+  
+  // Se for remoção, executa imediatamente
+  if (action === "remove" && supplierId) {
+    console.log("Removendo fornecedor com ID:", supplierId);
+    try {
+      await removeSupplierFromDatabase(supplierId);
+      console.log("Fornecedor removido com sucesso");
+      return redirect("/sucesso/remover-fornecedor");
+    } catch (error) {
+      console.error("Erro ao remover fornecedor:", error);
+      return redirect("/");
+    }
+  }
 
   // Conversão de contatos e métodos de pagamento para objetos
   let contacts: Array<{ type: string; value: string }> = [];
@@ -65,16 +83,7 @@ export async function action({ request }: { request: Request }) {
     payment_methods: paymentMethods,
   };
 
-  // Verifica ação a ser executada
-  const supplierId = formData.get("supplierId")?.toString();
-  const action = formData.get("_action")?.toString();
-  const isEditing = supplierId && supplierId !== "" && supplierId !== "undefined";
-  
-  // Se for remoção
-  if (action === "remove" && supplierId) {
-    await removeSupplierFromDatabase(supplierId);
-    return redirect("/sucesso/remover-fornecedor");
-  }
+
 
   // Log dos dados coletados para validação
   console.log(isEditing ? "Editando fornecedor:" : "Criando fornecedor:", supplierData);
