@@ -51,19 +51,23 @@ export default function Biblioteca() {
     }
   }, [user]);
 
-  const livrosComDisponibilidade = livros.map((livro: Livro) => ({
-    ...livro,
-    exemplares_disponiveis: livro.exemplares.filter(ex => ex.disponivel && !ex.consulta_local).length,
-    exemplares_sede: livro.exemplares.filter(ex => ex.disponivel && ex.consulta_local).length,
-    total_exemplares: livro.exemplares.filter(ex => !ex.consulta_local).length
-  }));
+  const livrosComDisponibilidade = livros.map((livro: Livro) => {
+    const totalDisponiveis = livro.exemplares.filter(ex => ex.disponivel).length;
+    return {
+      ...livro,
+      total_disponiveis: totalDisponiveis,
+      indisponivel: totalDisponiveis === 0,
+      apenas_sede: totalDisponiveis === 1,
+      para_locacao: totalDisponiveis > 1
+    };
+  });
 
   // Aplicar filtros
   const livrosFiltrados = livrosComDisponibilidade.filter((livro: any) => {
     // Filtro por disponibilidade
-    if (filtroDisponibilidade === "disponiveis" && livro.exemplares_disponiveis === 0) return false;
-    if (filtroDisponibilidade === "sede" && livro.total_exemplares !== 1) return false;
-    if (filtroDisponibilidade === "indisponiveis" && (livro.exemplares_disponiveis > 0 || livro.exemplares_sede > 0)) return false;
+    if (filtroDisponibilidade === "disponiveis" && !livro.para_locacao) return false;
+    if (filtroDisponibilidade === "sede" && !livro.apenas_sede) return false;
+    if (filtroDisponibilidade === "indisponiveis" && !livro.indisponivel) return false;
     
     // Filtro por tipo
     if (filtroTipo && livro.tipo !== filtroTipo) return false;
@@ -158,8 +162,7 @@ export default function Biblioteca() {
                   >
                     <option value="todos">Todos</option>
                     <option value="disponiveis">Disponíveis para locação</option>
-                    <option value="sede">Disponíveis para leitura na sede</option>
-                    <option value="indisponiveis">Indisponíveis</option>
+                    <option value="sede">Disponível apenas na sede</option>
                   </select>
                 </div>
                 

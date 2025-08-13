@@ -46,7 +46,7 @@ export async function bibliotecaLoader({ request }: LoaderFunctionArgs) {
       livrosAgrupados[titulo].exemplares.push({
         subcodigo: livro.register,
         disponivel: !emprestado,
-        consulta_local: false
+        consulta_local: livro.register.endsWith('.1') // .1 indica consulta local
       });
     });
     
