@@ -8,9 +8,9 @@ export default function SucessoRemoverFornecedor() {
       <p className="mb-6">O fornecedor foi removido permanentemente do sistema.</p>
       
       <div className="space-y-4">
-        <Link to="/adicionar-fornecedor">
+        <Link to="/gestao-fornecedores">
           <button className="button-full">
-            📦 Gerenciar Fornecedores
+            📦 Gestão de Fornecedores
           </button>
         </Link>
         

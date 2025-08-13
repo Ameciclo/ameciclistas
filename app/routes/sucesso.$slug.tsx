@@ -10,7 +10,7 @@ const messages = {
   "adicionar-fornecedor": {
     title: "✅ Fornecedor adicionado com sucesso!",
     actions: [
-      { label: "📦 Adicionar Fornecedor", to: "/adicionar-fornecedor" },
+      { label: "📦 Gestão de Fornecedores", to: "/gestao-fornecedores" },
       { label: "💰 Solicitar Pagamento", to: "/solicitar-pagamento" },
     ],
   },
@@ -18,7 +18,7 @@ const messages = {
     title: "✅ Solicitações enviadas com sucesso!",
     actions: [
       { label: "💰 Solicitar Pagamento", to: "/solicitar-pagamento" },
-      { label: "📦 Adicionar Fornecedor", to: "/adicionar-fornecedor" },
+      { label: "📦 Gestão de Fornecedores", to: "/gestao-fornecedores" },
     ],
   },
   usuario: {

@@ -22,6 +22,12 @@ const links = [
     requiredPermission: UserCategory.PROJECT_COORDINATORS,
   },
   {
+    to: "/gestao-fornecedores",
+    label: "Gestão de Fornecedores",
+    icon: "📦",
+    requiredPermission: UserCategory.PROJECT_COORDINATORS,
+  },
+  {
     to: "/links-uteis",
     label: "Lista de Links Úteis",
     icon: "🔗",

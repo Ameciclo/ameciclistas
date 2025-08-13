@@ -411,8 +411,8 @@ export default function SolicitarPagamento() {
       />
       {/* Botão único para adicionar fornecedor */}
       <GenericButton
-        to="/adicionar-fornecedor"
-        label="📦 Adicionar Fornecedor"
+        to="/gestao-fornecedores"
+        label="📦 Gestão de Fornecedores"
         userPermissions={userPermissions}
         requiredPermission={UserCategory.PROJECT_COORDINATORS}
       />

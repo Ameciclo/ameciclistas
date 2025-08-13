@@ -8,14 +8,14 @@ import { formatEmail, formatIdNumber, formatPhone } from "~/utils/format";
 import { validateIdNumber } from "~/utils/idNumber";
 import { BackButton } from "~/components/Forms/Buttons";
 
-import { action } from "../handlers/actions/adicionar-fornecedor";
-import { loader } from "~/handlers/loaders/adicionar-fornecedor";
+import { action } from "../handlers/actions/gestao-fornecedores";
+import { loader } from "~/handlers/loaders/gestao-fornecedores";
 import SendToAction from "~/components/Forms/SendToAction";
 import SelectInput from "~/components/Forms/Inputs/SelectInput";
 import FormTitle from "~/components/Forms/FormTitle";
 export { loader, action };
 
-export default function AdicionarFornecedor() {
+export default function GestaoFornecedores() {
   const { usersInfo, currentUserCategories, suppliers } = useLoaderData<typeof loader>();
   const [userPermissions, setUserPermissions] = useState(currentUserCategories || []);
   const [user, setUser] = useState<UserData | null>({} as UserData);
@@ -176,7 +176,7 @@ export default function AdicionarFornecedor() {
 
   return isAuth(userPermissions || [], UserCategory.PROJECT_COORDINATORS) ? (
     <Form className="container mx-auto p-4" method="post">
-      <FormTitle> 📦 {isEditing ? "Editar" : "Adicionar"} Fornecedor de Pagamentos </FormTitle>
+      <FormTitle> 📦 Gestão de Fornecedores de Pagamentos </FormTitle>
 
       {/* Seção de busca para edição */}
       <div className="form-group mb-6 p-4 bg-gray-50 rounded-md">

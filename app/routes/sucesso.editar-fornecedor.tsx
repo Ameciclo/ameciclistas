@@ -8,9 +8,9 @@ export default function SucessoEditarFornecedor() {
       <p className="mb-6">As alterações do fornecedor foram salvas com sucesso.</p>
       
       <div className="space-y-4">
-        <Link to="/adicionar-fornecedor">
+        <Link to="/gestao-fornecedores">
           <button className="button-full">
-            📝 Editar Outro Fornecedor
+            📦 Gestão de Fornecedores
           </button>
         </Link>
         
