@@ -2,34 +2,39 @@ import React from "react";
 
 interface NumberInputProps {
   label: string;
-  type?: string;
-  value: string | number;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  min?: string | number;
-  step?: string | number;
-  placeholder?: string;
+  value: number;
+  onChange: (value: number) => void;
+  min?: number;
+  max?: number;
+  name?: string;
 }
 
 const NumberInput: React.FC<NumberInputProps> = ({
   label,
-  type = "text",
   value,
   onChange,
-  min,
-  step,
-  placeholder,
+  min = 0,
+  max,
+  name,
 }) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = parseInt(e.target.value) || 0;
+    if (newValue >= min && (!max || newValue <= max)) {
+      onChange(newValue);
+    }
+  };
+
   return (
     <div className="form-group">
       <label className="form-label">{label}</label>
       <input
-        className="form-input"
-        type={type}
+        type="number"
+        name={name}
         value={value}
-        onChange={onChange}
+        onChange={handleChange}
         min={min}
-        step={step}
-        placeholder={placeholder}
+        max={max}
+        className="form-input"
       />
     </div>
   );
