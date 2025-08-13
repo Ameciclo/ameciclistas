@@ -1,5 +1,5 @@
 // loaders/solicitar-pagamento-loader.ts
-import { json } from "@remix-run/react";
+import { json } from "@remix-run/node";
 import { getUsersFirebase } from "~/api/firebaseConnection.server";
 import { UserCategory } from "~/utils/types";
 

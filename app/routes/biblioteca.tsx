@@ -62,7 +62,7 @@ export default function Biblioteca() {
   const livrosFiltrados = livrosComDisponibilidade.filter((livro: any) => {
     // Filtro por disponibilidade
     if (filtroDisponibilidade === "disponiveis" && livro.exemplares_disponiveis === 0) return false;
-    if (filtroDisponibilidade === "sede" && livro.exemplares_sede === 0) return false;
+    if (filtroDisponibilidade === "sede" && livro.total_exemplares !== 1) return false;
     if (filtroDisponibilidade === "indisponiveis" && (livro.exemplares_disponiveis > 0 || livro.exemplares_sede > 0)) return false;
     
     // Filtro por tipo
@@ -158,7 +158,7 @@ export default function Biblioteca() {
                   >
                     <option value="todos">Todos</option>
                     <option value="disponiveis">Disponíveis para locação</option>
-                    <option value="sede">Disponíveis apenas na sede</option>
+                    <option value="sede">Disponíveis para leitura na sede</option>
                     <option value="indisponiveis">Indisponíveis</option>
                   </select>
                 </div>

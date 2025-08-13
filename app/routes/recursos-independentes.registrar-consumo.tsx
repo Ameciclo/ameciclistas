@@ -3,12 +3,16 @@ import { Form, useLoaderData, useActionData, Link } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import { getTelegramUsersInfo } from "~/utils/users";
 import telegramInit from "~/utils/telegramInit";
-import { getProducts, saveSale } from "~/api/firebaseConnection.server";
-import { Product, ProductCategory, SaleStatus, UserData } from "~/utils/types";
+import { getProducts, saveSale, getUsersFirebase } from "~/api/firebaseConnection.server";
+import { Product, ProductCategory, SaleStatus, UserData, UserCategory } from "~/utils/types";
+import { isAuth } from "~/utils/isAuthorized";
 
 export const loader: LoaderFunction = async () => {
-  const products = await getProducts();
-  return json({ products });
+  const [products, users] = await Promise.all([
+    getProducts(),
+    getUsersFirebase()
+  ]);
+  return json({ products, users });
 };
 
 export const action: ActionFunction = async ({ request }) => {
@@ -45,17 +49,28 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 export default function RegistrarConsumo() {
-  const { products } = useLoaderData<typeof loader>();
+  const { products, users } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const [user, setUser] = useState<UserData | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedVariant, setSelectedVariant] = useState<string>("");
   const [quantity, setQuantity] = useState(1);
+  const [isCoordinator, setIsCoordinator] = useState(false);
+  const [customerName, setCustomerName] = useState("");
+  const [customerSearch, setCustomerSearch] = useState("");
+  const [showCustomerForm, setShowCustomerForm] = useState(false);
 
   useEffect(() => {
     telegramInit();
-    setUser(getTelegramUsersInfo());
-  }, []);
+    const userData = getTelegramUsersInfo();
+    setUser(userData);
+    
+    // Verificar se é coordenador
+    if (userData?.id && users[userData.id]) {
+      const userRole = users[userData.id].role;
+      setIsCoordinator(userRole === UserCategory.PROJECT_COORDINATORS);
+    }
+  }, [users]);
 
   const productsList = products ? Object.values(products) as Product[] : [];
   const currentPrice = selectedProduct?.variants?.find(v => v.id === selectedVariant)?.price || selectedProduct?.price || 0;
@@ -93,10 +108,58 @@ export default function RegistrarConsumo() {
 
       <Form method="post" className="max-w-md mx-auto space-y-4">
         <input type="hidden" name="userId" value={user?.id || ""} />
-        <input type="hidden" name="userName" value={user?.first_name || ""} />
+        <input type="hidden" name="userName" value={showCustomerForm ? customerName : (user?.first_name || "")} />
         <input type="hidden" name="productName" value={selectedProduct?.name || ""} />
         <input type="hidden" name="unitPrice" value={currentPrice} />
         <input type="hidden" name="totalValue" value={totalValue} />
+        
+        {isCoordinator && (
+          <div className="bg-blue-50 p-4 rounded-lg">
+            <h3 className="font-medium text-gray-900 mb-3">Registrar para:</h3>
+            <div className="space-y-3">
+              <label className="flex items-center space-x-3">
+                <input
+                  type="radio"
+                  name="customerType"
+                  checked={!showCustomerForm}
+                  onChange={() => setShowCustomerForm(false)}
+                  className="text-teal-600"
+                />
+                <span>Para mim</span>
+              </label>
+              <label className="flex items-center space-x-3">
+                <input
+                  type="radio"
+                  name="customerType"
+                  checked={showCustomerForm}
+                  onChange={() => setShowCustomerForm(true)}
+                  className="text-teal-600"
+                />
+                <span>Para outra pessoa</span>
+              </label>
+            </div>
+            
+            {showCustomerForm && (
+              <div className="mt-3 space-y-2">
+                <input
+                  type="text"
+                  placeholder="Digite o nome do cliente"
+                  value={customerSearch}
+                  onChange={(e) => setCustomerSearch(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded"
+                />
+                <input
+                  type="text"
+                  placeholder="Nome completo do cliente"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  required={showCustomerForm}
+                  className="w-full p-2 border border-gray-300 rounded"
+                />
+              </div>
+            )}
+          </div>
+        )}
         
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -192,7 +255,7 @@ export default function RegistrarConsumo() {
 
         <button
           type="submit"
-          disabled={!selectedProduct || !user}
+          disabled={!selectedProduct || !user || (showCustomerForm && !customerName)}
           className="w-full bg-teal-600 text-white py-3 px-4 rounded-lg hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
           Registrar Consumo

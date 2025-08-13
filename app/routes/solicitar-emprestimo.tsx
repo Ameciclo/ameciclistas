@@ -64,19 +64,8 @@ export async function action({ request }: ActionFunctionArgs) {
   if (action === "solicitar") {
     const subcodigo = formData.get("subcodigo") as string;
     const usuario_id = formData.get("usuario_id") as string;
-    const cpf = formData.get("cpf") as string;
-    const telefone = formData.get("telefone") as string;
     
     try {
-      // Salvar dados pessoais se fornecidos
-      if (cpf || telefone) {
-        const userRef = db.ref(`subscribers/${usuario_id}/personal`);
-        await userRef.update({
-          cpf: cpf || null,
-          telefone: telefone || null,
-          updated_at: new Date().toISOString()
-        });
-      }
       
       // Criar solicitação
       const solicitacaoRef = db.ref("biblioteca_solicitacoes");
@@ -103,7 +92,7 @@ export default function SolicitarEmprestimo() {
   const [searchParams] = useSearchParams();
   const actionData = useActionData<typeof action>();
   const [user, setUser] = useState<UserData | null>(null);
-  const [dadosPessoais, setDadosPessoais] = useState({ cpf: "", telefone: "" });
+
   const [exemplaresDisponiveis, setExemplaresDisponiveis] = useState<any[]>([]);
   const [exemplarSelecionado, setExemplarSelecionado] = useState("");
   const [solicitarParaOutraPessoa, setSolicitarParaOutraPessoa] = useState(false);
@@ -138,13 +127,7 @@ export default function SolicitarEmprestimo() {
     }
   }, [exemplares]);
 
-  useEffect(() => {
-    // Buscar dados pessoais do Firebase (simulado em dev)
-    if (user?.id && process.env.NODE_ENV === "development") {
-      // Simular dados existentes ou não
-      setDadosPessoais({ cpf: "", telefone: "" });
-    }
-  }, [user]);
+
 
   // Verificar se usuário precisa completar cadastro
   const needsLibraryRegister = user && !hasLibraryRegister && (userRole === 'ANY_USER' || userRole === 'AMECICLISTAS');
@@ -270,58 +253,7 @@ export default function SolicitarEmprestimo() {
           </div>
         </div>
 
-        {/* Dados do Usuário */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-semibold mb-4">Seus Dados</h3>
-          
-          <div className="grid md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nome</label>
-              <input
-                type="text"
-                value={`${user?.first_name || ""} ${user?.last_name || ""}`}
-                disabled
-                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
-              <input
-                type="text"
-                value={user?.username || ""}
-                disabled
-                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100"
-              />
-            </div>
-          </div>
 
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">CPF</label>
-              <input
-                type="text"
-                name="cpf"
-                value={dadosPessoais.cpf}
-                onChange={(e) => setDadosPessoais(prev => ({ ...prev, cpf: e.target.value }))}
-                placeholder="000.000.000-00"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Telefone</label>
-              <input
-                type="tel"
-                name="telefone"
-                value={dadosPessoais.telefone}
-                onChange={(e) => setDadosPessoais(prev => ({ ...prev, telefone: e.target.value }))}
-                placeholder="(00) 00000-0000"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                required
-              />
-            </div>
-          </div>
-        </div>
 
         {actionData?.error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">

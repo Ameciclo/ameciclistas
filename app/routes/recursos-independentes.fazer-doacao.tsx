@@ -1,10 +1,16 @@
-import { ActionFunction, json, redirect } from "@remix-run/node";
-import { Form, useActionData, Link } from "@remix-run/react";
+import { ActionFunction, LoaderFunction, json, redirect } from "@remix-run/node";
+import { Form, useActionData, useLoaderData, Link } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import { getTelegramUsersInfo } from "~/utils/users";
 import telegramInit from "~/utils/telegramInit";
-import { saveDonation } from "~/api/firebaseConnection.server";
-import { SaleStatus, UserData } from "~/utils/types";
+import { saveDonation, getUsersFirebase } from "~/api/firebaseConnection.server";
+import { SaleStatus, UserData, UserCategory } from "~/utils/types";
+import { isAuth } from "~/utils/isAuthorized";
+
+export const loader: LoaderFunction = async () => {
+  const users = await getUsersFirebase();
+  return json({ users });
+};
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
@@ -32,14 +38,25 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 export default function FazerDoacao() {
+  const { users } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const [user, setUser] = useState<UserData | null>(null);
   const [value, setValue] = useState("");
+  const [isCoordinator, setIsCoordinator] = useState(false);
+  const [customerName, setCustomerName] = useState("");
+  const [showCustomerForm, setShowCustomerForm] = useState(false);
 
   useEffect(() => {
     telegramInit();
-    setUser(getTelegramUsersInfo());
-  }, []);
+    const userData = getTelegramUsersInfo();
+    setUser(userData);
+    
+    // Verificar se é coordenador
+    if (userData?.id && users[userData.id]) {
+      const userRole = users[userData.id].role;
+      setIsCoordinator(userRole === UserCategory.PROJECT_COORDINATORS);
+    }
+  }, [users]);
 
   const predefinedValues = [10, 20, 50, 100];
 
@@ -77,7 +94,48 @@ export default function FazerDoacao() {
 
         <Form method="post" className="space-y-4">
           <input type="hidden" name="userId" value={user?.id || ""} />
-          <input type="hidden" name="userName" value={user?.first_name || ""} />
+          <input type="hidden" name="userName" value={showCustomerForm ? customerName : (user?.first_name || "")} />
+          
+          {isCoordinator && (
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <h3 className="font-medium text-gray-900 mb-3">Registrar doação para:</h3>
+              <div className="space-y-3">
+                <label className="flex items-center space-x-3">
+                  <input
+                    type="radio"
+                    name="customerType"
+                    checked={!showCustomerForm}
+                    onChange={() => setShowCustomerForm(false)}
+                    className="text-teal-600"
+                  />
+                  <span>Para mim</span>
+                </label>
+                <label className="flex items-center space-x-3">
+                  <input
+                    type="radio"
+                    name="customerType"
+                    checked={showCustomerForm}
+                    onChange={() => setShowCustomerForm(true)}
+                    className="text-teal-600"
+                  />
+                  <span>Para outra pessoa</span>
+                </label>
+              </div>
+              
+              {showCustomerForm && (
+                <div className="mt-3">
+                  <input
+                    type="text"
+                    placeholder="Nome completo do doador"
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    required={showCustomerForm}
+                    className="w-full p-2 border border-gray-300 rounded"
+                  />
+                </div>
+              )}
+            </div>
+          )}
           
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -137,7 +195,7 @@ export default function FazerDoacao() {
 
           <button
             type="submit"
-            disabled={!value || !user}
+            disabled={!value || !user || (showCustomerForm && !customerName)}
             className="w-full bg-teal-600 text-white py-3 px-4 rounded-lg hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             Registrar Doação

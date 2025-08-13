@@ -65,7 +65,21 @@ export const action: ActionFunction = async ({ request }) => {
       const variantId = formData.get("variantId") as string | null;
       const variantIdValue = variantId || null;
       
-      await updateProductStock(productId, newStock, variantIdValue);
+      // Para atualização manual, calcular a diferença
+      const products = await getProducts();
+      const product = products[productId];
+      
+      if (variantIdValue && product?.variants) {
+        const variant = product.variants.find(v => v.id === variantIdValue);
+        const currentStock = variant?.stock || 0;
+        const stockChange = newStock - currentStock;
+        await updateProductStock(productId, stockChange, variantIdValue);
+      } else {
+        const currentStock = product?.stock || 0;
+        const stockChange = newStock - currentStock;
+        await updateProductStock(productId, stockChange);
+      }
+      
       return json({ success: "Estoque atualizado com sucesso!" });
     }
     

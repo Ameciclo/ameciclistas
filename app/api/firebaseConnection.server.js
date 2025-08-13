@@ -265,7 +265,7 @@ export async function getDonations() {
 }
 
 export async function saveSale(saleData) {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     const ref = db.ref("resources/sales");
     const key = ref.push().key;
 
@@ -281,15 +281,20 @@ export async function saveSale(saleData) {
     cleanSaleData.id = key;
     cleanSaleData.createdAt = new Date().toISOString();
 
-    ref
-      .child(key)
-      .update(cleanSaleData)
-      .then((snapshot) => {
-        resolve(snapshot);
-      })
-      .catch((err) => {
-        reject(err);
-      });
+    try {
+      // Reduzir estoque automaticamente
+      if (cleanSaleData.variantId) {
+        await updateProductStock(cleanSaleData.productId, -cleanSaleData.quantity, cleanSaleData.variantId);
+      } else {
+        await updateProductStock(cleanSaleData.productId, -cleanSaleData.quantity);
+      }
+      
+      // Salvar a venda
+      await ref.child(key).update(cleanSaleData);
+      resolve(true);
+    } catch (err) {
+      reject(err);
+    }
   });
 }
 
@@ -325,6 +330,19 @@ export async function saveDonation(donationData) {
 export async function updateSaleStatus(saleId, status, additionalData = {}) {
   return new Promise((resolve, reject) => {
     const ref = db.ref(`resources/sales/${saleId}`);
+    
+    // Se for cancelamento, remove o registro
+    if (status === "CANCELLED") {
+      ref
+        .remove()
+        .then((snapshot) => {
+          resolve(snapshot);
+        })
+        .catch((err) => {
+          reject(err);
+        });
+      return;
+    }
     
     const updateData = {
       status,
@@ -451,7 +469,7 @@ export async function deleteProduct(productId) {
   });
 }
 
-export async function updateProductStock(productId, newStock, variantId = null) {
+export async function updateProductStock(productId, stockChange, variantId = null) {
   return new Promise((resolve, reject) => {
     const ref = variantId 
       ? db.ref(`resources/products/${productId}/variants`)
@@ -464,6 +482,8 @@ export async function updateProductStock(productId, newStock, variantId = null) 
         const variantIndex = variants.findIndex(v => v.id === variantId);
         
         if (variantIndex !== -1) {
+          const currentStock = variants[variantIndex].stock || 0;
+          const newStock = Math.max(0, currentStock + stockChange);
           variants[variantIndex].stock = newStock;
           ref.set(variants)
             .then(resolve)
@@ -474,10 +494,19 @@ export async function updateProductStock(productId, newStock, variantId = null) 
       });
     } else {
       // Atualizar estoque do produto principal
-      ref
-        .update({ stock: newStock })
-        .then(resolve)
-        .catch(reject);
+      const productRef = db.ref(`resources/products/${productId}`);
+      productRef.once('value', (snapshot) => {
+        const product = snapshot.val();
+        if (product) {
+          const currentStock = product.stock || 0;
+          const newStock = Math.max(0, currentStock + stockChange);
+          productRef.update({ stock: newStock })
+            .then(resolve)
+            .catch(reject);
+        } else {
+          reject(new Error('Produto não encontrado'));
+        }
+      });
     }
   });
 }

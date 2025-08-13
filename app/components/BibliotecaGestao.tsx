@@ -12,19 +12,36 @@ interface BibliotecaGestaoProps {
 export function BibliotecaGestao({ emprestimos, solicitacoes, livros, users }: BibliotecaGestaoProps) {
   const getUserName = (userId: string) => {
     const user = users[userId];
-    if (user?.telegram_user) {
-      return `${user.telegram_user.first_name} ${user.telegram_user.last_name || ''}`.trim();
+    
+    // Debug: log da estrutura do usuário
+    if (process.env.NODE_ENV === "development") {
+      console.log(`Buscando usuário ${userId}:`, user);
     }
-    if (user?.library_register?.nome) {
+    
+    if (!user) {
+      return `Usuário ${userId}`;
+    }
+    
+    // Priorizar dados do registro da biblioteca
+    if (user.library_register?.nome) {
       return user.library_register.nome;
     }
-    if (user?.ameciclo_register?.nome) {
+    
+    // Depois dados do registro ameciclo
+    if (user.ameciclo_register?.nome) {
       return user.ameciclo_register.nome;
     }
-    return user?.name || `Usuário ${userId}`;
+    
+    // Depois dados do telegram
+    if (user.telegram_user) {
+      return `${user.telegram_user.first_name} ${user.telegram_user.last_name || ''}`.trim();
+    }
+    
+    // Por último, nome genérico ou ID
+    return user.name || `Usuário ${userId}`;
   };
   const [activeTab, setActiveTab] = useState<'emprestados' | 'solicitacoes'>('emprestados');
-  const [nomeRetirada, setNomeRetirada] = useState<{[key: string]: string}>({});
+
   const submit = useSubmit();
 
   const handleRegistrarDevolucao = (emprestimoId: string) => {
@@ -38,9 +55,6 @@ export function BibliotecaGestao({ emprestimos, solicitacoes, livros, users }: B
     const formData = new FormData();
     formData.append("action", "aprovar_solicitacao");
     formData.append("solicitacao_id", solicitacaoId);
-    if (nomeRetirada[solicitacaoId]) {
-      formData.append("nome_retirada", nomeRetirada[solicitacaoId]);
-    }
     submit(formData, { method: "post" });
   };
 
@@ -140,18 +154,7 @@ export function BibliotecaGestao({ emprestimos, solicitacoes, livros, users }: B
                     <p className="text-gray-600 mb-1">Data da solicitação: {sol.data_solicitacao}</p>
                     <p className="text-gray-600 mb-1">Solicitante: <strong>{getUserName(sol.usuario_id)}</strong></p>
                   </div>
-                  <div className="mb-3">
-                    <input
-                      type="text"
-                      placeholder="Nome de quem retira (opcional)"
-                      value={nomeRetirada[sol.id] || ""}
-                      onChange={(e) => setNomeRetirada(prev => ({
-                        ...prev,
-                        [sol.id]: e.target.value
-                      }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded"
-                    />
-                  </div>
+
                   <div className="flex gap-2 justify-center">
                     <button
                       onClick={() => handleAprovarSolicitacao(sol.id)}

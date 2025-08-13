@@ -11,7 +11,7 @@ interface PaginacaoLivrosProps {
 
 export function PaginacaoLivros({ livros, userCanRequest, userId }: PaginacaoLivrosProps) {
   const [paginaAtual, setPaginaAtual] = useState(1);
-  const [itensPorPagina, setItensPorPagina] = useState(10);
+  const [itensPorPagina, setItensPorPagina] = useState(5)
   const [expandidos, setExpandidos] = useState<Set<string>>(new Set());
 
   const totalPaginas = Math.ceil(livros.length / itensPorPagina);
@@ -81,13 +81,13 @@ export function PaginacaoLivros({ livros, userCanRequest, userId }: PaginacaoLiv
                       livroInfo.apenas_sede ? 'text-orange-600' :
                       'text-green-600'
                     }`}>
-                      {livroInfo.apenas_sede ? 
-                        `${livroInfo.exemplares_sede} apenas para leitura na sede` :
-                        livroInfo.exemplares_disponiveis === 0 && livroInfo.exemplares_sede === 0 ?
+                      {livroInfo.exemplares_disponiveis === 0 && livroInfo.exemplares_sede === 0 ?
                         'Nenhum disponível' :
-                        `${livroInfo.exemplares_disponiveis} de ${livroInfo.total_exemplares} para locação`
+                        livroInfo.total_exemplares === 1 ?
+                        `${livroInfo.exemplares_sede} para leitura na sede` :
+                        `${livroInfo.exemplares_disponiveis} de ${livroInfo.total_exemplares}`
                       }
-                      {livroInfo.exemplares_sede > 0 && !livroInfo.apenas_sede && (
+                      {livroInfo.exemplares_sede > 0 && livroInfo.total_exemplares > 1 && (
                         <span className="text-orange-600"> + {livroInfo.exemplares_sede} na sede</span>
                       )}
                     </span>

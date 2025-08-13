@@ -21,17 +21,13 @@ export const action: ActionFunction = async ({ request }) => {
   try {
     if (action === "markAsPaid") {
       const saleId = formData.get("saleId") as string;
-      const paymentProof = formData.get("paymentProof") as string;
-      
-      await updateSaleStatus(saleId, SaleStatus.PAID, { paymentProof });
+      await updateSaleStatus(saleId, SaleStatus.PAID);
       return json({ success: true });
     }
     
     if (action === "markDonationAsPaid") {
       const donationId = formData.get("donationId") as string;
-      const paymentProof = formData.get("paymentProof") as string;
-      
-      await updateDonationStatus(donationId, SaleStatus.PAID, { paymentProof });
+      await updateDonationStatus(donationId, SaleStatus.PAID);
       return json({ success: true });
     }
     
@@ -214,18 +210,6 @@ export default function MeusConsumos() {
                         </p>
                       </div>
                       
-                      <div className="mb-3">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Comprovante de Pagamento (opcional)
-                        </label>
-                        <textarea
-                          name="paymentProof"
-                          placeholder="Cole aqui o ID da transação ou outras informações do comprovante"
-                          className="w-full p-2 border border-gray-300 rounded text-sm"
-                          rows={2}
-                        />
-                      </div>
-                      
                       <div className="flex gap-2">
                         <button
                           type="submit"
@@ -332,18 +316,6 @@ export default function MeusConsumos() {
                         <p className="text-sm text-gray-600 mb-2">
                           Valor: R$ {donation.value.toFixed(2)}
                         </p>
-                      </div>
-                      
-                      <div className="mb-3">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Comprovante de Pagamento (opcional)
-                        </label>
-                        <textarea
-                          name="paymentProof"
-                          placeholder="Cole aqui o ID da transação ou outras informações do comprovante"
-                          className="w-full p-2 border border-gray-300 rounded text-sm"
-                          rows={2}
-                        />
                       </div>
                       
                       <div className="flex gap-2">
