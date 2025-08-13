@@ -82,6 +82,50 @@ export async function saveSupplierToDatabase(supplierData) {
   });
 }
 
+export async function updateSupplierInDatabase(supplierId, supplierData) {
+  return new Promise((resolve, reject) => {
+    const ref = db.ref("suppliers");
+
+    if (!supplierId || !supplierData) {
+      return reject(
+        new Error("ID do fornecedor ou dados são inválidos.")
+      );
+    }
+
+    supplierData.id = supplierId;
+
+    ref
+      .child(supplierId)
+      .update(supplierData)
+      .then((snapshot) => {
+        resolve(snapshot);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export async function removeSupplierFromDatabase(supplierId) {
+  return new Promise((resolve, reject) => {
+    const ref = db.ref("suppliers");
+
+    if (!supplierId) {
+      return reject(new Error("ID do fornecedor é obrigatório."));
+    }
+
+    ref
+      .child(supplierId)
+      .remove()
+      .then(() => {
+        resolve(true);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
 export async function saveCalendarEvent(eventInfo) {
   return new Promise((resolve, reject) => {
     const ref = db.ref("calendar");

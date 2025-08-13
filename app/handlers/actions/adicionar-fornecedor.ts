@@ -1,5 +1,5 @@
 import { redirect } from "@remix-run/node";
-import { saveSupplierToDatabase } from "~/api/firebaseConnection.server";
+import { saveSupplierToDatabase, updateSupplierInDatabase, removeSupplierFromDatabase } from "~/api/firebaseConnection.server";
 
 export async function action({ request }: { request: Request }) {
   const formData = await request.formData();
@@ -12,6 +12,7 @@ export async function action({ request }: { request: Request }) {
   const fullAddress = formData.get("fullAddress")?.toString() || ""; // Endereço (opcional)
   const contactsJson = formData.get("contacts")?.toString(); // Contatos em JSON
   const paymentMethodsJson = formData.get("paymentMethods")?.toString(); // Métodos de pagamento em JSON
+  const isInternational = formData.get("isInternational")?.toString() === "true";
 
   // Conversão de contatos e métodos de pagamento para objetos
   let contacts: Array<{ type: string; value: string }> = [];
@@ -57,17 +58,32 @@ export async function action({ request }: { request: Request }) {
     type: personType === "fisica" ? "Pessoa Física" : "Pessoa Jurídica",
     name: fullName, // Nome completo ou razão social
     nickname: name, // Nome fantasia ou apelido
-    id_number: idNumber, // CPF ou CNPJ
+    id_number: idNumber, // CPF, CNPJ ou documento internacional
+    is_international: isInternational, // Flag para fornecedor internacional
     address: fullAddress || null, // Endereço opcional
     contacts,
     payment_methods: paymentMethods,
   };
 
+  // Verifica ação a ser executada
+  const supplierId = formData.get("supplierId")?.toString();
+  const action = formData.get("_action")?.toString();
+  const isEditing = supplierId && supplierId !== "" && supplierId !== "undefined";
+  
+  // Se for remoção
+  if (action === "remove" && supplierId) {
+    await removeSupplierFromDatabase(supplierId);
+    return redirect("/sucesso/remover-fornecedor");
+  }
+
   // Log dos dados coletados para validação
-  console.log("Dados do fornecedor a serem salvos:", supplierData);
+  console.log(isEditing ? "Editando fornecedor:" : "Criando fornecedor:", supplierData);
 
-  await saveSupplierToDatabase(supplierData);
-
-  // Redireciona após salvar
-  return redirect("/sucesso/adicionar-fornecedor");
+  if (isEditing) {
+    await updateSupplierInDatabase(supplierId, supplierData);
+    return redirect("/sucesso/editar-fornecedor");
+  } else {
+    await saveSupplierToDatabase(supplierData);
+    return redirect("/sucesso/adicionar-fornecedor");
+  }
 }

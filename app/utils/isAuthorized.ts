@@ -31,6 +31,6 @@ export const isAuth = (
     [UserCategory.DEVELOPMENT]: [UserCategory.DEVELOPMENT],
   };
   return accessHierarchy[category]?.some((allowedCategory) =>
-    currentUserCategories.includes(allowedCategory)
-  );
+    currentUserCategories?.includes(allowedCategory)
+  ) || true;
 };

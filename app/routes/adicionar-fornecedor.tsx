@@ -16,8 +16,8 @@ import FormTitle from "~/components/Forms/FormTitle";
 export { loader, action };
 
 export default function AdicionarFornecedor() {
-  const { usersInfo, currentUserCategories } = useLoaderData<typeof loader>();
-  const [userPermissions, setUserPermissions] = useState(currentUserCategories);
+  const { usersInfo, currentUserCategories, suppliers } = useLoaderData<typeof loader>();
+  const [userPermissions, setUserPermissions] = useState(currentUserCategories || []);
   const [user, setUser] = useState<UserData | null>({} as UserData);
 
   useEffect(() => {
@@ -47,6 +47,11 @@ export default function AdicionarFornecedor() {
     Array<{ type: string; value: string }>
   >([{ type: "PIX", value: "" }]);
 
+  const [selectedSupplierId, setSelectedSupplierId] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isInternational, setIsInternational] = useState(false);
+
   const getEmailValue = () => {
     const emailContact = contacts.find((contact) => contact.type === "E-mail");
     return emailContact ? emailContact.value : "";
@@ -62,8 +67,12 @@ export default function AdicionarFornecedor() {
   const getIdNumberValue = () => idNumber || "";
 
   const handleIdNumberChange = (personType: string, value: string) => {
-    const formatted = formatIdNumber(personType, value);
-    setIdNumber(formatted);
+    if (isInternational) {
+      setIdNumber(value); // Não formata para internacional
+    } else {
+      const formatted = formatIdNumber(personType, value);
+      setIdNumber(formatted);
+    }
   };
 
   const handlePhoneChange = (index: number, value: string) => {
@@ -116,17 +125,113 @@ export default function AdicionarFornecedor() {
     setPaymentMethods(updatedPaymentMethods);
   };
 
-  const isFormValid =
-    name !== "" &&
-    fullName !== "" &&
-    idNumber !== "" &&
-    validateIdNumber(personType, idNumber) &&
-    contacts.every((c) => c.value !== "") &&
-    paymentMethods.some((pm) => pm.value !== "");
+  const loadSupplierData = (supplier: any) => {
+    setPersonType(supplier.type === "Pessoa Física" ? "fisica" : "juridica");
+    setName(supplier.nickname || "");
+    setFullName(supplier.name || "");
+    setIdNumber(supplier.id_number || "");
+    setFullAddress(supplier.address || "");
+    setContacts(supplier.contacts || [{ type: "E-mail", value: "" }]);
+    setPaymentMethods(supplier.payment_methods || [{ type: "PIX", value: "" }]);
+    setIsInternational(supplier.is_international || false);
+    setSelectedSupplierId(supplier.id);
+    setIsEditing(true);
+  };
 
-  return isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS) ? (
+  const resetForm = () => {
+    setPersonType("juridica");
+    setName("");
+    setFullName("");
+    setIdNumber("");
+    setFullAddress("");
+    setContacts([{ type: "E-mail", value: "" }]);
+    setPaymentMethods([{ type: "PIX", value: "" }]);
+    setSelectedSupplierId("");
+    setIsEditing(false);
+    setSearchTerm("");
+    setIsInternational(false);
+  };
+
+  const filteredSuppliers = suppliers ? Object.entries(suppliers).filter(([_, supplier]: [string, any]) => {
+    const searchLower = searchTerm.toLowerCase();
+    return supplier.name?.toLowerCase().includes(searchLower) ||
+           supplier.nickname?.toLowerCase().includes(searchLower) ||
+           supplier.id_number?.includes(searchTerm);
+  }) : [];
+
+  const getMissingFields = () => {
+    const missing = [];
+    if (!name) missing.push(personType === "juridica" ? "Nome Fantasia" : "Nome/Apelido");
+    if (!fullName) missing.push(personType === "juridica" ? "Razão Social" : "Nome Completo");
+    if (!isInternational && !idNumber) missing.push(personType === "juridica" ? "CNPJ" : "CPF");
+    if (!isInternational && idNumber && !validateIdNumber(personType, idNumber)) missing.push(`${personType === "juridica" ? "CNPJ" : "CPF"} válido`);
+    if (isInternational && !idNumber) missing.push("Documento Internacional");
+    if (contacts.some(c => c.value === "")) missing.push("Contatos");
+    if (!paymentMethods.some(pm => pm.value !== "")) missing.push("Método de Pagamento");
+    return missing;
+  };
+
+  const missingFields = getMissingFields();
+  const isFormValid = missingFields.length === 0;
+
+  return isAuth(userPermissions || [], UserCategory.PROJECT_COORDINATORS) ? (
     <Form className="container mx-auto p-4" method="post">
-      <FormTitle> 📦 Adicionar Fornecedor </FormTitle>
+      <FormTitle> 📦 {isEditing ? "Editar" : "Adicionar"} Fornecedor de Pagamentos </FormTitle>
+
+      {/* Seção de busca para edição */}
+      <div className="form-group mb-6 p-4 bg-gray-50 rounded-md">
+        <label className="font-bold mb-2 block">Buscar fornecedor para editar:</label>
+        <input
+          className="w-full p-2 border border-gray-300 rounded-md mb-2"
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Digite nome, nome fantasia ou CPF/CNPJ..."
+        />
+        
+        {searchTerm && filteredSuppliers.length > 0 && (
+          <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-md">
+            {filteredSuppliers.map(([id, supplier]: [string, any]) => (
+              <button
+                key={id}
+                type="button"
+                className="w-full text-left p-2 hover:bg-blue-50 border-b border-gray-200"
+                onClick={() => loadSupplierData(supplier)}
+              >
+                <div className="font-medium">{supplier.name}</div>
+                <div className="text-sm text-gray-600">
+                  {supplier.nickname} - {supplier.id_number}
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+        
+        {isEditing && (
+          <div className="mt-2 flex gap-2">
+            <button
+              type="button"
+              className="px-4 py-2 bg-gray-500 text-white rounded-md"
+              onClick={resetForm}
+            >
+              Cancelar edição / Adicionar novo
+            </button>
+            <button
+              type="submit"
+              name="_action"
+              value="remove"
+              className="px-4 py-2 bg-red-500 text-white rounded-md"
+              onClick={(e) => {
+                if (!confirm("Tem certeza que deseja remover este fornecedor?")) {
+                  e.preventDefault();
+                }
+              }}
+            >
+              🗑️ Remover Fornecedor
+            </button>
+          </div>
+        )}
+      </div>
 
       <SelectInput
         label="Tipo de pessoa: "
@@ -181,19 +286,34 @@ export default function AdicionarFornecedor() {
       </div>
 
       <div className="form-group mb-4">
-        <label className="font-bold">
-          {personType === "juridica" ? "CNPJ" : "CPF"}:
-        </label>
+        <div className="flex items-center gap-4 mb-2">
+          <label className="font-bold">
+            {isInternational ? "Documento Internacional:" : (personType === "juridica" ? "CNPJ:" : "CPF:")}
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={isInternational}
+              onChange={(e) => {
+                setIsInternational(e.target.checked);
+                setIdNumber(""); // Limpa o campo ao trocar
+              }}
+            />
+            Fornecedor internacional (sem CPF/CNPJ)
+          </label>
+        </div>
         <input
           className="w-full p-2 border border-gray-300 rounded-md"
           type="text"
           value={idNumber}
           onChange={(e) => handleIdNumberChange(personType, e.target.value)}
           placeholder={
-            personType === "juridica" ? "00.000.000/0000-00" : "000.000.000-00"
+            isInternational 
+              ? "Ex: Passaporte, Tax ID, VAT Number..."
+              : (personType === "juridica" ? "00.000.000/0000-00" : "000.000.000-00")
           }
         />
-        {!validateIdNumber(personType, idNumber) && idNumber.length > 0 && (
+        {!isInternational && !validateIdNumber(personType, idNumber) && idNumber.length > 0 && (
           <span className="text-red-500 text-sm">
             {personType === "juridica" ? "CNPJ inválido" : "CPF inválido"}
           </span>
@@ -408,15 +528,31 @@ export default function AdicionarFornecedor() {
           { name: "fullAddress", value: fullAddress },
           { name: "contacts", value: JSON.stringify(contacts) },
           { name: "paymentMethods", value: JSON.stringify(paymentMethods) },
+          { name: "supplierId", value: selectedSupplierId || "" },
+          { name: "isInternational", value: isInternational.toString() },
         ]}
       />
+      
+      {/* Campos faltantes */}
+      {missingFields.length > 0 && (
+        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+          <p className="font-medium text-yellow-800 mb-1">⚠️ Campos obrigatórios faltantes:</p>
+          <ul className="text-sm text-yellow-700 list-disc list-inside">
+            {missingFields.map((field, index) => (
+              <li key={index}>{field}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <button
         type="submit"
+        name="_action"
+        value="save"
         className={isFormValid ? "button-full" : "button-full button-disabled"}
         disabled={!isFormValid}
       >
-        🤞 Adicionar Fornecedor
+        {isEditing ? "✏️ Salvar Alterações" : "🤞 Adicionar Fornecedor"}
       </button>
 
       <Link to="/solicitar-pagamento">
