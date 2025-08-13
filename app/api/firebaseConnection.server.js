@@ -82,6 +82,62 @@ export async function saveSupplierToDatabase(supplierData) {
   });
 }
 
+export async function updateSupplierInDatabase(supplierId, supplierData) {
+  return new Promise((resolve, reject) => {
+    const ref = db.ref("suppliers");
+
+    if (!supplierId || !supplierData) {
+      return reject(
+        new Error("ID do fornecedor ou dados são inválidos.")
+      );
+    }
+
+    supplierData.id = supplierId;
+
+    ref
+      .child(supplierId)
+      .update(supplierData)
+      .then((snapshot) => {
+        resolve(snapshot);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export async function removeSupplierFromDatabase(supplierId) {
+  return new Promise((resolve, reject) => {
+    const ref = db.ref("suppliers");
+
+    if (!supplierId) {
+      return reject(new Error("ID do fornecedor é obrigatório."));
+    }
+
+    console.log("Tentando remover fornecedor do Firebase com ID:", supplierId);
+    
+    // Primeiro verifica se o fornecedor existe
+    ref.child(supplierId).once("value")
+      .then((snapshot) => {
+        if (!snapshot.exists()) {
+          console.log("Fornecedor não encontrado no banco:", supplierId);
+          return reject(new Error("Fornecedor não encontrado."));
+        }
+        
+        console.log("Fornecedor encontrado, removendo...");
+        return ref.child(supplierId).remove();
+      })
+      .then(() => {
+        console.log("Fornecedor removido com sucesso do Firebase");
+        resolve(true);
+      })
+      .catch((err) => {
+        console.error("Erro ao remover fornecedor:", err);
+        reject(err);
+      });
+  });
+}
+
 export async function saveCalendarEvent(eventInfo) {
   return new Promise((resolve, reject) => {
     const ref = db.ref("calendar");

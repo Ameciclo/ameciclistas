@@ -1,4 +1,4 @@
-import { useParams } from "@remix-run/react";
+import { useParams, useSearchParams } from "@remix-run/react";
 import { Link } from "@remix-run/react";
 
 const messages = {
@@ -10,15 +10,15 @@ const messages = {
   "adicionar-fornecedor": {
     title: "✅ Fornecedor adicionado com sucesso!",
     actions: [
-      { label: "📦 Adicionar Fornecedor", to: "/adicionar-fornecedor" },
+      { label: "📦 Gestão de Fornecedores", to: "/gestao-fornecedores" },
       { label: "💰 Solicitar Pagamento", to: "/solicitar-pagamento" },
     ],
   },
   "solicitar-pagamento": {
-    title: "✅ Solicitação enviada com sucesso!",
+    title: "✅ Solicitações enviadas com sucesso!",
     actions: [
       { label: "💰 Solicitar Pagamento", to: "/solicitar-pagamento" },
-      { label: "📦 Adicionar Fornecedor", to: "/adicionar-fornecedor" },
+      { label: "📦 Gestão de Fornecedores", to: "/gestao-fornecedores" },
     ],
   },
   usuario: {
@@ -57,9 +57,11 @@ function SuccessPage({ title, message, actions }: SuccessPageProps) {
 
 export default function Sucesso() {
   const { slug } = useParams();
+  const [searchParams] = useSearchParams();
+  const count = searchParams.get("count");
 
   // Verifique se `slug` é uma chave válida de `messages`
-  const page =
+  let page =
     slug && slug in messages
       ? messages[slug as MessageKey]
       : {
@@ -67,5 +69,15 @@ export default function Sucesso() {
           actions: [{ label: "⬅️ Voltar", to: "/" }],
         };
 
-  return <SuccessPage title={page.title} actions={page.actions} />;
+  // Personaliza mensagem para pagamentos múltiplos
+  if (slug === "solicitar-pagamento" && count) {
+    const numCount = parseInt(count);
+    page = {
+      ...page,
+      title: `✅ ${numCount} solicitação${numCount > 1 ? 'ões' : ''} enviada${numCount > 1 ? 's' : ''} com sucesso!`,
+      message: `Todas as ${numCount} solicitações foram processadas e enviadas para aprovação.`
+    };
+  }
+
+  return <SuccessPage title={page.title} message={page.message} actions={page.actions} />;
 }

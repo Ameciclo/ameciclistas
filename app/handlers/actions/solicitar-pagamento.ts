@@ -3,44 +3,85 @@ import { redirect, ActionFunction, json } from "@remix-run/node";
 import { savePaymentRequest } from "~/api/firebaseConnection.server";
 import { formatDate } from "~/utils/format";
 
-const createPaymentRequest = (formData: FormData) => {
-  // Se o campo paymentDate não for preenchido, ficará como null
-  const paymentDate = formData.get("paymentDate")?.toString() || null;
+interface PaymentItem {
+  id: string;
+  transactionType: string;
+  paymentDate: string;
+  projectId: string;
+  budgetItem: string;
+  supplierId: string;
+  supplierInput: string;
+  paymentMethod: string;
+  isRefund: boolean;
+  refundSupplierId: string;
+  refundSupplierInput: string;
+  description: string;
+  quantity: number;
+  unitName: string;
+  unitValue: string;
+  totalValue: string;
+}
 
-  // Processa o projeto
-  let project = JSON.parse(formData.get("project") as string);
+const createPaymentRequests = (formData: FormData) => {
+  const from = JSON.parse(formData.get("telegramUsersInfo") as string);
+  const paymentItems: PaymentItem[] = JSON.parse(formData.get("paymentItems") as string);
+  const projects = JSON.parse(formData.get("projects") as string);
+  const suppliers = JSON.parse(formData.get("suppliers") as string);
 
-  // Recupera o fornecedor completo (assumindo que o objeto foi enviado como JSON)
-  const supplier = JSON.parse(formData.get("supplier") as string);
-  const refundSupplier = formData.get("refundSupplier")
-    ? JSON.parse(formData.get("refundSupplier") as string)
-    : "";
+  return paymentItems.map(item => {
+    const project = projects.find((p: any) => p.spreadsheet_id === item.projectId);
+    const supplier = suppliers.find((s: any) => (s.id_number || s.id) === item.supplierId);
+    const refundSupplier = item.isRefund 
+      ? suppliers.find((s: any) => (s.id_number || s.id) === item.refundSupplierId)
+      : null;
 
-  return {
-    from: JSON.parse(formData.get("telegramUsersInfo") as string),
-    paymentDate,
-    transactionType: formData.get("transactionType"),
-    project,
-    budgetItem: formData.get("budgetItem"),
-    supplier,
-    isRefund: JSON.parse(formData.get("isRefund") as string),
-    refundSupplier,
-    description: formData.get("description"),
-    value: formData.get("paymentValue"),
-    from_chat_id: 0,
-    group_message_id: 0,
-    invoice_url: "",
-  };
+    const unitValueFormatted = (parseFloat(item.unitValue || '0') / 100).toFixed(2).replace('.', ',');
+    const totalValueFormatted = `R$ ${(parseFloat(item.totalValue || '0') / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    const description = `${item.description} (${item.quantity} ${item.unitName}${item.quantity > 1 ? 's' : ''} × R$ ${unitValueFormatted})`;
+
+    return {
+      from,
+      paymentDate: item.paymentDate,
+      transactionType: item.transactionType,
+      project,
+      budgetItem: item.budgetItem,
+      supplier,
+      paymentMethod: item.paymentMethod,
+      isRefund: item.isRefund,
+      refundSupplier: refundSupplier || "",
+      description,
+      value: totalValueFormatted,
+      from_chat_id: 0,
+      group_message_id: 0,
+      invoice_url: "",
+    };
+  });
 };
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
-  console.log("Solicitando pagamento com ", formData);
+  console.log("Solicitando pagamentos com ", formData);
   try {
-    const paymentRequest = createPaymentRequest(formData);
-    console.log(paymentRequest);
-    await savePaymentRequest(paymentRequest);
-    return redirect("/sucesso/solicitar-pagamento");
+    const paymentRequests = createPaymentRequests(formData);
+    console.log(`Processando ${paymentRequests.length} solicitações:`, paymentRequests);
+    
+    // Em desenvolvimento, apenas mostra no console
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🚧 MODO DESENVOLVIMENTO - Não enviando para Firebase');
+      console.log('📋 Solicitações que seriam enviadas:');
+      paymentRequests.forEach((request, i) => {
+        console.log(`\n📄 Solicitação ${i + 1}:`, JSON.stringify(request, null, 2));
+      });
+    } else {
+      // Salva todas as solicitações uma a uma
+      for (let i = 0; i < paymentRequests.length; i++) {
+        console.log(`Salvando solicitação ${i + 1} de ${paymentRequests.length}`);
+        await savePaymentRequest(paymentRequests[i]);
+        console.log(`Solicitação ${i + 1} salva com sucesso`);
+      }
+    }
+    
+    return redirect(`/sucesso/solicitar-pagamento?count=${paymentRequests.length}`);
   } catch (error: any) {
     return json({ error: error.message }, { status: 500 });
   }
