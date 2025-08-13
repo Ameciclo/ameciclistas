@@ -65,29 +65,37 @@ export const users: TelegramUser[] = [
 ];
 
 export const getTelegramUsersInfo = (): UserData | null => {
-  // Verifica se estamos no navegador
-  if (typeof window !== 'undefined') {
-    const telegram = (window as any).Telegram.WebApp;
+  try {
+    // Verifica se estamos no navegador
+    if (typeof window !== 'undefined') {
+      const telegram = (window as any)?.Telegram?.WebApp;
 
-    // Verifica se o usuário está disponível
-    if (telegram) {
-      return telegram.initDataUnsafe.user as UserData;
+      // Verifica se o usuário está disponível
+      if (telegram && telegram.initDataUnsafe && telegram.initDataUnsafe.user) {
+        return telegram.initDataUnsafe.user as UserData;
+      }
     }
+  } catch (error) {
+    console.error('Erro ao acessar dados do Telegram:', error);
   }
 
-  return null
+  return null;
 }
 
 
 export const getTelegramGeneralDataInfo = (): any => {
-  // Verifica se estamos no navegador
-  if (typeof window !== 'undefined') {
-    const telegram = (window as any)?.Telegram.WebApp;
+  try {
+    // Verifica se estamos no navegador
+    if (typeof window !== 'undefined') {
+      const telegram = (window as any)?.Telegram?.WebApp;
 
-    // Verifica se o dado está disponível
-    if (telegram && telegram.initDataUnsafe) {
-      return telegram.initDataUnsafe as UserData;
+      // Verifica se o dado está disponível
+      if (telegram && telegram.initDataUnsafe) {
+        return telegram.initDataUnsafe;
+      }
     }
+  } catch (error) {
+    console.error('Erro ao acessar dados gerais do Telegram:', error);
   }
 
   return null;

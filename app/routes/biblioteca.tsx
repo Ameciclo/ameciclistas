@@ -24,19 +24,24 @@ export default function Biblioteca() {
   const submit = useSubmit();
 
   useEffect(() => {
-    telegramInit();
-    const userData = getTelegramUsersInfo();
-    
-    // Em desenvolvimento, simular usuário se não houver
-    if (process.env.NODE_ENV === "development" && !userData) {
-      setUser({
-        id: 123456789,
-        first_name: "João",
-        last_name: "Silva",
-        username: "joaosilva"
-      } as UserData);
-    } else {
-      setUser(userData);
+    try {
+      telegramInit();
+      const userData = getTelegramUsersInfo();
+      
+      // Em desenvolvimento, simular usuário se não houver
+      if (process.env.NODE_ENV === "development" && !userData) {
+        setUser({
+          id: 123456789,
+          first_name: "João",
+          last_name: "Silva",
+          username: "joaosilva"
+        } as UserData);
+      } else {
+        setUser(userData);
+      }
+    } catch (error) {
+      console.error('Erro ao inicializar Telegram:', error);
+      setUser(null);
     }
   }, []);
 

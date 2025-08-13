@@ -16,12 +16,18 @@ import FormTitle from "~/components/Forms/FormTitle";
 export { loader, action };
 
 export default function GestaoFornecedores() {
-  const { usersInfo, currentUserCategories, suppliers } = useLoaderData<typeof loader>();
+  const loaderData = useLoaderData<typeof loader>();
+  const { usersInfo, currentUserCategories, suppliers } = loaderData || {};
   const [userPermissions, setUserPermissions] = useState(currentUserCategories || []);
-  const [user, setUser] = useState<UserData | null>({} as UserData);
+  const [user, setUser] = useState<UserData | null>(null);
 
   useEffect(() => {
-    setUser(getTelegramUsersInfo());
+    try {
+      setUser(getTelegramUsersInfo());
+    } catch (error) {
+      console.error('Erro ao obter dados do Telegram:', error);
+      setUser(null);
+    }
   }, []);
 
   useEffect(() => {
@@ -155,11 +161,16 @@ export default function GestaoFornecedores() {
   };
 
   const filteredSuppliers = suppliers ? Object.entries(suppliers).filter(([_, supplier]: [string, any]) => {
-    if (!supplier) return false;
-    const searchLower = searchTerm.toLowerCase();
-    return (supplier.name && supplier.name.toLowerCase().includes(searchLower)) ||
-           (supplier.nickname && supplier.nickname.toLowerCase().includes(searchLower)) ||
-           (supplier.id_number && supplier.id_number.includes(searchTerm));
+    try {
+      if (!supplier) return false;
+      const searchLower = searchTerm.toLowerCase();
+      return (supplier.name && supplier.name.toLowerCase().includes(searchLower)) ||
+             (supplier.nickname && supplier.nickname.toLowerCase().includes(searchLower)) ||
+             (supplier.id_number && supplier.id_number.includes(searchTerm));
+    } catch (error) {
+      console.error('Erro ao filtrar fornecedor:', error);
+      return false;
+    }
   }) : [];
 
   const getMissingFields = () => {
