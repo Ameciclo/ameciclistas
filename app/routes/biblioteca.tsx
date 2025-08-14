@@ -46,15 +46,13 @@ export default function Biblioteca() {
   }, []);
 
   useEffect(() => {
-    if (user?.id) {
-      // Em desenvolvimento, usar ANY_USER para facilitar testes
-      if (process.env.NODE_ENV === "development") {
-        setUserPermissions([UserCategory.ANY_USER]);
-      } else {
-        setUserPermissions([UserCategory.AMECICLISTAS]);
-      }
+    if (user?.id && users[user.id]) {
+      const userRole = users[user.id].role;
+      setUserPermissions([userRole]);
+    } else if (process.env.NODE_ENV === "development") {
+      setUserPermissions([UserCategory.ANY_USER]);
     }
-  }, [user]);
+  }, [user, users]);
 
   const livrosComDisponibilidade = livros.map((livro: Livro) => {
     const totalDisponiveis = livro.exemplares.filter(ex => ex.disponivel).length;

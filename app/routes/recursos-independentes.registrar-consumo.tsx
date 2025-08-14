@@ -77,6 +77,19 @@ export default function RegistrarConsumo() {
   const productsList = products ? Object.values(products) as Product[] : [];
   const currentPrice = selectedProduct?.variants?.find(v => v.id === selectedVariant)?.price || selectedProduct?.price || 0;
   const totalValue = currentPrice * quantity;
+  
+  const getAvailableStock = () => {
+    if (!selectedProduct) return 0;
+    if (selectedVariant) {
+      const variant = selectedProduct.variants?.find(v => v.id === selectedVariant);
+      return variant?.stock || 0;
+    }
+    return selectedProduct.stock || 0;
+  };
+  
+  const availableStock = getAvailableStock();
+  const isOutOfStock = availableStock === 0;
+  const isQuantityExceeded = quantity > availableStock;
 
   const getCategoryLabel = (category: ProductCategory) => {
     const labels = {
@@ -194,7 +207,7 @@ export default function RegistrarConsumo() {
           >
             <option value="">Selecione um produto</option>
             {Object.entries(
-              productsList.reduce((acc, product) => {
+              productsList.filter(product => (product.stock || 0) > 0).reduce((acc, product) => {
                 if (!acc[product.category]) acc[product.category] = [];
                 acc[product.category].push(product);
                 return acc;
@@ -203,11 +216,20 @@ export default function RegistrarConsumo() {
               <optgroup key={category} label={getCategoryLabel(category as ProductCategory)}>
                 {products.map((product) => (
                   <option key={product.id} value={product.id}>
-                    {product.name} - R$ {product.price.toFixed(2)}
+                    {product.name} - R$ {product.price.toFixed(2)} (Estoque: {product.stock})
                   </option>
                 ))}
               </optgroup>
             ))}
+            {productsList.filter(product => (product.stock || 0) === 0).length > 0 && (
+              <optgroup label="🚫 Sem Estoque">
+                {productsList.filter(product => (product.stock || 0) === 0).map((product) => (
+                  <option key={product.id} value={product.id} disabled>
+                    {product.name} - Sem estoque
+                  </option>
+                ))}
+              </optgroup>
+            )}
           </select>
         </div>
 
@@ -238,17 +260,27 @@ export default function RegistrarConsumo() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Quantidade
+            Quantidade {selectedProduct && `(Disponível: ${availableStock})`}
           </label>
           <input
             type="number"
             name="quantity"
             min="1"
+            max={availableStock || 1}
             value={quantity}
             onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
             required
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+            className={`w-full p-3 border rounded-lg focus:ring-2 ${
+              isQuantityExceeded 
+                ? "border-red-300 focus:ring-red-500" 
+                : "border-gray-300 focus:ring-teal-500"
+            }`}
           />
+          {isQuantityExceeded && (
+            <p className="text-red-500 text-sm mt-1">
+              Quantidade solicitada excede o estoque disponível ({availableStock})
+            </p>
+          )}
         </div>
 
         {selectedProduct && (
@@ -272,10 +304,10 @@ export default function RegistrarConsumo() {
 
         <button
           type="submit"
-          disabled={!selectedProduct || !user || (showCustomerForm && !customerName)}
+          disabled={!selectedProduct || !user || (showCustomerForm && !customerName) || isOutOfStock || isQuantityExceeded}
           className="w-full bg-teal-600 text-white py-3 px-4 rounded-lg hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
-          Registrar Consumo
+          {isOutOfStock ? "Produto sem estoque" : isQuantityExceeded ? "Quantidade excede estoque" : "Registrar Consumo"}
         </button>
       </Form>
 

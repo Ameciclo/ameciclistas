@@ -210,11 +210,6 @@ export default function GerenciarRecursos() {
                         <button
                           type="submit"
                           className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700"
-                          onClick={(e) => {
-                            if (!confirm("Tem certeza que deseja rejeitar esta venda?")) {
-                              e.preventDefault();
-                            }
-                          }}
                         >
                           Rejeitar
                         </button>
@@ -274,11 +269,6 @@ export default function GerenciarRecursos() {
                         <button
                           type="submit"
                           className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700"
-                          onClick={(e) => {
-                            if (!confirm("Tem certeza que deseja rejeitar esta doação?")) {
-                              e.preventDefault();
-                            }
-                          }}
                         >
                           Rejeitar
                         </button>

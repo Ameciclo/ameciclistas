@@ -196,23 +196,23 @@ export default function MeusConsumos() {
 
                   {sale.status === SaleStatus.PENDING && (
                     <div className="flex gap-2 mt-3">
-                      <button
-                        onClick={() => setShowPaymentForm(sale.id)}
-                        className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700"
-                      >
-                        Marcar como Pago
-                      </button>
+                      <Form method="post" className="inline">
+                        <input type="hidden" name="action" value="markAsPaid" />
+                        <input type="hidden" name="saleId" value={sale.id} />
+                        <input type="hidden" name="paymentProof" value="" />
+                        <button
+                          type="submit"
+                          className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700"
+                        >
+                          Marcar como Pago
+                        </button>
+                      </Form>
                       <Form method="post" className="inline">
                         <input type="hidden" name="action" value="cancel" />
                         <input type="hidden" name="saleId" value={sale.id} />
                         <button
                           type="submit"
                           className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700"
-                          onClick={(e) => {
-                            if (!confirm("Tem certeza que deseja cancelar este consumo?")) {
-                              e.preventDefault();
-                            }
-                          }}
                         >
                           Cancelar
                         </button>
@@ -220,37 +220,7 @@ export default function MeusConsumos() {
                     </div>
                   )}
 
-                  {showPaymentForm === sale.id && (
-                    <Form method="post" className="mt-3 p-3 bg-gray-50 rounded">
-                      <input type="hidden" name="action" value="markAsPaid" />
-                      <input type="hidden" name="saleId" value={sale.id} />
-                      
-                      <div className="mb-3">
-                        <p className="text-sm font-medium text-gray-700 mb-2">
-                          PIX: <span className="font-mono bg-gray-200 px-2 py-1 rounded">doe@ameciclo.org</span>
-                        </p>
-                        <p className="text-sm text-gray-600 mb-2">
-                          Valor: R$ {sale.totalValue.toFixed(2)}
-                        </p>
-                      </div>
-                      
-                      <div className="flex gap-2">
-                        <button
-                          type="submit"
-                          className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700"
-                        >
-                          Confirmar Pagamento
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setShowPaymentForm(null)}
-                          className="bg-gray-600 text-white px-3 py-1 rounded text-sm hover:bg-gray-700"
-                        >
-                          Cancelar
-                        </button>
-                      </div>
-                    </Form>
-                  )}
+
 
                   {sale.paymentProof && (
                     <div className="mt-2 p-2 bg-blue-50 rounded text-sm">
@@ -304,23 +274,23 @@ export default function MeusConsumos() {
 
                   {donation.status === SaleStatus.PENDING && (
                     <div className="flex gap-2 mt-3">
-                      <button
-                        onClick={() => setShowPaymentForm(`donation-${donation.id}`)}
-                        className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700"
-                      >
-                        Marcar como Pago
-                      </button>
+                      <Form method="post" className="inline">
+                        <input type="hidden" name="action" value="markDonationAsPaid" />
+                        <input type="hidden" name="donationId" value={donation.id} />
+                        <input type="hidden" name="paymentProof" value="" />
+                        <button
+                          type="submit"
+                          className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700"
+                        >
+                          Marcar como Pago
+                        </button>
+                      </Form>
                       <Form method="post" className="inline">
                         <input type="hidden" name="action" value="cancelDonation" />
                         <input type="hidden" name="donationId" value={donation.id} />
                         <button
                           type="submit"
                           className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700"
-                          onClick={(e) => {
-                            if (!confirm("Tem certeza que deseja cancelar esta doação?")) {
-                              e.preventDefault();
-                            }
-                          }}
                         >
                           Cancelar
                         </button>
@@ -328,37 +298,7 @@ export default function MeusConsumos() {
                     </div>
                   )}
 
-                  {showPaymentForm === `donation-${donation.id}` && (
-                    <Form method="post" className="mt-3 p-3 bg-gray-50 rounded">
-                      <input type="hidden" name="action" value="markDonationAsPaid" />
-                      <input type="hidden" name="donationId" value={donation.id} />
-                      
-                      <div className="mb-3">
-                        <p className="text-sm font-medium text-gray-700 mb-2">
-                          PIX: <span className="font-mono bg-gray-200 px-2 py-1 rounded">doe@ameciclo.org</span>
-                        </p>
-                        <p className="text-sm text-gray-600 mb-2">
-                          Valor: R$ {donation.value.toFixed(2)}
-                        </p>
-                      </div>
-                      
-                      <div className="flex gap-2">
-                        <button
-                          type="submit"
-                          className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700"
-                        >
-                          Confirmar Pagamento
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setShowPaymentForm(null)}
-                          className="bg-gray-600 text-white px-3 py-1 rounded text-sm hover:bg-gray-700"
-                        >
-                          Cancelar
-                        </button>
-                      </div>
-                    </Form>
-                  )}
+
 
                   {donation.paymentProof && (
                     <div className="mt-2 p-2 bg-blue-50 rounded text-sm">
