@@ -18,7 +18,7 @@ export { loader, action };
 export default function GestaoFornecedores() {
   const loaderData = useLoaderData<typeof loader>();
   const { usersInfo, currentUserCategories, suppliers } = loaderData || {};
-  const [userPermissions, setUserPermissions] = useState(currentUserCategories || []);
+  const [userPermissions, setUserPermissions] = useState<UserCategory[]>(currentUserCategories || []);
   const [user, setUser] = useState<UserData | null>(null);
 
   useEffect(() => {
@@ -31,10 +31,10 @@ export default function GestaoFornecedores() {
   }, []);
 
   useEffect(() => {
-    if (user?.id && usersInfo[user.id]) {
-      setUserPermissions([usersInfo[user.id].role as any]);
+    if (user?.id && usersInfo && usersInfo[user.id]) {
+      setUserPermissions([usersInfo[user.id].role as UserCategory]);
     }
-  }, [user]);
+  }, [user, usersInfo]);
 
   const [personType, setPersonType] = useState<"fisica" | "juridica">(
     "juridica"
@@ -132,18 +132,36 @@ export default function GestaoFornecedores() {
   };
 
   const loadSupplierData = (supplier: any, firebaseKey: string) => {
-    setPersonType(supplier.type === "Pessoa Física" ? "fisica" : "juridica");
-    setName(supplier.nickname || "");
-    setFullName(supplier.name || "");
-    setIdNumber(supplier.id_number || "");
-    setFullAddress(supplier.address || "");
-    setContacts(supplier.contacts || [{ type: "E-mail", value: "" }]);
-    setPaymentMethods(supplier.payment_methods || [{ type: "PIX", value: "" }]);
-    setIsInternational(supplier.is_international || false);
-    // Usa a chave do Firebase se o supplier.id não existir
-    setSelectedSupplierId(supplier.id || firebaseKey);
-    setIsEditing(true);
-    console.log("Supplier ID definido como:", supplier.id || firebaseKey);
+    try {
+      if (!supplier || typeof supplier !== 'object') {
+        console.error('Dados do fornecedor inválidos:', supplier);
+        return;
+      }
+      
+      setPersonType(supplier.type === "Pessoa Física" ? "fisica" : "juridica");
+      setName(supplier.nickname || "");
+      setFullName(supplier.name || "");
+      setIdNumber(supplier.id_number || "");
+      setFullAddress(supplier.address || "");
+      
+      // Validação mais robusta para arrays
+      const validContacts = Array.isArray(supplier.contacts) && supplier.contacts.length > 0 
+        ? supplier.contacts 
+        : [{ type: "E-mail", value: "" }];
+      setContacts(validContacts);
+      
+      const validPaymentMethods = Array.isArray(supplier.payment_methods) && supplier.payment_methods.length > 0 
+        ? supplier.payment_methods 
+        : [{ type: "PIX", value: "" }];
+      setPaymentMethods(validPaymentMethods);
+      
+      setIsInternational(Boolean(supplier.is_international));
+      setSelectedSupplierId(supplier.id || firebaseKey);
+      setIsEditing(true);
+      console.log("Supplier ID definido como:", supplier.id || firebaseKey);
+    } catch (error) {
+      console.error('Erro ao carregar dados do fornecedor:', error);
+    }
   };
 
   const resetForm = () => {
@@ -162,11 +180,11 @@ export default function GestaoFornecedores() {
 
   const filteredSuppliers = suppliers ? Object.entries(suppliers).filter(([_, supplier]: [string, any]) => {
     try {
-      if (!supplier) return false;
+      if (!supplier || typeof supplier !== 'object') return false;
       const searchLower = searchTerm.toLowerCase();
-      return (supplier.name && supplier.name.toLowerCase().includes(searchLower)) ||
-             (supplier.nickname && supplier.nickname.toLowerCase().includes(searchLower)) ||
-             (supplier.id_number && supplier.id_number.includes(searchTerm));
+      return (supplier.name && typeof supplier.name === 'string' && supplier.name.toLowerCase().includes(searchLower)) ||
+             (supplier.nickname && typeof supplier.nickname === 'string' && supplier.nickname.toLowerCase().includes(searchLower)) ||
+             (supplier.id_number && typeof supplier.id_number === 'string' && supplier.id_number.includes(searchTerm));
     } catch (error) {
       console.error('Erro ao filtrar fornecedor:', error);
       return false;
@@ -188,7 +206,10 @@ export default function GestaoFornecedores() {
   const missingFields = getMissingFields();
   const isFormValid = missingFields.length === 0;
 
-  return isAuth(userPermissions || [], UserCategory.PROJECT_COORDINATORS) ? (
+  // Verificação de segurança para userPermissions
+  const safeUserPermissions = Array.isArray(userPermissions) ? userPermissions : [];
+  
+  return isAuth(safeUserPermissions, UserCategory.PROJECT_COORDINATORS) ? (
     <Form className="container mx-auto p-4" method="post">
       <FormTitle> 📦 Gestão de Fornecedores de Pagamentos </FormTitle>
 
@@ -205,22 +226,25 @@ export default function GestaoFornecedores() {
         
         {searchTerm && filteredSuppliers.length > 0 && (
           <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-md">
-            {filteredSuppliers.map(([firebaseKey, supplier]: [string, any]) => (
-              <button
-                key={firebaseKey}
-                type="button"
-                className="w-full text-left p-2 hover:bg-blue-50 border-b border-gray-200"
-                onClick={() => loadSupplierData(supplier, firebaseKey)}
-              >
-                <div className="font-medium">{supplier.name}</div>
-                <div className="text-sm text-gray-600">
-                  {supplier.nickname} - {supplier.id_number}
-                  <span className="text-xs text-gray-400 ml-2">
-                    (ID: {supplier.id || firebaseKey})
-                  </span>
-                </div>
-              </button>
-            ))}
+            {filteredSuppliers.map(([firebaseKey, supplier]: [string, any]) => {
+              if (!supplier || typeof supplier !== 'object') return null;
+              return (
+                <button
+                  key={firebaseKey}
+                  type="button"
+                  className="w-full text-left p-2 hover:bg-blue-50 border-b border-gray-200"
+                  onClick={() => loadSupplierData(supplier, firebaseKey)}
+                >
+                  <div className="font-medium">{supplier.name || 'Nome não informado'}</div>
+                  <div className="text-sm text-gray-600">
+                    {supplier.nickname || 'Sem apelido'} - {supplier.id_number || 'Sem documento'}
+                    <span className="text-xs text-gray-400 ml-2">
+                      (ID: {supplier.id || firebaseKey})
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         )}
         
@@ -258,6 +282,7 @@ export default function GestaoFornecedores() {
 
       <SelectInput
         label="Tipo de pessoa: "
+        name="personType"
         value={personType}
         onChange={(e) => setPersonType(e.target.value as "fisica" | "juridica")}
         options={[

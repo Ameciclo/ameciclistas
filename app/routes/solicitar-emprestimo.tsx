@@ -115,9 +115,14 @@ export default function SolicitarEmprestimo() {
   }, []);
 
   useEffect(() => {
-    // Filtrar exemplares disponíveis
+    // Filtrar exemplares disponíveis (excluir .1 e emprestados)
     const disponiveis = exemplares.filter(ex => {
-      // Simular disponibilidade (em produção viria do Firebase)
+      // Excluir livros .1 (apenas consulta local)
+      if (ex.register.endsWith('.1')) {
+        return false;
+      }
+      // Verificar se está emprestado (simulação - em produção viria do Firebase)
+      // Por enquanto, assumir que todos estão disponíveis exceto .1
       return true;
     });
     setExemplaresDisponiveis(disponiveis);
@@ -229,28 +234,33 @@ export default function SolicitarEmprestimo() {
         {/* Seleção de Exemplar */}
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h3 className="text-lg font-semibold mb-4">Selecione o Exemplar</h3>
-          <div className="space-y-3">
-            {exemplaresDisponiveis.map((exemplar) => (
-              <label key={exemplar.register} className="flex items-center space-x-3">
-                <input
-                  type="radio"
-                  name="subcodigo"
-                  value={exemplar.register}
-                  checked={exemplarSelecionado === exemplar.register}
-                  onChange={(e) => setExemplarSelecionado(e.target.value)}
-                  className="text-teal-600"
-                />
-                <div>
-                  <span className="font-medium">{exemplar.register}</span>
-                  {exemplar.register.endsWith('.1') && (
-                    <span className="ml-2 text-sm text-orange-600 font-medium">
-                      (Disponível para leitura na sede)
+          {exemplaresDisponiveis.length === 0 ? (
+            <div className="text-center py-4">
+              <p className="text-gray-600 mb-2">Nenhum exemplar disponível para empréstimo no momento.</p>
+              <p className="text-sm text-gray-500">Exemplares terminados em .1 são apenas para consulta local na sede.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {exemplaresDisponiveis.map((exemplar) => (
+                <label key={exemplar.register} className="flex items-center space-x-3">
+                  <input
+                    type="radio"
+                    name="subcodigo"
+                    value={exemplar.register}
+                    checked={exemplarSelecionado === exemplar.register}
+                    onChange={(e) => setExemplarSelecionado(e.target.value)}
+                    className="text-teal-600"
+                  />
+                  <div>
+                    <span className="font-medium">{exemplar.register}</span>
+                    <span className="ml-2 text-sm text-green-600 font-medium">
+                      (Disponível para empréstimo)
                     </span>
-                  )}
-                </div>
-              </label>
-            ))}
-          </div>
+                  </div>
+                </label>
+              ))}
+            </div>
+          )}
         </div>
 
 
@@ -264,7 +274,7 @@ export default function SolicitarEmprestimo() {
         <div className="flex gap-4">
           <button
             type="submit"
-            disabled={!exemplarSelecionado || exemplarSelecionado.endsWith('.1') || solicitarParaOutraPessoa}
+            disabled={!exemplarSelecionado || exemplaresDisponiveis.length === 0 || solicitarParaOutraPessoa}
             className="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             Confirmar Solicitação

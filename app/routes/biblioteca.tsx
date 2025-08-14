@@ -55,13 +55,16 @@ export default function Biblioteca() {
   }, [user, users]);
 
   const livrosComDisponibilidade = livros.map((livro: Livro) => {
-    const totalDisponiveis = livro.exemplares.filter(ex => ex.disponivel).length;
+    const exemplaresParaEmprestimo = livro.exemplares.filter(ex => ex.disponivel && !ex.consulta_local);
+    const exemplaresConsultaLocal = livro.exemplares.filter(ex => ex.consulta_local && !ex.emprestado);
+    
     return {
       ...livro,
-      total_disponiveis: totalDisponiveis,
-      indisponivel: totalDisponiveis === 0,
-      apenas_sede: totalDisponiveis === 1,
-      para_locacao: totalDisponiveis > 1
+      total_disponiveis: exemplaresParaEmprestimo.length,
+      total_consulta_local: exemplaresConsultaLocal.length,
+      indisponivel: exemplaresParaEmprestimo.length === 0 && exemplaresConsultaLocal.length === 0,
+      apenas_sede: exemplaresParaEmprestimo.length === 0 && exemplaresConsultaLocal.length > 0,
+      para_locacao: exemplaresParaEmprestimo.length > 0
     };
   });
 
@@ -164,8 +167,8 @@ export default function Biblioteca() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                   >
                     <option value="todos">Todos</option>
-                    <option value="disponiveis">Disponíveis para locação</option>
-                    <option value="sede">Disponível apenas na sede</option>
+                    <option value="disponiveis">Disponíveis para empréstimo</option>
+                    <option value="sede">Disponível apenas para consulta na sede</option>
                   </select>
                 </div>
                 

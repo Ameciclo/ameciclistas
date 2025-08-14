@@ -31,13 +31,17 @@ export function PaginacaoLivros({ livros, userCanRequest, userId }: PaginacaoLiv
   };
 
   const getLivroComDisponibilidade = (livro: Livro) => {
-    const totalDisponiveis = livro.exemplares.filter(ex => ex.disponivel).length;
+    // Contar apenas exemplares disponíveis para empréstimo (excluindo .1)
+    const exemplaresParaEmprestimo = livro.exemplares.filter(ex => ex.disponivel && !ex.consulta_local);
+    const exemplaresConsultaLocal = livro.exemplares.filter(ex => ex.consulta_local && !ex.emprestado);
+    
     return {
       ...livro,
-      total_disponiveis: totalDisponiveis,
-      indisponivel: totalDisponiveis === 0,
-      apenas_sede: totalDisponiveis === 1,
-      para_locacao: totalDisponiveis > 1
+      total_disponiveis: exemplaresParaEmprestimo.length,
+      total_consulta_local: exemplaresConsultaLocal.length,
+      indisponivel: exemplaresParaEmprestimo.length === 0 && exemplaresConsultaLocal.length === 0,
+      apenas_sede: exemplaresParaEmprestimo.length === 0 && exemplaresConsultaLocal.length > 0,
+      para_locacao: exemplaresParaEmprestimo.length > 0
     };
   };
 
@@ -85,8 +89,8 @@ export function PaginacaoLivros({ livros, userCanRequest, userId }: PaginacaoLiv
                       'text-green-600'
                     }`}>
                       {livroInfo.indisponivel ? 'Indisponível' :
-                       livroInfo.apenas_sede ? 'Disponível apenas na sede' :
-                       'Disponíveis para locação'
+                       livroInfo.apenas_sede ? 'Disponível apenas para consulta na sede' :
+                       'Disponíveis para empréstimo'
                       }
                     </span>
                   </p>
@@ -97,7 +101,10 @@ export function PaginacaoLivros({ livros, userCanRequest, userId }: PaginacaoLiv
                       <p className="text-gray-600 mb-1"><strong>Ano:</strong> {livro.ano}</p>
                       <p className="text-gray-600 mb-1"><strong>Tipo:</strong> {livro.tipo}</p>
                       <p className="text-gray-600 mb-1"><strong>Código:</strong> {livro.codigo}</p>
-                      <p className="text-gray-600 mb-1"><strong>Unidades disponíveis:</strong> {livroInfo.total_disponiveis}</p>
+                      <p className="text-gray-600 mb-1"><strong>Disponíveis para empréstimo:</strong> {livroInfo.total_disponiveis}</p>
+                      {livroInfo.total_consulta_local > 0 && (
+                        <p className="text-gray-600 mb-1"><strong>Disponíveis para consulta na sede:</strong> {livroInfo.total_consulta_local}</p>
+                      )}
                     </div>
                   )}
                   

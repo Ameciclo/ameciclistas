@@ -19,7 +19,12 @@ export async function action({ request }: ActionFunctionArgs) {
       if (users) {
         for (const [userId, userData] of Object.entries(users)) {
           const user = userData as any;
-          if (user.ameciclo_register?.cpf === cpf || user.personal?.cpf === cpf) {
+          // Buscar em ameciclo_register, library_register ou personal (para compatibilidade)
+          const userCpf = user.ameciclo_register?.cpf || 
+                         user.library_register?.cpf || 
+                         user.personal?.cpf;
+          
+          if (userCpf === cpf) {
             foundUser = { id: userId, ...user };
             break;
           }
@@ -53,7 +58,7 @@ export async function action({ request }: ActionFunctionArgs) {
         id: userId,
         name: nome,
         role: "ANY_USER",
-        library_register: {
+        ameciclo_register: {
           cpf,
           nome,
           telefone,
@@ -204,10 +209,10 @@ export default function RegistrarUsuarioBiblioteca() {
         <div className="bg-green-50 p-6 rounded-lg shadow-md mb-6">
           <h3 className="text-lg font-semibold mb-4 text-green-800">Usuário Encontrado</h3>
           <div className="space-y-2 mb-4">
-            <p><strong>Nome:</strong> {usuarioEncontrado.library_register?.nome || usuarioEncontrado.name}</p>
-            <p><strong>CPF:</strong> {usuarioEncontrado.library_register?.cpf || usuarioEncontrado.ameciclo_register?.cpf}</p>
-            <p><strong>Telefone:</strong> {usuarioEncontrado.library_register?.telefone || usuarioEncontrado.ameciclo_register?.telefone || "Não informado"}</p>
-            <p><strong>Email:</strong> {usuarioEncontrado.library_register?.email || usuarioEncontrado.ameciclo_register?.email || "Não informado"}</p>
+            <p><strong>Nome:</strong> {usuarioEncontrado.ameciclo_register?.nome || usuarioEncontrado.library_register?.nome || usuarioEncontrado.name || "Não informado"}</p>
+            <p><strong>CPF:</strong> {usuarioEncontrado.ameciclo_register?.cpf || usuarioEncontrado.library_register?.cpf || usuarioEncontrado.personal?.cpf || "Não informado"}</p>
+            <p><strong>Telefone:</strong> {usuarioEncontrado.ameciclo_register?.telefone || usuarioEncontrado.library_register?.telefone || usuarioEncontrado.personal?.telefone || "Não informado"}</p>
+            <p><strong>Email:</strong> {usuarioEncontrado.ameciclo_register?.email || usuarioEncontrado.library_register?.email || "Não informado"}</p>
           </div>
           
           <Form method="post" className="space-y-4">

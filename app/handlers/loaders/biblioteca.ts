@@ -43,10 +43,13 @@ export async function bibliotecaLoader({ request }: LoaderFunctionArgs) {
         emp.subcodigo === livro.register && emp.status === 'emprestado'
       );
       
+      const isConsultaLocal = livro.register.endsWith('.1');
+      
       livrosAgrupados[titulo].exemplares.push({
         subcodigo: livro.register,
-        disponivel: !emprestado,
-        consulta_local: livro.register.endsWith('.1') // .1 indica consulta local
+        disponivel: !emprestado && !isConsultaLocal, // Disponível se não emprestado e não for .1
+        consulta_local: isConsultaLocal,
+        emprestado: emprestado
       });
     });
     

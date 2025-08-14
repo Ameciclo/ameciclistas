@@ -7,9 +7,15 @@ export async function getProjects() {
 }
 
 export async function getSuppliers() {
-  const ref = db.ref("suppliers");
-  const snapshot = await ref.once("value");
-  return snapshot.val();
+  try {
+    const ref = db.ref("suppliers");
+    const snapshot = await ref.once("value");
+    const data = snapshot.val();
+    return data || {};
+  } catch (error) {
+    console.error('Erro ao buscar fornecedores:', error);
+    return {};
+  }
 }
 
 export async function savePaymentRequest(paymentRequest) {
@@ -41,14 +47,14 @@ export const getUsersFirebase = async () => {
     const snapshot = await userRef.once("value");
 
     if (snapshot.exists()) {
-      return snapshot.val();
+      return snapshot.val() || {};
     } else {
-      console.error("No data available for this user.");
-      return null;
+      console.log("No data available for users.");
+      return {};
     }
   } catch (error) {
     console.error("Error fetching user category:", error);
-    return null;
+    return {};
   }
 };
 

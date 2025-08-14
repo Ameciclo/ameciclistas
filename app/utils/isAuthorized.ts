@@ -2,9 +2,14 @@
 import { UserCategory } from "~/utils/types";
 
 export const isAuth = (
-  currentUserCategories: string[],
+  currentUserCategories: string[] | UserCategory[],
   category: UserCategory
 ) => {
+  // Validação de segurança
+  if (!Array.isArray(currentUserCategories) || !category) {
+    return false;
+  }
+  
   const accessHierarchy = {
     [UserCategory.ANY_USER]: [
       UserCategory.ANY_USER,
@@ -30,7 +35,13 @@ export const isAuth = (
     ],
     [UserCategory.DEVELOPMENT]: [UserCategory.DEVELOPMENT],
   };
-  return accessHierarchy[category]?.some((allowedCategory) =>
-    currentUserCategories?.includes(allowedCategory)
-  ) || false;
+  
+  const allowedCategories = accessHierarchy[category];
+  if (!allowedCategories) {
+    return false;
+  }
+  
+  return allowedCategories.some((allowedCategory) =>
+    currentUserCategories.includes(allowedCategory)
+  );
 };

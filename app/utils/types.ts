@@ -59,6 +59,7 @@ export interface Exemplar {
   subcodigo: string;
   disponivel: boolean;
   consulta_local: boolean;
+  emprestado?: boolean;
 }
 
 export interface Livro {
@@ -95,16 +96,32 @@ export interface UsuarioComDados {
   id: number;
   name: string;
   role: string;
-  telegram_user: {
+  telegram_user?: {
     first_name: string;
     id: number;
     is_bot: boolean;
     language_code: string;
     last_name?: string;
   };
-  personal_data?: {
+  ameciclo_register?: {
+    cpf: string;
+    nome?: string;
+    telefone?: string;
+    email?: string;
+    created_at?: string;
+    updated_at?: string;
+  };
+  library_register?: {
+    cpf: string;
+    nome?: string;
+    telefone?: string;
+    email?: string;
+    created_at?: string;
+  };
+  personal?: {
     cpf?: string;
     telefone?: string;
+    updated_at?: string;
   };
 }
 

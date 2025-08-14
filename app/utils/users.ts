@@ -67,12 +67,16 @@ export const users: TelegramUser[] = [
 export const getTelegramUsersInfo = (): UserData | null => {
   try {
     // Verifica se estamos no navegador
-    if (typeof window !== 'undefined') {
-      const telegram = (window as any)?.Telegram?.WebApp;
+    if (typeof window !== 'undefined' && window.Telegram) {
+      const telegram = window.Telegram?.WebApp;
 
       // Verifica se o usuário está disponível
       if (telegram && telegram.initDataUnsafe && telegram.initDataUnsafe.user) {
-        return telegram.initDataUnsafe.user as UserData;
+        const user = telegram.initDataUnsafe.user;
+        // Valida se o objeto user tem as propriedades necessárias
+        if (user && typeof user.id === 'number') {
+          return user as UserData;
+        }
       }
     }
   } catch (error) {

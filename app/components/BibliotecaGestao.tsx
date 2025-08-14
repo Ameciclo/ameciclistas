@@ -22,14 +22,14 @@ export function BibliotecaGestao({ emprestimos, solicitacoes, livros, users }: B
       return `Usuário ${userId}`;
     }
     
-    // Priorizar dados do registro da biblioteca
-    if (user.library_register?.nome) {
-      return user.library_register.nome;
-    }
-    
-    // Depois dados do registro ameciclo
+    // Priorizar dados do registro ameciclo
     if (user.ameciclo_register?.nome) {
       return user.ameciclo_register.nome;
+    }
+    
+    // Depois dados do registro da biblioteca (para compatibilidade)
+    if (user.library_register?.nome) {
+      return user.library_register.nome;
     }
     
     // Depois dados do telegram
@@ -39,6 +39,18 @@ export function BibliotecaGestao({ emprestimos, solicitacoes, livros, users }: B
     
     // Por último, nome genérico ou ID
     return user.name || `Usuário ${userId}`;
+  };
+
+  const getUserInfo = (userId: string) => {
+    const user = users[userId];
+    if (!user) return null;
+    
+    return {
+      nome: user.ameciclo_register?.nome || user.library_register?.nome || user.name || 'Não informado',
+      cpf: user.ameciclo_register?.cpf || user.library_register?.cpf || user.personal?.cpf || 'Não informado',
+      telefone: user.ameciclo_register?.telefone || user.library_register?.telefone || user.personal?.telefone || 'Não informado',
+      email: user.ameciclo_register?.email || user.library_register?.email || 'Não informado'
+    };
   };
   const [activeTab, setActiveTab] = useState<'emprestados' | 'solicitacoes'>('emprestados');
 
