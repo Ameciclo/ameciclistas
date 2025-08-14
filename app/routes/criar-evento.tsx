@@ -17,6 +17,7 @@ import HourInput from "~/components/Forms/Inputs/HourInput";
 import DateInput from "~/components/Forms/Inputs/DateInput";
 import SubmitButton from "~/components/Forms/SubmitButton";
 import FormTitle from "~/components/Forms/FormTitle";
+import TextInput from "~/components/Forms/Inputs/TextInput";
 
 export default function CriarEvento() {
   const { usersInfo, currentUserCategories } = useLoaderData<typeof loader>();
@@ -77,26 +78,26 @@ export default function CriarEvento() {
     <Form className="container" method="post">
       <FormTitle>📅 Criar Evento</FormTitle>
 
-      <NumberInput
+      <TextInput
         label="Nome do Evento:"
         value={name}
         onChange={(e: any) => setName(e.target.value)}
       />
 
       <DateInput value={date} onChange={(e: any) => setDate(e.target.value)} />
+      <div className="grid grid-cols-2 space-x-3">
+        <HourInput
+          value={startTime}
+          label="Hora Início:"
+          onChange={(e: any) => setStartTime(e.target.value)}
+        />
 
-      <HourInput
-        value={startTime}
-        label="Hora Início:"
-        onChange={(e: any) => setStartTime(e.target.value)}
-      />
-
-      <HourInput
-        value={endTime}
-        label="Hora Fim:"
-        onChange={(e: any) => setEndTime(e.target.value)}
-      />
-
+        <HourInput
+          value={endTime}
+          label="Hora Fim:"
+          onChange={(e: any) => setEndTime(e.target.value)}
+        />
+      </div>
       {durationMessage && <h3>{durationMessage}</h3>}
 
       <br />
@@ -106,7 +107,7 @@ export default function CriarEvento() {
         setText={setDescription}
       />
 
-      <NumberInput
+      <TextInput
         label="Local do Evento:"
         value={location}
         onChange={(e: any) => setLocation(e.target.value)}
