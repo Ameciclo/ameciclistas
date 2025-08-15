@@ -23,6 +23,7 @@ export const action: ActionFunction = async ({ request }) => {
       userName: formData.get("userName") as string,
       value: parseFloat(formData.get("value") as string),
       status: SaleStatus.PENDING,
+      description: description,
     };
     
     // Apenas adicionar description se tiver valor válido

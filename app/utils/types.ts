@@ -40,11 +40,10 @@ export interface UserData {
 }
 
 export enum UserCategory {
-  ANY_USER = "ANY_USER", // Mudar para "ANY_USER" para refletir o nome
+  ANY_USER = "ANY_USER",
   AMECICLISTAS = "AMECICLISTAS",
   PROJECT_COORDINATORS = "PROJECT_COORDINATORS",
   AMECICLO_COORDINATORS = "AMECICLO_COORDINATORS",
-  RESOURCES_COORDINATOR = "RESOURCES_COORDINATOR", // Para gerenciar recursos independentes
   DEVELOPMENT = "DEVELOPMENT",
 }
 

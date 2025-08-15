@@ -9,30 +9,38 @@ import { validateIdNumber } from "~/utils/idNumber";
 import { BackButton } from "~/components/Forms/Buttons";
 
 import { action } from "../handlers/actions/gestao-fornecedores";
-import { loader } from "~/handlers/loaders/gestao-fornecedores";
+import { loader, LoaderData } from "~/handlers/loaders/gestao-fornecedores";
 import SendToAction from "~/components/Forms/SendToAction";
 import SelectInput from "~/components/Forms/Inputs/SelectInput";
 import FormTitle from "~/components/Forms/FormTitle";
 export { loader, action };
 
 export default function GestaoFornecedores() {
-  const loaderData = useLoaderData<typeof loader>();
+  const loaderData = useLoaderData<LoaderData>();
   const { usersInfo, currentUserCategories, suppliers } = loaderData || {};
-  const [userPermissions, setUserPermissions] = useState<UserCategory[]>(currentUserCategories || []);
+  const [userPermissions, setUserPermissions] = useState<UserCategory[]>(
+    currentUserCategories || []
+  );
   const [user, setUser] = useState<UserData | null>(null);
 
   useEffect(() => {
     try {
       setUser(getTelegramUsersInfo());
     } catch (error) {
-      console.error('Erro ao obter dados do Telegram:', error);
+      console.error("Erro ao obter dados do Telegram:", error);
       setUser(null);
     }
   }, []);
 
   useEffect(() => {
-    if (user?.id && usersInfo && usersInfo[user.id]) {
-      setUserPermissions([usersInfo[user.id].role as UserCategory]);
+    if (user?.id) {
+      // Tenta pegar do Firebase
+      if (usersInfo && usersInfo[user.id]) {
+        setUserPermissions([usersInfo[user.id].role as UserCategory]);
+      } else {
+        // Fallback para desenvolvimento
+        setUserPermissions([UserCategory.DEVELOPMENT]);
+      }
     }
   }, [user, usersInfo]);
 
@@ -133,34 +141,37 @@ export default function GestaoFornecedores() {
 
   const loadSupplierData = (supplier: any, firebaseKey: string) => {
     try {
-      if (!supplier || typeof supplier !== 'object') {
-        console.error('Dados do fornecedor inválidos:', supplier);
+      if (!supplier || typeof supplier !== "object") {
+        console.error("Dados do fornecedor inválidos:", supplier);
         return;
       }
-      
+
       setPersonType(supplier.type === "Pessoa Física" ? "fisica" : "juridica");
       setName(supplier.nickname || "");
       setFullName(supplier.name || "");
       setIdNumber(supplier.id_number || "");
       setFullAddress(supplier.address || "");
-      
+
       // Validação mais robusta para arrays
-      const validContacts = Array.isArray(supplier.contacts) && supplier.contacts.length > 0 
-        ? supplier.contacts 
-        : [{ type: "E-mail", value: "" }];
+      const validContacts =
+        Array.isArray(supplier.contacts) && supplier.contacts.length > 0
+          ? supplier.contacts
+          : [{ type: "E-mail", value: "" }];
       setContacts(validContacts);
-      
-      const validPaymentMethods = Array.isArray(supplier.payment_methods) && supplier.payment_methods.length > 0 
-        ? supplier.payment_methods 
-        : [{ type: "PIX", value: "" }];
+
+      const validPaymentMethods =
+        Array.isArray(supplier.payment_methods) &&
+        supplier.payment_methods.length > 0
+          ? supplier.payment_methods
+          : [{ type: "PIX", value: "" }];
       setPaymentMethods(validPaymentMethods);
-      
+
       setIsInternational(Boolean(supplier.is_international));
       setSelectedSupplierId(supplier.id || firebaseKey);
       setIsEditing(true);
       console.log("Supplier ID definido como:", supplier.id || firebaseKey);
     } catch (error) {
-      console.error('Erro ao carregar dados do fornecedor:', error);
+      console.error("Erro ao carregar dados do fornecedor:", error);
     }
   };
 
@@ -178,28 +189,47 @@ export default function GestaoFornecedores() {
     setIsInternational(false);
   };
 
-  const filteredSuppliers = suppliers ? Object.entries(suppliers).filter(([_, supplier]: [string, any]) => {
-    try {
-      if (!supplier || typeof supplier !== 'object') return false;
-      const searchLower = searchTerm.toLowerCase();
-      return (supplier.name && typeof supplier.name === 'string' && supplier.name.toLowerCase().includes(searchLower)) ||
-             (supplier.nickname && typeof supplier.nickname === 'string' && supplier.nickname.toLowerCase().includes(searchLower)) ||
-             (supplier.id_number && typeof supplier.id_number === 'string' && supplier.id_number.includes(searchTerm));
-    } catch (error) {
-      console.error('Erro ao filtrar fornecedor:', error);
-      return false;
-    }
-  }) : [];
+  const filteredSuppliers = suppliers
+    ? Object.entries(suppliers).filter(([_, supplier]: [string, any]) => {
+        try {
+          if (!supplier || typeof supplier !== "object") return false;
+          const searchLower = searchTerm.toLowerCase();
+          return (
+            (supplier.name &&
+              typeof supplier.name === "string" &&
+              supplier.name.toLowerCase().includes(searchLower)) ||
+            (supplier.nickname &&
+              typeof supplier.nickname === "string" &&
+              supplier.nickname.toLowerCase().includes(searchLower)) ||
+            (supplier.id_number &&
+              typeof supplier.id_number === "string" &&
+              supplier.id_number.includes(searchTerm))
+          );
+        } catch (error) {
+          console.error("Erro ao filtrar fornecedor:", error);
+          return false;
+        }
+      })
+    : [];
 
   const getMissingFields = () => {
     const missing = [];
-    if (!name) missing.push(personType === "juridica" ? "Nome Fantasia" : "Nome/Apelido");
-    if (!fullName) missing.push(personType === "juridica" ? "Razão Social" : "Nome Completo");
-    if (!isInternational && !idNumber) missing.push(personType === "juridica" ? "CNPJ" : "CPF");
-    if (!isInternational && idNumber && !validateIdNumber(personType, idNumber)) missing.push(`${personType === "juridica" ? "CNPJ" : "CPF"} válido`);
+    if (!name)
+      missing.push(
+        personType === "juridica" ? "Nome Fantasia" : "Nome/Apelido"
+      );
+    if (!fullName)
+      missing.push(
+        personType === "juridica" ? "Razão Social" : "Nome Completo"
+      );
+    if (!isInternational && !idNumber)
+      missing.push(personType === "juridica" ? "CNPJ" : "CPF");
+    if (!isInternational && idNumber && !validateIdNumber(personType, idNumber))
+      missing.push(`${personType === "juridica" ? "CNPJ" : "CPF"} válido`);
     if (isInternational && !idNumber) missing.push("Documento Internacional");
-    if (contacts.some(c => c.value === "")) missing.push("Contatos");
-    if (!paymentMethods.some(pm => pm.value !== "")) missing.push("Método de Pagamento");
+    if (contacts.some((c) => c.value === "")) missing.push("Contatos");
+    if (!paymentMethods.some((pm) => pm.value !== ""))
+      missing.push("Método de Pagamento");
     return missing;
   };
 
@@ -207,15 +237,19 @@ export default function GestaoFornecedores() {
   const isFormValid = missingFields.length === 0;
 
   // Verificação de segurança para userPermissions
-  const safeUserPermissions = Array.isArray(userPermissions) ? userPermissions : [];
-  
+  const safeUserPermissions = Array.isArray(userPermissions)
+    ? userPermissions
+    : [];
+
   return isAuth(safeUserPermissions, UserCategory.PROJECT_COORDINATORS) ? (
     <Form className="container mx-auto p-4" method="post">
       <FormTitle> 📦 Gestão de Fornecedores de Pagamentos </FormTitle>
 
       {/* Seção de busca para edição */}
       <div className="form-group mb-6 p-4 bg-gray-50 rounded-md">
-        <label className="font-bold mb-2 block">Buscar fornecedor para editar:</label>
+        <label className="font-bold mb-2 block">
+          Buscar fornecedor para editar:
+        </label>
         <input
           className="w-full p-2 border border-gray-300 rounded-md mb-2"
           type="text"
@@ -223,11 +257,11 @@ export default function GestaoFornecedores() {
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Digite nome, nome fantasia ou CPF/CNPJ..."
         />
-        
+
         {searchTerm && filteredSuppliers.length > 0 && (
           <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-md">
             {filteredSuppliers.map(([firebaseKey, supplier]: [string, any]) => {
-              if (!supplier || typeof supplier !== 'object') return null;
+              if (!supplier || typeof supplier !== "object") return null;
               return (
                 <button
                   key={firebaseKey}
@@ -235,9 +269,12 @@ export default function GestaoFornecedores() {
                   className="w-full text-left p-2 hover:bg-blue-50 border-b border-gray-200"
                   onClick={() => loadSupplierData(supplier, firebaseKey)}
                 >
-                  <div className="font-medium">{supplier.name || 'Nome não informado'}</div>
+                  <div className="font-medium">
+                    {supplier.name || "Nome não informado"}
+                  </div>
                   <div className="text-sm text-gray-600">
-                    {supplier.nickname || 'Sem apelido'} - {supplier.id_number || 'Sem documento'}
+                    {supplier.nickname || "Sem apelido"} -{" "}
+                    {supplier.id_number || "Sem documento"}
                     <span className="text-xs text-gray-400 ml-2">
                       (ID: {supplier.id || firebaseKey})
                     </span>
@@ -247,7 +284,7 @@ export default function GestaoFornecedores() {
             })}
           </div>
         )}
-        
+
         {isEditing && (
           <div className="mt-2">
             <div className="text-xs text-gray-500 mb-2">
@@ -267,8 +304,15 @@ export default function GestaoFornecedores() {
                 value="remove"
                 className="px-4 py-2 bg-red-500 text-white rounded-md"
                 onClick={(e) => {
-                  console.log("Tentando remover fornecedor ID:", selectedSupplierId);
-                  if (!confirm(`Tem certeza que deseja remover este fornecedor?\nID: ${selectedSupplierId}`)) {
+                  console.log(
+                    "Tentando remover fornecedor ID:",
+                    selectedSupplierId
+                  );
+                  if (
+                    !confirm(
+                      `Tem certeza que deseja remover este fornecedor?\nID: ${selectedSupplierId}`
+                    )
+                  ) {
                     e.preventDefault();
                   }
                 }}
@@ -336,7 +380,11 @@ export default function GestaoFornecedores() {
       <div className="form-group mb-4">
         <div className="flex items-center gap-4 mb-2">
           <label className="font-bold">
-            {isInternational ? "Documento Internacional:" : (personType === "juridica" ? "CNPJ:" : "CPF:")}
+            {isInternational
+              ? "Documento Internacional:"
+              : personType === "juridica"
+              ? "CNPJ:"
+              : "CPF:"}
           </label>
           <label className="flex items-center gap-2 text-sm">
             <input
@@ -356,16 +404,20 @@ export default function GestaoFornecedores() {
           value={idNumber}
           onChange={(e) => handleIdNumberChange(personType, e.target.value)}
           placeholder={
-            isInternational 
+            isInternational
               ? "Ex: Passaporte, Tax ID, VAT Number..."
-              : (personType === "juridica" ? "00.000.000/0000-00" : "000.000.000-00")
+              : personType === "juridica"
+              ? "00.000.000/0000-00"
+              : "000.000.000-00"
           }
         />
-        {!isInternational && !validateIdNumber(personType, idNumber) && idNumber.length > 0 && (
-          <span className="text-red-500 text-sm">
-            {personType === "juridica" ? "CNPJ inválido" : "CPF inválido"}
-          </span>
-        )}
+        {!isInternational &&
+          !validateIdNumber(personType, idNumber) &&
+          idNumber.length > 0 && (
+            <span className="text-red-500 text-sm">
+              {personType === "juridica" ? "CNPJ inválido" : "CPF inválido"}
+            </span>
+          )}
       </div>
 
       <div className="form-group mb-4">
@@ -580,11 +632,13 @@ export default function GestaoFornecedores() {
           { name: "isInternational", value: isInternational.toString() },
         ]}
       />
-      
+
       {/* Campos faltantes */}
       {missingFields.length > 0 && (
         <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-          <p className="font-medium text-yellow-800 mb-1">⚠️ Campos obrigatórios faltantes:</p>
+          <p className="font-medium text-yellow-800 mb-1">
+            ⚠️ Campos obrigatórios faltantes:
+          </p>
           <ul className="text-sm text-yellow-700 list-disc list-inside">
             {missingFields.map((field, index) => (
               <li key={index}>{field}</li>

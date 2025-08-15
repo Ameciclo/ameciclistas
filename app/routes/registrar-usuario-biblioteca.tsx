@@ -209,7 +209,15 @@ export default function RegistrarUsuarioBiblioteca() {
         <div className="bg-green-50 p-6 rounded-lg shadow-md mb-6">
           <h3 className="text-lg font-semibold mb-4 text-green-800">Usuário Encontrado</h3>
           <div className="space-y-2 mb-4">
-            <p><strong>Nome:</strong> {usuarioEncontrado.ameciclo_register?.nome || usuarioEncontrado.library_register?.nome || usuarioEncontrado.name || "Não informado"}</p>
+            <p><strong>Nome:</strong> {
+              usuarioEncontrado.ameciclo_register?.nome || 
+              usuarioEncontrado.library_register?.nome || 
+              usuarioEncontrado.name || 
+              (usuarioEncontrado.telegram_user ? 
+                `${usuarioEncontrado.telegram_user.first_name} ${usuarioEncontrado.telegram_user.last_name || ''}`.trim() : 
+                "Não informado"
+              )
+            }</p>
             <p><strong>CPF:</strong> {usuarioEncontrado.ameciclo_register?.cpf || usuarioEncontrado.library_register?.cpf || usuarioEncontrado.personal?.cpf || "Não informado"}</p>
             <p><strong>Telefone:</strong> {usuarioEncontrado.ameciclo_register?.telefone || usuarioEncontrado.library_register?.telefone || usuarioEncontrado.personal?.telefone || "Não informado"}</p>
             <p><strong>Email:</strong> {usuarioEncontrado.ameciclo_register?.email || usuarioEncontrado.library_register?.email || "Não informado"}</p>

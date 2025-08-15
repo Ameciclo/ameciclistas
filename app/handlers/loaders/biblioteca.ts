@@ -16,6 +16,13 @@ export async function bibliotecaLoader({ request }: LoaderFunctionArgs) {
     const emprestimos: Emprestimo[] = emprestimosData ? Object.keys(emprestimosData).map(key => ({ id: key, ...emprestimosData[key] })) : [];
     const solicitacoes = solicitacoesData ? Object.keys(solicitacoesData).map(key => ({ id: key, ...solicitacoesData[key] })) : [];
     
+    // Debug: verificar empréstimos carregados
+    if (process.env.NODE_ENV === "development") {
+      console.log(`Carregados ${emprestimos.length} empréstimos:`, 
+        emprestimos.filter(emp => emp.status === 'emprestado')
+      );
+    }
+    
     const livrosFiltrados = biblioteca.filter((livro: any) =>
       (livro.title?.toLowerCase() || "").includes(busca.toLowerCase()) ||
       (livro.author?.toLowerCase() || "").includes(busca.toLowerCase())
@@ -39,9 +46,17 @@ export async function bibliotecaLoader({ request }: LoaderFunctionArgs) {
         };
       }
       
-      const emprestado = emprestimos.some((emp: any) => 
+      // Verificar se este exemplar está emprestado
+      const emprestimosDoExemplar = emprestimos.filter((emp: any) => 
         emp.subcodigo === livro.register && emp.status === 'emprestado'
       );
+      
+      const emprestado = emprestimosDoExemplar.length > 0;
+      
+      // Debug: log para verificar empréstimos
+      if (process.env.NODE_ENV === "development" && emprestimosDoExemplar.length > 0) {
+        console.log(`Exemplar ${livro.register} está emprestado:`, emprestimosDoExemplar);
+      }
       
       const isConsultaLocal = livro.register.endsWith('.1');
       

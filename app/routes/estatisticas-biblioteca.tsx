@@ -1,6 +1,5 @@
 import { useLoaderData, Link } from "@remix-run/react";
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
-import { type Emprestimo, type Livro } from "~/utils/types";
 import db from "~/api/firebaseAdmin.server.js";
 
 // Funções para buscar dados do Firebase

@@ -62,25 +62,25 @@ export default function HistoricoVendas() {
   const filteredDonations = filterByDate(confirmedDonations);
 
   // Estatísticas
-  const totalSalesValue = filteredSales.reduce((sum, sale) => sum + sale.totalValue, 0);
-  const totalDonationsValue = filteredDonations.reduce((sum, donation) => sum + donation.value, 0);
+  const totalSalesValue = filteredSales.reduce((sum, sale) => sum + (sale.totalValue || 0), 0);
+  const totalDonationsValue = filteredDonations.reduce((sum, donation) => sum + (donation.value || 0), 0);
   const totalRevenue = totalSalesValue + totalDonationsValue;
 
   // Vendas por categoria
   const salesByCategory = filteredSales.reduce((acc, sale) => {
-    const category = getCategoryFromProductName(sale.productName);
+    const category = getCategoryFromProductName(sale.productName || '');
     if (!acc[category]) acc[category] = { count: 0, value: 0 };
-    acc[category].count += sale.quantity;
-    acc[category].value += sale.totalValue;
+    acc[category].count += sale.quantity || 0;
+    acc[category].value += sale.totalValue || 0;
     return acc;
   }, {} as Record<string, { count: number; value: number }>);
 
   // Top produtos
   const productSales = filteredSales.reduce((acc, sale) => {
-    const key = `${sale.productName}${sale.variantName ? ` (${sale.variantName})` : ''}`;
+    const key = `${sale.productName || 'Produto'}${sale.variantName ? ` (${sale.variantName})` : ''}`;
     if (!acc[key]) acc[key] = { count: 0, value: 0 };
-    acc[key].count += sale.quantity;
-    acc[key].value += sale.totalValue;
+    acc[key].count += sale.quantity || 0;
+    acc[key].value += sale.totalValue || 0;
     return acc;
   }, {} as Record<string, { count: number; value: number }>);
 

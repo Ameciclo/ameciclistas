@@ -47,13 +47,16 @@ export async function bibliotecaAction({ request }: ActionFunctionArgs) {
         const solicitacao = solicitacaoSnapshot.val();
         
         if (solicitacao) {
-          await emprestimoRef.push({
+          const novoEmprestimo = {
             usuario_id: solicitacao.usuario_id,
             subcodigo: solicitacao.subcodigo,
             data_saida: new Date().toISOString().split('T')[0],
             status: 'emprestado',
             created_at: new Date().toISOString()
-          });
+          };
+          
+          console.log("Criando empréstimo:", novoEmprestimo);
+          await emprestimoRef.push(novoEmprestimo);
         }
         
         return json({ success: true, message: "Solicitação aprovada e empréstimo registrado!" });

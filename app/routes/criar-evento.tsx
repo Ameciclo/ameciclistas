@@ -10,7 +10,6 @@ import { loader } from "~/handlers/loaders/criar-evento";
 export { loader, action };
 
 import SelectInput from "~/components/Forms/Inputs/SelectInput";
-import NumberInput from "~/components/Forms/Inputs/NumberInput";
 import DescriptionInput from "~/components/Forms/Inputs/LongTextInput";
 import SendToAction from "~/components/Forms/SendToAction";
 import HourInput from "~/components/Forms/Inputs/HourInput";
