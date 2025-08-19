@@ -71,9 +71,13 @@ export default function MeusConsumos() {
   }, [users]);
 
   const userSales = sales && user ? 
-    Object.values(sales).filter((sale: any) => sale.userId === user.id) as Sale[] : [];
+    Object.values(sales)
+      .filter((sale: any) => sale.userId === user.id || sale.registeredBy === user.id)
+      .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()) as Sale[] : [];
   const userDonations = donations && user ? 
-    Object.values(donations).filter((donation: any) => donation.userId === user.id) as Donation[] : [];
+    Object.values(donations)
+      .filter((donation: any) => donation.userId === user.id || donation.registeredBy === user.id)
+      .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()) as Donation[] : [];
 
   const getStatusLabel = (status: SaleStatus) => {
     const labels = {
@@ -181,8 +185,16 @@ export default function MeusConsumos() {
                       <h3 className="font-medium text-gray-900">
                         {sale.productName}
                         {sale.variantName && ` (${sale.variantName})`}
+                        {sale.registeredBy && sale.registeredBy !== user?.id && (
+                          <span className="text-sm text-blue-600 ml-2">
+                            (via {sale.registeredByName})
+                          </span>
+                        )}
                       </h3>
                       <p className="text-sm text-gray-600">
+                        {sale.registeredBy && sale.registeredBy !== user?.id ? (
+                          <>Consumidor: {sale.userName} | </>
+                        ) : null}
                         Quantidade: {sale.quantity} | Valor: R$ {sale.totalValue.toFixed(2)}
                       </p>
                       <p className="text-xs text-gray-500">
@@ -254,8 +266,18 @@ export default function MeusConsumos() {
                 <div key={donation.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
                   <div className="flex justify-between items-start mb-3">
                     <div>
-                      <h3 className="font-medium text-gray-900">Doação</h3>
+                      <h3 className="font-medium text-gray-900">
+                        Doação
+                        {donation.registeredBy && donation.registeredBy !== user?.id && (
+                          <span className="text-sm text-blue-600 ml-2">
+                            (via {donation.registeredByName})
+                          </span>
+                        )}
+                      </h3>
                       <p className="text-sm text-gray-600">
+                        {donation.registeredBy && donation.registeredBy !== user?.id ? (
+                          <>Doador: {donation.userName} | </>
+                        ) : null}
                         Valor: R$ {donation.value.toFixed(2)}
                       </p>
                       {donation.description && (

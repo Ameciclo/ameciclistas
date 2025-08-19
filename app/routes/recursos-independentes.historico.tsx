@@ -34,8 +34,12 @@ export default function HistoricoVendas() {
     }
   }, [users]);
 
-  const salesList = sales ? Object.values(sales) as Sale[] : [];
-  const donationsList = donations ? Object.values(donations) as Donation[] : [];
+  const salesList = sales ? 
+    Object.values(sales)
+      .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()) as Sale[] : [];
+  const donationsList = donations ? 
+    Object.values(donations)
+      .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()) as Donation[] : [];
 
   const confirmedSales = salesList.filter(sale => sale.status === SaleStatus.CONFIRMED);
   const confirmedDonations = donationsList.filter(donation => donation.status === SaleStatus.CONFIRMED);
@@ -225,6 +229,11 @@ export default function HistoricoVendas() {
                       <p className="font-medium text-gray-900">
                         {sale.productName}
                         {sale.variantName && ` (${sale.variantName})`}
+                        {sale.registeredBy && (
+                          <span className="text-xs text-blue-600 ml-1">
+                            (via {sale.registeredByName})
+                          </span>
+                        )}
                       </p>
                       <p className="text-sm text-gray-600">
                         {sale.userName} • {sale.quantity} unidades
@@ -252,7 +261,14 @@ export default function HistoricoVendas() {
                 {filteredDonations.slice(0, 10).map((donation) => (
                   <div key={donation.id} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
                     <div>
-                      <p className="font-medium text-gray-900">Doação</p>
+                      <p className="font-medium text-gray-900">
+                        Doação
+                        {donation.registeredBy && (
+                          <span className="text-xs text-blue-600 ml-1">
+                            (via {donation.registeredByName})
+                          </span>
+                        )}
+                      </p>
                       <p className="text-sm text-gray-600">
                         {donation.userName}
                         {donation.description && ` • ${donation.description}`}
@@ -325,6 +341,11 @@ export default function HistoricoVendas() {
                     <h3 className="font-medium text-gray-900">
                       {sale.productName}
                       {sale.variantName && ` (${sale.variantName})`}
+                      {sale.registeredBy && (
+                        <span className="text-sm text-blue-600 ml-2">
+                          (via {sale.registeredByName})
+                        </span>
+                      )}
                     </h3>
                     <p className="text-sm text-gray-600">
                       Cliente: {sale.userName} | Quantidade: {sale.quantity}
@@ -355,7 +376,14 @@ export default function HistoricoVendas() {
               <div key={donation.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="font-medium text-gray-900">Doação</h3>
+                    <h3 className="font-medium text-gray-900">
+                      Doação
+                      {donation.registeredBy && (
+                        <span className="text-sm text-blue-600 ml-2">
+                          (via {donation.registeredByName})
+                        </span>
+                      )}
+                    </h3>
                     <p className="text-sm text-gray-600">Doador: {donation.userName}</p>
                     {donation.description && (
                       <p className="text-sm text-gray-600">Mensagem: {donation.description}</p>

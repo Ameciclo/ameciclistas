@@ -21,6 +21,9 @@ export const action: ActionFunction = async ({ request }) => {
   try {
     const variantId = formData.get("variantId") as string;
     const variantName = formData.get("variantName") as string;
+    const isForOther = formData.get("isForOther") === "true";
+    const registeredById = formData.get("registeredById") as string;
+    const registeredByName = formData.get("registeredByName") as string;
     
     const saleData = {
       userId: parseInt(formData.get("userId") as string),
@@ -39,6 +42,12 @@ export const action: ActionFunction = async ({ request }) => {
     }
     if (variantName && variantName !== "" && variantName !== "undefined") {
       saleData.variantName = variantName;
+    }
+    
+    // Adicionar dados do registrador se for para outra pessoa
+    if (isForOther && registeredById && registeredByName) {
+      saleData.registeredBy = parseInt(registeredById);
+      saleData.registeredByName = registeredByName;
     }
 
     await saveSale(saleData);
@@ -137,15 +146,18 @@ export default function RegistrarConsumo() {
       )}
 
       <Form method="post" className="max-w-md mx-auto space-y-4">
-        <input type="hidden" name="userId" value={user?.id || ""} />
+        <input type="hidden" name="userId" value={showCustomerForm ? "0" : (user?.id || "")} />
         <input type="hidden" name="userName" value={showCustomerForm ? customerName : (user?.first_name || "")} />
         <input type="hidden" name="productName" value={selectedProduct?.name || ""} />
         <input type="hidden" name="unitPrice" value={currentPrice} />
         <input type="hidden" name="totalValue" value={totalValue} />
+        <input type="hidden" name="isForOther" value={showCustomerForm.toString()} />
+        <input type="hidden" name="registeredById" value={showCustomerForm ? (user?.id || "") : ""} />
+        <input type="hidden" name="registeredByName" value={showCustomerForm ? (user?.first_name || "") : ""} />
         
         {isCoordinator && (
           <div className="bg-blue-50 p-4 rounded-lg">
-            <h3 className="font-medium text-gray-900 mb-3">Registrar para:</h3>
+            <h3 className="font-medium text-gray-900 mb-3">Registrar consumo:</h3>
             <div className="space-y-3">
               <label className="flex items-center space-x-3">
                 <input
@@ -155,7 +167,7 @@ export default function RegistrarConsumo() {
                   onChange={() => setShowCustomerForm(false)}
                   className="text-teal-600"
                 />
-                <span>Para mim</span>
+                <span>Registrar consumo próprio</span>
               </label>
               <label className="flex items-center space-x-3">
                 <input
@@ -165,27 +177,23 @@ export default function RegistrarConsumo() {
                   onChange={() => setShowCustomerForm(true)}
                   className="text-teal-600"
                 />
-                <span>Para outra pessoa</span>
+                <span>Registrar consumo alheio</span>
               </label>
             </div>
             
             {showCustomerForm && (
-              <div className="mt-3 space-y-2">
+              <div className="mt-3">
                 <input
                   type="text"
-                  placeholder="Digite o nome do cliente"
-                  value={customerSearch}
-                  onChange={(e) => setCustomerSearch(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded"
-                />
-                <input
-                  type="text"
-                  placeholder="Nome completo do cliente"
+                  placeholder="Nome da pessoa para quem está registrando"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
                   required={showCustomerForm}
                   className="w-full p-2 border border-gray-300 rounded"
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Registrando via {user?.first_name}
+                </p>
               </div>
             )}
           </div>

@@ -72,10 +72,18 @@ export default function GerenciarRecursos() {
   const salesList = sales ? Object.values(sales) as Sale[] : [];
   const donationsList = donations ? Object.values(donations) as Donation[] : [];
 
-  const pendingSales = salesList.filter(sale => sale.status === SaleStatus.PAID);
-  const pendingDonations = donationsList.filter(donation => donation.status === SaleStatus.PAID);
-  const confirmedSales = salesList.filter(sale => sale.status === SaleStatus.CONFIRMED);
-  const confirmedDonations = donationsList.filter(donation => donation.status === SaleStatus.CONFIRMED);
+  const pendingSales = salesList
+    .filter(sale => sale.status === SaleStatus.PAID)
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const pendingDonations = donationsList
+    .filter(donation => donation.status === SaleStatus.PAID)
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const confirmedSales = salesList
+    .filter(sale => sale.status === SaleStatus.CONFIRMED)
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const confirmedDonations = donationsList
+    .filter(donation => donation.status === SaleStatus.CONFIRMED)
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   const getStatusLabel = (status: SaleStatus) => {
     const labels = {
@@ -174,6 +182,11 @@ export default function GerenciarRecursos() {
                         <h3 className="font-medium text-gray-900">
                           {sale.productName}
                           {sale.variantName && ` (${sale.variantName})`}
+                          {sale.registeredBy && (
+                            <span className="text-sm text-blue-600 ml-2">
+                              (via {sale.registeredByName})
+                            </span>
+                          )}
                         </h3>
                         <p className="text-sm text-gray-600">
                           Cliente: {sale.userName} | Quantidade: {sale.quantity} | Total: R$ {sale.totalValue.toFixed(2)}
@@ -230,7 +243,14 @@ export default function GerenciarRecursos() {
                   <div key={donation.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
                     <div className="flex justify-between items-start mb-3">
                       <div>
-                        <h3 className="font-medium text-gray-900">Doação</h3>
+                        <h3 className="font-medium text-gray-900">
+                          Doação
+                          {donation.registeredBy && (
+                            <span className="text-sm text-blue-600 ml-2">
+                              (via {donation.registeredByName})
+                            </span>
+                          )}
+                        </h3>
                         <p className="text-sm text-gray-600">
                           Doador: {donation.userName} | Valor: R$ {donation.value.toFixed(2)}
                         </p>
@@ -302,6 +322,11 @@ export default function GerenciarRecursos() {
                         <h3 className="font-medium text-gray-900">
                           {sale.productName}
                           {sale.variantName && ` (${sale.variantName})`}
+                          {sale.registeredBy && (
+                            <span className="text-sm text-blue-600 ml-2">
+                              (via {sale.registeredByName})
+                            </span>
+                          )}
                         </h3>
                         <p className="text-sm text-gray-600">
                           Cliente: {sale.userName} | Quantidade: {sale.quantity} | Total: R$ {sale.totalValue.toFixed(2)}
@@ -329,7 +354,14 @@ export default function GerenciarRecursos() {
                   <div key={donation.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
                     <div className="flex justify-between items-start">
                       <div>
-                        <h3 className="font-medium text-gray-900">Doação</h3>
+                        <h3 className="font-medium text-gray-900">
+                          Doação
+                          {donation.registeredBy && (
+                            <span className="text-sm text-blue-600 ml-2">
+                              (via {donation.registeredByName})
+                            </span>
+                          )}
+                        </h3>
                         <p className="text-sm text-gray-600">
                           Doador: {donation.userName} | Valor: R$ {donation.value.toFixed(2)}
                         </p>
