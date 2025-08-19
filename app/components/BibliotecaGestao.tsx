@@ -52,7 +52,7 @@ export function BibliotecaGestao({ emprestimos, solicitacoes, livros, users }: B
       email: user.ameciclo_register?.email || user.library_register?.email || 'Não informado'
     };
   };
-  const [activeTab, setActiveTab] = useState<'emprestados' | 'solicitacoes'>('emprestados');
+  const [activeTab, setActiveTab] = useState<'emprestados' | 'solicitacoes' | 'cadastrar'>('emprestados');
 
   const submit = useSubmit();
 
@@ -110,6 +110,16 @@ export function BibliotecaGestao({ emprestimos, solicitacoes, livros, users }: B
           }`}
         >
           Solicitações Pendentes ({solicitacoes.length})
+        </button>
+        <button
+          onClick={() => setActiveTab('cadastrar')}
+          className={`px-4 py-2 font-semibold ml-4 ${
+            activeTab === 'cadastrar' 
+              ? 'text-teal-600 border-b-2 border-teal-600' 
+              : 'text-gray-500'
+          }`}
+        >
+          Cadastrar Livro
         </button>
       </div>
 
@@ -185,6 +195,128 @@ export function BibliotecaGestao({ emprestimos, solicitacoes, livros, users }: B
               );
             })
           )}
+        </div>
+      )}
+
+      {activeTab === 'cadastrar' && (
+        <div className="max-w-md mx-auto">
+          <Form method="post" className="space-y-4">
+            <input type="hidden" name="action" value="cadastrar_livro" />
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Título *
+              </label>
+              <input
+                type="text"
+                name="titulo"
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                placeholder="Ex: Dom Casmurro"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Autor *
+              </label>
+              <input
+                type="text"
+                name="autor"
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                placeholder="Ex: Machado de Assis"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Código/Registro *
+              </label>
+              <input
+                type="text"
+                name="codigo"
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                placeholder="Ex: LIT001"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Ano
+              </label>
+              <input
+                type="number"
+                name="ano"
+                min="1000"
+                max="2030"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                placeholder="Ex: 2020"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Tipo *
+              </label>
+              <select
+                name="tipo"
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              >
+                <option value="">Selecione o tipo</option>
+                <option value="Livro">Livro</option>
+                <option value="Revista">Revista</option>
+                <option value="Artigo">Artigo</option>
+                <option value="Manual">Manual</option>
+                <option value="Relatório">Relatório</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                ISBN
+              </label>
+              <input
+                type="text"
+                name="isbn"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                placeholder="Ex: 978-85-123-4567-8"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Resumo
+              </label>
+              <textarea
+                name="resumo"
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                placeholder="Breve descrição do livro..."
+              />
+            </div>
+
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                name="consulta_local"
+                id="consulta_local"
+                className="mr-2"
+              />
+              <label htmlFor="consulta_local" className="text-sm text-gray-700">
+                Disponível apenas para consulta local
+              </label>
+            </div>
+
+            <button
+              type="submit"
+              className="w-full bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700"
+            >
+              Cadastrar Livro
+            </button>
+          </Form>
         </div>
       )}
     </div>
