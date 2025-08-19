@@ -34,6 +34,12 @@ const links = [
     requiredPermission: UserCategory.ANY_USER,
   },
   {
+    to: "/bota-pra-rodar",
+    label: "Bota pra Rodar",
+    icon: "🚴♀️",
+    requiredPermission: UserCategory.ANY_USER,
+  },
+  {
     to: "/recursos-independentes",
     label: "Controle de Recursos Independentes",
     icon: "🏪",

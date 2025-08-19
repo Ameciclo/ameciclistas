@@ -330,6 +330,8 @@ export interface Sale {
   paidAt?: string;
   confirmedAt?: string;
   paymentProof?: string;
+  registeredBy?: number; // ID do coordenador que registrou
+  registeredByName?: string; // Nome do coordenador que registrou
 }
 
 export enum SaleStatus {
@@ -350,4 +352,34 @@ export interface Donation {
   paidAt?: string;
   confirmedAt?: string;
   paymentProof?: string;
+  registeredBy?: number; // ID do coordenador que registrou
+  registeredByName?: string; // Nome do coordenador que registrou
+}
+
+// Bota pra Rodar types
+export interface Bicicleta {
+  codigo: string;
+  nome: string;
+  tipo: string;
+  disponivel: boolean;
+  emprestada?: boolean;
+  descricao?: string;
+  imagem?: string;
+}
+
+export interface EmprestimoBicicleta {
+  id: string;
+  usuario_id: number;
+  codigo_bicicleta: string;
+  data_saida: string;
+  data_devolucao?: string;
+  status: 'emprestado' | 'devolvido' | 'solicitado';
+}
+
+export interface SolicitacaoEmprestimoBicicleta {
+  id: string;
+  usuario_id: number;
+  codigo_bicicleta: string;
+  data_solicitacao: string;
+  status: 'pendente' | 'aprovada' | 'rejeitada';
 }

@@ -516,3 +516,161 @@ export async function updateProductStock(productId, stockChange, variantId = nul
     }
   });
 }
+
+// Funções para o sistema Bota pra Rodar
+export async function getBicicletas() {
+  const ref = db.ref("bicicletas");
+  const snapshot = await ref.once("value");
+  return snapshot.val();
+}
+
+export async function getEmprestimosBicicletas() {
+  const ref = db.ref("emprestimos_bicicletas");
+  const snapshot = await ref.once("value");
+  return snapshot.val();
+}
+
+export async function getSolicitacoesBicicletas() {
+  const ref = db.ref("solicitacoes_bicicletas");
+  const snapshot = await ref.once("value");
+  return snapshot.val();
+}
+
+export async function cadastrarBicicleta(dadosBicicleta) {
+  return new Promise((resolve, reject) => {
+    const ref = db.ref("bicicletas");
+    const key = dadosBicicleta.codigo;
+
+    if (!key) {
+      return reject(new Error("Código da bicicleta é obrigatório."));
+    }
+
+    ref
+      .child(key)
+      .update(dadosBicicleta)
+      .then((snapshot) => {
+        resolve(snapshot);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export async function solicitarEmprestimoBicicleta(userId, codigoBicicleta) {
+  return new Promise((resolve, reject) => {
+    const ref = db.ref("solicitacoes_bicicletas");
+    const key = ref.push().key;
+
+    if (!key) {
+      return reject(new Error("Falha ao gerar chave para a solicitação."));
+    }
+
+    const solicitacao = {
+      id: key,
+      usuario_id: userId,
+      codigo_bicicleta: codigoBicicleta,
+      data_solicitacao: new Date().toISOString().split('T')[0],
+      status: 'pendente'
+    };
+
+    ref
+      .child(key)
+      .update(solicitacao)
+      .then((snapshot) => {
+        resolve(snapshot);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export async function aprovarSolicitacaoBicicleta(solicitacaoId, userId, codigoBicicleta, direto = false) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (!direto) {
+        // Buscar dados da solicitação
+        const solicitacaoRef = db.ref(`solicitacoes_bicicletas/${solicitacaoId}`);
+        const solicitacaoSnapshot = await solicitacaoRef.once("value");
+        const solicitacao = solicitacaoSnapshot.val();
+        
+        if (!solicitacao) {
+          return reject(new Error("Solicitação não encontrada."));
+        }
+        
+        userId = solicitacao.usuario_id;
+        codigoBicicleta = solicitacao.codigo_bicicleta;
+        
+        // Atualizar status da solicitação
+        await solicitacaoRef.update({ status: 'aprovada' });
+      }
+      
+      // Criar empréstimo
+      const emprestimoRef = db.ref("emprestimos_bicicletas");
+      const emprestimoKey = emprestimoRef.push().key;
+      
+      const emprestimo = {
+        id: emprestimoKey,
+        usuario_id: userId,
+        codigo_bicicleta: codigoBicicleta,
+        data_saida: new Date().toISOString().split('T')[0],
+        status: 'emprestado'
+      };
+      
+      await emprestimoRef.child(emprestimoKey).update(emprestimo);
+      
+      // Atualizar disponibilidade da bicicleta
+      const bicicletaRef = db.ref(`bicicletas/${codigoBicicleta}`);
+      await bicicletaRef.update({ disponivel: false, emprestada: true });
+      
+      resolve(true);
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+
+export async function rejeitarSolicitacaoBicicleta(solicitacaoId) {
+  return new Promise((resolve, reject) => {
+    const ref = db.ref(`solicitacoes_bicicletas/${solicitacaoId}`);
+    
+    ref
+      .update({ status: 'rejeitada' })
+      .then((snapshot) => {
+        resolve(snapshot);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export async function registrarDevolucaoBicicleta(emprestimoId) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // Buscar dados do empréstimo
+      const emprestimoRef = db.ref(`emprestimos_bicicletas/${emprestimoId}`);
+      const emprestimoSnapshot = await emprestimoRef.once("value");
+      const emprestimo = emprestimoSnapshot.val();
+      
+      if (!emprestimo) {
+        return reject(new Error("Empréstimo não encontrado."));
+      }
+      
+      // Atualizar status do empréstimo
+      await emprestimoRef.update({ 
+        status: 'devolvido',
+        data_devolucao: new Date().toISOString().split('T')[0]
+      });
+      
+      // Atualizar disponibilidade da bicicleta
+      const bicicletaRef = db.ref(`bicicletas/${emprestimo.codigo_bicicleta}`);
+      await bicicletaRef.update({ disponivel: true, emprestada: false });
+      
+      resolve(true);
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
