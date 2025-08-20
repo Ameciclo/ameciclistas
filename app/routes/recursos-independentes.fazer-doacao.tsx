@@ -17,6 +17,9 @@ export const action: ActionFunction = async ({ request }) => {
   
   try {
     const description = formData.get("description") as string;
+    const isForOther = formData.get("isForOther") === "true";
+    const registeredById = formData.get("registeredById") as string;
+    const registeredByName = formData.get("registeredByName") as string;
     
     const donationData = {
       userId: parseInt(formData.get("userId") as string),
@@ -29,6 +32,12 @@ export const action: ActionFunction = async ({ request }) => {
     // Apenas adicionar description se tiver valor válido
     if (description && description.trim() !== "") {
       donationData.description = description.trim();
+    }
+    
+    // Adicionar dados do registrador se for para outra pessoa
+    if (isForOther && registeredById && registeredByName) {
+      donationData.registeredBy = parseInt(registeredById);
+      donationData.registeredByName = registeredByName;
     }
 
     await saveDonation(donationData);
@@ -111,12 +120,15 @@ export default function FazerDoacao() {
         )}
 
         <Form method="post" className="space-y-4">
-          <input type="hidden" name="userId" value={user?.id || ""} />
+          <input type="hidden" name="userId" value={showCustomerForm ? "0" : (user?.id || "")} />
           <input type="hidden" name="userName" value={showCustomerForm ? customerName : (user?.first_name || "")} />
+          <input type="hidden" name="isForOther" value={showCustomerForm.toString()} />
+          <input type="hidden" name="registeredById" value={showCustomerForm ? (user?.id || "") : ""} />
+          <input type="hidden" name="registeredByName" value={showCustomerForm ? (user?.first_name || "") : ""} />
           
           {isCoordinator && (
             <div className="bg-blue-50 p-4 rounded-lg">
-              <h3 className="font-medium text-gray-900 mb-3">Registrar doação para:</h3>
+              <h3 className="font-medium text-gray-900 mb-3">Registrar doação:</h3>
               <div className="space-y-3">
                 <label className="flex items-center space-x-3">
                   <input
@@ -126,7 +138,7 @@ export default function FazerDoacao() {
                     onChange={() => setShowCustomerForm(false)}
                     className="text-teal-600"
                   />
-                  <span>Para mim</span>
+                  <span>Registrar doação própria</span>
                 </label>
                 <label className="flex items-center space-x-3">
                   <input
@@ -136,7 +148,7 @@ export default function FazerDoacao() {
                     onChange={() => setShowCustomerForm(true)}
                     className="text-teal-600"
                   />
-                  <span>Para outra pessoa</span>
+                  <span>Registrar doação alheia</span>
                 </label>
               </div>
               
@@ -144,12 +156,15 @@ export default function FazerDoacao() {
                 <div className="mt-3">
                   <input
                     type="text"
-                    placeholder="Nome completo do doador"
+                    placeholder="Nome da pessoa que está doando"
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
                     required={showCustomerForm}
                     className="w-full p-2 border border-gray-300 rounded"
                   />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Registrando via {user?.first_name}
+                  </p>
                 </div>
               )}
             </div>

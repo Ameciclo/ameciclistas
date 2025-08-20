@@ -101,6 +101,30 @@ export async function bibliotecaAction({ request }: ActionFunctionArgs) {
       }
     }
     
+    if (action === "cadastrar_livro") {
+      try {
+        const dadosLivro = {
+          title: formData.get("titulo") as string,
+          author: formData.get("autor") as string,
+          register: formData.get("codigo") as string,
+          year: formData.get("ano") ? parseInt(formData.get("ano") as string) : null,
+          type: formData.get("tipo") as string,
+          isbn: formData.get("isbn") as string || null,
+          resumo: formData.get("resumo") as string || null,
+          consulta_local: formData.get("consulta_local") === "on",
+          created_at: new Date().toISOString()
+        };
+        
+        const livroRef = db.ref("library");
+        await livroRef.push(dadosLivro);
+        
+        return json({ success: true, message: "Livro cadastrado com sucesso!" });
+      } catch (error) {
+        console.error("Erro ao cadastrar livro:", error);
+        return json({ success: false, error: "Erro ao cadastrar livro" });
+      }
+    }
+    
 
     
     return json({ success: false, error: "Ação não reconhecida" });
