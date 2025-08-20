@@ -81,7 +81,6 @@ export default function SolicitarEmprestimoBicicleta() {
     }
   });
   const [solicitarParaOutraPessoa, setSolicitarParaOutraPessoa] = useState(false);
-  const submit = useSubmit();
 
   useEffect(() => {
     try {
@@ -113,16 +112,7 @@ export default function SolicitarEmprestimoBicicleta() {
     // Não sobrescrever em desenvolvimento - manter valores iniciais
   }, [user, users]);
 
-  const handleSubmit = () => {
-    if (!user) {
-      alert("Você precisa estar logado para solicitar empréstimo");
-      return;
-    }
 
-    const formData = new FormData();
-    formData.append("codigo", bicicleta.codigo);
-    submit(formData, { method: "post" });
-  };
 
   const getUserData = () => {
     if (!userInfo) return null;
@@ -272,37 +262,40 @@ export default function SolicitarEmprestimoBicicleta() {
 
           {/* Botão de Confirmação */}
           <div className="text-center">
-            {isCoordinator ? (
-              <div className="mb-4">
-                <div className="bg-green-50 p-3 rounded-lg mb-4">
-                  <p className="text-green-700 text-sm">
-                    ✅ Como coordenador de projeto, sua solicitação será aprovada automaticamente.
-                  </p>
+            <Form method="post">
+              <input type="hidden" name="codigo" value={bicicleta.codigo} />
+              {isCoordinator ? (
+                <div className="mb-4">
+                  <div className="bg-green-50 p-3 rounded-lg mb-4">
+                    <p className="text-green-700 text-sm">
+                      ✅ Como coordenador de projeto, sua solicitação será aprovada automaticamente.
+                    </p>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={solicitarParaOutraPessoa}
+                    className="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 transition-colors text-lg font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  >
+                    Confirmar Empréstimo
+                  </button>
                 </div>
-                <button
-                  onClick={handleSubmit}
-                  disabled={solicitarParaOutraPessoa}
-                  className="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 transition-colors text-lg font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed"
-                >
-                  Confirmar Empréstimo
-                </button>
-              </div>
-            ) : (
-              <div className="mb-4">
-                <div className="bg-yellow-50 p-3 rounded-lg mb-4">
-                  <p className="text-yellow-700 text-sm">
-                    ⏳ Sua solicitação será enviada para aprovação da coordenação.
-                  </p>
+              ) : (
+                <div className="mb-4">
+                  <div className="bg-yellow-50 p-3 rounded-lg mb-4">
+                    <p className="text-yellow-700 text-sm">
+                      ⏳ Sua solicitação será enviada para aprovação da coordenação.
+                    </p>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={solicitarParaOutraPessoa}
+                    className="bg-teal-600 text-white px-8 py-3 rounded-lg hover:bg-teal-700 transition-colors text-lg font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  >
+                    Solicitar Empréstimo
+                  </button>
                 </div>
-                <button
-                  onClick={handleSubmit}
-                  disabled={solicitarParaOutraPessoa}
-                  className="bg-teal-600 text-white px-8 py-3 rounded-lg hover:bg-teal-700 transition-colors text-lg font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed"
-                >
-                  Solicitar Empréstimo
-                </button>
-              </div>
-            )}
+              )}
+            </Form>
           </div>
         </div>
       </div>
