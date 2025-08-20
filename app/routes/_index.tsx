@@ -36,7 +36,7 @@ const links = [
   {
     to: "/bota-pra-rodar",
     label: "Bota pra Rodar",
-    icon: "🚴♀️",
+    icon: "🚴",
     requiredPermission: UserCategory.ANY_USER,
   },
   {

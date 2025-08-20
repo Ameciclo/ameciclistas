@@ -218,6 +218,7 @@ export function BotaPraRodarGestao({ emprestimos, solicitacoes, bicicletas, user
               >
                 <option value="">Selecione o tipo</option>
                 <option value="Urbana">Urbana</option>
+                <option value="Cargueira">Cargueira</option>
                 <option value="Mountain Bike">Mountain Bike</option>
                 <option value="Speed">Speed</option>
                 <option value="Híbrida">Híbrida</option>
@@ -225,7 +226,7 @@ export function BotaPraRodarGestao({ emprestimos, solicitacoes, bicicletas, user
               </select>
             </div>
 
-
+            <input type="hidden" name="categoria" value="bicicleta" />
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">

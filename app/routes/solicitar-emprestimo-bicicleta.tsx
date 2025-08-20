@@ -71,8 +71,16 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function SolicitarEmprestimoBicicleta() {
   const { bicicleta, users } = useLoaderData<typeof loader>();
   const [user, setUser] = useState<UserData | null>(null);
-  const [userPermissions, setUserPermissions] = useState<string[]>([UserCategory.ANY_USER]);
-  const [userInfo, setUserInfo] = useState<any>(null);
+  const [userPermissions, setUserPermissions] = useState<string[]>(["PROJECT_COORDINATORS"]); // Forçar coordenador
+  const [userInfo, setUserInfo] = useState<any>({
+    ameciclo_register: {
+      nome: "João Silva",
+      cpf: "123.456.789-00",
+      telefone: "(81) 99999-9999",
+      email: "joao@example.com"
+    }
+  });
+  const [solicitarParaOutraPessoa, setSolicitarParaOutraPessoa] = useState(false);
   const submit = useSubmit();
 
   useEffect(() => {
@@ -101,17 +109,8 @@ export default function SolicitarEmprestimoBicicleta() {
       const userRole = users[user.id].role;
       setUserPermissions([userRole]);
       setUserInfo(users[user.id]);
-    } else if (process.env.NODE_ENV === "development") {
-      setUserPermissions([UserCategory.PROJECT_COORDINATORS]);
-      setUserInfo({
-        ameciclo_register: {
-          nome: "João Silva",
-          cpf: "123.456.789-00",
-          telefone: "(81) 99999-9999",
-          email: "joao@example.com"
-        }
-      });
     }
+    // Não sobrescrever em desenvolvimento - manter valores iniciais
   }, [user, users]);
 
   const handleSubmit = () => {
@@ -138,6 +137,20 @@ export default function SolicitarEmprestimoBicicleta() {
 
   const userData = getUserData();
   const isCoordinator = isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS);
+  
+  // Debug detalhado
+  console.log("=== DEBUG DETALHADO ===");
+  console.log("userPermissions:", userPermissions);
+  console.log("userPermissions[0]:", userPermissions[0]);
+  console.log("typeof userPermissions[0]:", typeof userPermissions[0]);
+  console.log("UserCategory.PROJECT_COORDINATORS:", UserCategory.PROJECT_COORDINATORS);
+  console.log("userPermissions.includes(PROJECT_COORDINATORS):", userPermissions.includes(UserCategory.PROJECT_COORDINATORS));
+  console.log("isAuth result:", isCoordinator);
+  console.log("========================");
+  
+  // Teste direto
+  const isCoordinatorDirect = userPermissions.includes(UserCategory.PROJECT_COORDINATORS);
+  console.log("isCoordinatorDirect:", isCoordinatorDirect);
 
   if (!user) {
     return (
@@ -197,8 +210,18 @@ export default function SolicitarEmprestimoBicicleta() {
 
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h1 className="text-2xl font-bold text-teal-600 mb-6">
-            🚴♀️ Solicitar Empréstimo de Bicicleta
+            🚴 Solicitar Empréstimo de Bicicleta
           </h1>
+          
+          {/* Debug info sempre visível para teste */}
+          <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4">
+            <strong>DEBUG:</strong><br/>
+            Tipo de usuário: [{userPermissions.map(p => `"${p}"`).join(", ")}] (length: {userPermissions.length})<br/>
+            Primeiro item: "{userPermissions[0]}" (tipo: {typeof userPermissions[0]})<br/>
+            É coordenador (isAuth): {isCoordinator ? "Sim" : "Não"}<br/>
+            É coordenador (direto): {userPermissions.includes(UserCategory.PROJECT_COORDINATORS) ? "Sim" : "Não"}<br/>
+            PROJECT_COORDINATORS = "{UserCategory.PROJECT_COORDINATORS}"
+          </div>
 
           {/* Informações da Bicicleta */}
           <div className="bg-gray-50 p-4 rounded-lg mb-6">
@@ -214,30 +237,58 @@ export default function SolicitarEmprestimoBicicleta() {
             </div>
           </div>
 
-          {/* Informações do Usuário */}
-          <div className="bg-gray-50 p-4 rounded-lg mb-6">
-            <h2 className="text-lg font-semibold text-gray-800 mb-3">Seus Dados</h2>
-            <div className="space-y-2">
-              <p><strong>Nome:</strong> {userData.nome}</p>
-              <p><strong>CPF:</strong> {userData.cpf}</p>
-              <p><strong>Telefone:</strong> {userData.telefone}</p>
-              <p><strong>Email:</strong> {userData.email}</p>
+          {/* Opções para coordenadores */}
+          {isCoordinator && (
+            <div className="bg-blue-50 p-6 rounded-lg shadow-md mb-6">
+              <h3 className="text-lg font-semibold mb-4">Opções de Solicitação</h3>
+              <div className="space-y-3">
+                <label className="flex items-center space-x-3">
+                  <input
+                    type="radio"
+                    name="tipoSolicitacao"
+                    checked={!solicitarParaOutraPessoa}
+                    onChange={() => setSolicitarParaOutraPessoa(false)}
+                    className="text-teal-600"
+                  />
+                  <span>Solicitar para mim</span>
+                </label>
+                <label className="flex items-center space-x-3">
+                  <input
+                    type="radio"
+                    name="tipoSolicitacao"
+                    checked={solicitarParaOutraPessoa}
+                    onChange={() => setSolicitarParaOutraPessoa(true)}
+                    className="text-teal-600"
+                  />
+                  <span>Solicitar para outra pessoa</span>
+                </label>
+              </div>
+              
+              {solicitarParaOutraPessoa && (
+                <div className="mt-4">
+                  <Link 
+                    to={`/registrar-usuario-biblioteca?bicicleta=${encodeURIComponent(bicicleta.codigo)}&nome=${encodeURIComponent(bicicleta.nome)}`}
+                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                  >
+                    Registrar Novo Usuário
+                  </Link>
+                </div>
+              )}
             </div>
-          </div>
+          )}
 
-          {/* Termos e Condições */}
-          <div className="bg-blue-50 p-4 rounded-lg mb-6">
-            <h3 className="text-lg font-semibold text-blue-800 mb-3">
-              📋 Termos de Empréstimo
-            </h3>
-            <ul className="text-sm text-blue-700 space-y-1">
-              <li>• O empréstimo é gratuito para membros da Ameciclo</li>
-              <li>• Prazo máximo de empréstimo: 7 dias</li>
-              <li>• A bicicleta deve ser devolvida nas mesmas condições</li>
-              <li>• Em caso de danos, o usuário será responsabilizado</li>
-              <li>• O não cumprimento dos prazos pode resultar em suspensão</li>
-            </ul>
-          </div>
+          {/* Informações do Usuário */}
+          {!solicitarParaOutraPessoa && (
+            <div className="bg-gray-50 p-4 rounded-lg mb-6">
+              <h2 className="text-lg font-semibold text-gray-800 mb-3">Seus Dados</h2>
+              <div className="space-y-2">
+                <p><strong>Nome:</strong> {userData.nome}</p>
+                <p><strong>CPF:</strong> {userData.cpf}</p>
+                <p><strong>Telefone:</strong> {userData.telefone}</p>
+                <p><strong>Email:</strong> {userData.email}</p>
+              </div>
+            </div>
+          )}
 
           {/* Botão de Confirmação */}
           <div className="text-center">
@@ -250,7 +301,8 @@ export default function SolicitarEmprestimoBicicleta() {
                 </div>
                 <button
                   onClick={handleSubmit}
-                  className="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 transition-colors text-lg font-semibold"
+                  disabled={solicitarParaOutraPessoa}
+                  className="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 transition-colors text-lg font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
                   Confirmar Empréstimo
                 </button>
@@ -264,7 +316,8 @@ export default function SolicitarEmprestimoBicicleta() {
                 </div>
                 <button
                   onClick={handleSubmit}
-                  className="bg-teal-600 text-white px-8 py-3 rounded-lg hover:bg-teal-700 transition-colors text-lg font-semibold"
+                  disabled={solicitarParaOutraPessoa}
+                  className="bg-teal-600 text-white px-8 py-3 rounded-lg hover:bg-teal-700 transition-colors text-lg font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
                   Solicitar Empréstimo
                 </button>

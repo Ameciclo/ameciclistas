@@ -31,7 +31,7 @@ export function PaginacaoBicicletas({ bicicletas, onSolicitar, userCanRequest, u
         Mostrando {bicicletasPagina.length} de {bicicletas.length} bicicletas
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 gap-6 mb-8">
         {bicicletasPagina.map((bicicleta) => (
           <div key={bicicleta.codigo} className="bg-white rounded-lg shadow-md p-6 border">
             <div className="mb-4">

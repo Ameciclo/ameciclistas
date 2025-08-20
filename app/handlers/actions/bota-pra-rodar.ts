@@ -82,6 +82,7 @@ export async function botaPraRodarAction({ request }: ActionFunctionArgs) {
           codigo: formData.get("codigo") as string,
           nome: formData.get("nome") as string,
           tipo: formData.get("tipo") as string,
+          categoria: formData.get("categoria") as string || "bicicleta",
           descricao: formData.get("descricao") as string || "",
           disponivel: true
         };

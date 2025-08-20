@@ -67,15 +67,28 @@ export async function action({ request }: ActionFunctionArgs) {
         }
       });
       
-      // Criar solicitação de empréstimo
-      const solicitacaoRef = db.ref("biblioteca_solicitacoes");
-      await solicitacaoRef.push({
-        usuario_id: userId,
-        subcodigo,
-        data_solicitacao: new Date().toISOString().split('T')[0],
-        status: 'pendente',
-        created_at: new Date().toISOString()
-      });
+      // Criar solicitação de empréstimo (livro ou bicicleta)
+      const isBicicleta = !!formData.get("bicicleta");
+      
+      if (isBicicleta) {
+        const solicitacaoRef = db.ref("solicitacoes_bicicletas");
+        await solicitacaoRef.push({
+          usuario_id: userId,
+          codigo_bicicleta: formData.get("bicicleta") as string,
+          data_solicitacao: new Date().toISOString().split('T')[0],
+          status: 'pendente',
+          created_at: new Date().toISOString()
+        });
+      } else {
+        const solicitacaoRef = db.ref("biblioteca_solicitacoes");
+        await solicitacaoRef.push({
+          usuario_id: userId,
+          subcodigo,
+          data_solicitacao: new Date().toISOString().split('T')[0],
+          status: 'pendente',
+          created_at: new Date().toISOString()
+        });
+      }
       
       return json({ 
         success: true, 
@@ -90,16 +103,28 @@ export async function action({ request }: ActionFunctionArgs) {
   if (action === "solicitar_existente") {
     const userId = formData.get("userId") as string;
     const subcodigo = formData.get("subcodigo") as string;
+    const isBicicleta = !!formData.get("bicicleta");
     
     try {
-      const solicitacaoRef = db.ref("biblioteca_solicitacoes");
-      await solicitacaoRef.push({
-        usuario_id: userId,
-        subcodigo,
-        data_solicitacao: new Date().toISOString().split('T')[0],
-        status: 'pendente',
-        created_at: new Date().toISOString()
-      });
+      if (isBicicleta) {
+        const solicitacaoRef = db.ref("solicitacoes_bicicletas");
+        await solicitacaoRef.push({
+          usuario_id: userId,
+          codigo_bicicleta: formData.get("bicicleta") as string,
+          data_solicitacao: new Date().toISOString().split('T')[0],
+          status: 'pendente',
+          created_at: new Date().toISOString()
+        });
+      } else {
+        const solicitacaoRef = db.ref("biblioteca_solicitacoes");
+        await solicitacaoRef.push({
+          usuario_id: userId,
+          subcodigo,
+          data_solicitacao: new Date().toISOString().split('T')[0],
+          status: 'pendente',
+          created_at: new Date().toISOString()
+        });
+      }
       
       return json({ 
         success: true, 
@@ -127,6 +152,12 @@ export default function RegistrarUsuarioBiblioteca() {
 
   const livroTitulo = searchParams.get("livro") || "";
   const codigo = searchParams.get("codigo") || "";
+  const bicicletaCodigo = searchParams.get("bicicleta") || "";
+  const bicicletaNome = searchParams.get("nome") || "";
+  
+  const isBicicleta = !!bicicletaCodigo;
+  const itemTitulo = isBicicleta ? bicicletaNome : livroTitulo;
+  const itemCodigo = isBicicleta ? bicicletaCodigo : codigo;
 
   useEffect(() => {
     if (actionData?.user) {
@@ -157,8 +188,8 @@ export default function RegistrarUsuarioBiblioteca() {
         <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
           {actionData.message}
         </div>
-        <Link to="/biblioteca" className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700">
-          Voltar à Biblioteca
+        <Link to={isBicicleta ? "/bota-pra-rodar" : "/biblioteca"} className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700">
+          Voltar {isBicicleta ? "ao Bota pra Rodar" : "à Biblioteca"}
         </Link>
       </div>
     );
@@ -169,8 +200,9 @@ export default function RegistrarUsuarioBiblioteca() {
       <h1 className="text-3xl font-bold text-teal-600 mb-6">Registrar Usuário da Biblioteca</h1>
       
       <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-        <h2 className="text-xl font-semibold mb-4">Livro Selecionado</h2>
-        <p className="text-lg text-gray-800">{livroTitulo}</p>
+        <h2 className="text-xl font-semibold mb-4">{isBicicleta ? "Bicicleta Selecionada" : "Livro Selecionado"}</h2>
+        <p className="text-lg text-gray-800">{itemTitulo}</p>
+        {isBicicleta && <p className="text-sm text-gray-600">Código: {itemCodigo}</p>}
       </div>
 
       {/* Busca por CPF */}
@@ -227,6 +259,7 @@ export default function RegistrarUsuarioBiblioteca() {
             <input type="hidden" name="action" value="solicitar_existente" />
             <input type="hidden" name="userId" value={usuarioEncontrado.id} />
             <input type="hidden" name="subcodigo" value={codigo} />
+            {isBicicleta && <input type="hidden" name="bicicleta" value={bicicletaCodigo} />}
             
             <div className="flex gap-4">
               <button
@@ -260,6 +293,7 @@ export default function RegistrarUsuarioBiblioteca() {
             <input type="hidden" name="action" value="criar_usuario" />
             <input type="hidden" name="cpf" value={cpf} />
             <input type="hidden" name="subcodigo" value={codigo} />
+            {isBicicleta && <input type="hidden" name="bicicleta" value={bicicletaCodigo} />}
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">CPF</label>
@@ -339,10 +373,10 @@ export default function RegistrarUsuarioBiblioteca() {
 
       <div className="flex gap-4">
         <Link
-          to="/biblioteca"
+          to={isBicicleta ? "/bota-pra-rodar" : "/biblioteca"}
           className="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600"
         >
-          Voltar à Biblioteca
+          Voltar {isBicicleta ? "ao Bota pra Rodar" : "à Biblioteca"}
         </Link>
       </div>
     </div>

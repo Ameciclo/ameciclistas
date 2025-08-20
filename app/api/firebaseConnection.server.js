@@ -547,7 +547,7 @@ export async function cadastrarBicicleta(dadosBicicleta) {
 
     ref
       .child(key)
-      .update(dadosBicicleta)
+      .set(dadosBicicleta)
       .then((snapshot) => {
         resolve(snapshot);
       })
