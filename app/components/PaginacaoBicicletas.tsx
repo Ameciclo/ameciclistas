@@ -55,25 +55,13 @@ export function PaginacaoBicicletas({ bicicletas, onSolicitar, userCanRequest, u
                     <span className="inline-block w-3 h-3 bg-green-500 rounded-full mr-2"></span>
                     <span className="text-green-600 font-semibold">Disponível</span>
                   </div>
-                  {userCanRequest ? (
+                  {userCanRequest && (
                     <Link
                       to={`/solicitar-emprestimo-bicicleta?codigo=${bicicleta.codigo}`}
                       className="w-full bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700 transition-colors block text-center no-underline"
                     >
                       Solicitar Empréstimo
                     </Link>
-                  ) : (
-                    <div className="text-center">
-                      <p className="text-sm text-gray-600 mb-2">
-                        Para solicitar empréstimo, você precisa estar cadastrado
-                      </p>
-                      <Link
-                        to="/registrar-usuario-biblioteca"
-                        className="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors text-sm"
-                      >
-                        Fazer Cadastro
-                      </Link>
-                    </div>
                   )}
                 </div>
               ) : (
