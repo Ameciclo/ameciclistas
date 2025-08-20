@@ -138,19 +138,7 @@ export default function SolicitarEmprestimoBicicleta() {
   const userData = getUserData();
   const isCoordinator = isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS);
   
-  // Debug detalhado
-  console.log("=== DEBUG DETALHADO ===");
-  console.log("userPermissions:", userPermissions);
-  console.log("userPermissions[0]:", userPermissions[0]);
-  console.log("typeof userPermissions[0]:", typeof userPermissions[0]);
-  console.log("UserCategory.PROJECT_COORDINATORS:", UserCategory.PROJECT_COORDINATORS);
-  console.log("userPermissions.includes(PROJECT_COORDINATORS):", userPermissions.includes(UserCategory.PROJECT_COORDINATORS));
-  console.log("isAuth result:", isCoordinator);
-  console.log("========================");
-  
-  // Teste direto
-  const isCoordinatorDirect = userPermissions.includes(UserCategory.PROJECT_COORDINATORS);
-  console.log("isCoordinatorDirect:", isCoordinatorDirect);
+
 
   if (!user) {
     return (
@@ -213,15 +201,7 @@ export default function SolicitarEmprestimoBicicleta() {
             🚴 Solicitar Empréstimo de Bicicleta
           </h1>
           
-          {/* Debug info sempre visível para teste */}
-          <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4">
-            <strong>DEBUG:</strong><br/>
-            Tipo de usuário: [{userPermissions.map(p => `"${p}"`).join(", ")}] (length: {userPermissions.length})<br/>
-            Primeiro item: "{userPermissions[0]}" (tipo: {typeof userPermissions[0]})<br/>
-            É coordenador (isAuth): {isCoordinator ? "Sim" : "Não"}<br/>
-            É coordenador (direto): {userPermissions.includes(UserCategory.PROJECT_COORDINATORS) ? "Sim" : "Não"}<br/>
-            PROJECT_COORDINATORS = "{UserCategory.PROJECT_COORDINATORS}"
-          </div>
+
 
           {/* Informações da Bicicleta */}
           <div className="bg-gray-50 p-4 rounded-lg mb-6">
