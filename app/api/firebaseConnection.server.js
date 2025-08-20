@@ -674,3 +674,111 @@ export async function registrarDevolucaoBicicleta(emprestimoId) {
     }
   });
 }
+
+// Funções para gerenciar usuários
+export async function getUserById(userId) {
+  const ref = db.ref(`subscribers/${userId}`);
+  const snapshot = await ref.once("value");
+  return snapshot.val();
+}
+
+export async function updateUserAmecicloRegister(userId, amecicloData) {
+  return new Promise((resolve, reject) => {
+    const ref = db.ref(`subscribers/${userId}`);
+    
+    ref.update({
+      ameciclo_register: {
+        ...amecicloData,
+        created_at: new Date().toISOString()
+      }
+    })
+    .then((snapshot) => {
+      resolve(snapshot);
+    })
+    .catch((err) => {
+      reject(err);
+    });
+  });
+}
+
+export async function createUserWithAmecicloRegister(userId, userData) {
+  return new Promise((resolve, reject) => {
+    const ref = db.ref(`subscribers/${userId}`);
+    
+    ref.set({
+      id: userId,
+      name: userData.nome,
+      role: "ANY_USER",
+      ameciclo_register: {
+        ...userData,
+        created_at: new Date().toISOString()
+      }
+    })
+    .then((snapshot) => {
+      resolve(snapshot);
+    })
+    .catch((err) => {
+      reject(err);
+    });
+  });
+}
+
+export async function criarSolicitacaoBiblioteca(userId, subcodigo) {
+  return new Promise((resolve, reject) => {
+    const ref = db.ref("biblioteca_solicitacoes");
+    const key = ref.push().key;
+
+    if (!key) {
+      return reject(new Error("Falha ao gerar chave para a solicitação."));
+    }
+
+    const solicitacao = {
+      id: key,
+      usuario_id: userId,
+      subcodigo,
+      data_solicitacao: new Date().toISOString().split('T')[0],
+      status: 'pendente',
+      created_at: new Date().toISOString()
+    };
+
+    ref
+      .child(key)
+      .update(solicitacao)
+      .then((snapshot) => {
+        resolve(snapshot);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export async function criarSolicitacaoBicicleta(userId, codigoBicicleta) {
+  return new Promise((resolve, reject) => {
+    const ref = db.ref("solicitacoes_bicicletas");
+    const key = ref.push().key;
+
+    if (!key) {
+      return reject(new Error("Falha ao gerar chave para a solicitação."));
+    }
+
+    const solicitacao = {
+      id: key,
+      usuario_id: userId,
+      codigo_bicicleta: codigoBicicleta,
+      data_solicitacao: new Date().toISOString().split('T')[0],
+      status: 'pendente',
+      created_at: new Date().toISOString()
+    };
+
+    ref
+      .child(key)
+      .update(solicitacao)
+      .then((snapshot) => {
+        resolve(snapshot);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
