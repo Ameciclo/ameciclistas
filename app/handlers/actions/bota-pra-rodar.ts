@@ -14,6 +14,11 @@ import { isAuth } from "~/utils/isAuthorized";
 export async function botaPraRodarAction({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const action = formData.get("action") as string;
+  
+  console.log("=== BOTA PRA RODAR ACTION ===");
+  console.log("Action:", action);
+  console.log("FormData:", Object.fromEntries(formData));
+  console.log("==============================");
 
   try {
     const users = await getUsersFirebase();
@@ -35,7 +40,7 @@ export async function botaPraRodarAction({ request }: ActionFunctionArgs) {
           throw new Error("Usuário não identificado");
         }
         
-        const codigoBicicleta = formData.get("codigo_bicicleta") as string;
+        const codigoBicicleta = formData.get("codigo") as string;
         
         // Se é coordenador de projeto, vai direto para emprestado
         if (isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) {
