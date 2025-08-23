@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { getTelegramUsersInfo } from "~/utils/users";
 import telegramInit from "~/utils/telegramInit";
 import { ButtonsListWithPermissions } from "~/components/Forms/Buttons";
+import { useDevUser } from "~/utils/useDevUser";
+import { createDevTelegramUserWithCategories } from "~/utils/devTelegram";
 
 import { loader } from "~/handlers/loaders/_index";
 export { loader };
@@ -80,37 +82,49 @@ const links = [
 
 export default function Index() {
   const [user, setUser] = useState<UserData | null>({} as UserData);
+  const { devUser, isDevMode } = useDevUser();
 
   const { usersInfo, currentUserCategories } =
     useLoaderData<typeof loader>();
   const [userPermissions, setUserPermissions] = useState(currentUserCategories);
 
   useEffect(() => {
-    telegramInit();
-    setUser(() => getTelegramUsersInfo());
-  }, []);
+    if (isDevMode && devUser) {
+      const devTelegramUser = createDevTelegramUserWithCategories(devUser);
+      setUserPermissions(devTelegramUser.categories);
+      setUser({
+        id: devUser.id,
+        first_name: devUser.name.split(" ")[0],
+        last_name: devUser.name.split(" ").slice(1).join(" ")
+      });
+    } else {
+      telegramInit();
+      setUser(() => getTelegramUsersInfo());
+    }
+  }, [devUser, isDevMode]);
 
   useEffect(() => {
-    if (user?.id && usersInfo[user.id]) {
+    if (!isDevMode && user?.id && usersInfo[user.id]) {
       setUserPermissions([usersInfo[user.id].role as UserCategory]);
     }
-  }, [user]);
+  }, [user, isDevMode]);
 
   return (
     <div className="container mx-auto py-8 px-4">
       <h1 className="text-3xl font-bold text-teal-600 text-center">
         Ameciclobot Miniapp
       </h1>
-      {process.env.NODE_ENV === "development" && (
-        <p className="text-xs text-center">
-          Você está no ambiente de DESENVOLVIMENTO
-        </p>
-      )}
-      {process.env.NODE_ENV === "development" && (
-        <p className="text-xs text-center">Permissões de {userPermissions}</p>
-      )}
-      {process.env.NODE_ENV === "production" && (
-        <p className="text-xs text-center">Olá, {user?.first_name}!</p>
+      {isDevMode ? (
+        <div className="text-center mb-4">
+          <p className="text-sm text-blue-600 font-semibold">
+            🧪 Testando como: {devUser?.name}
+          </p>
+          <p className="text-xs text-gray-600">
+            Permissões: {userPermissions.join(", ")}
+          </p>
+        </div>
+      ) : (
+        <p className="text-sm text-center mb-4">Olá, {user?.first_name}!</p>
       )}
       <ButtonsListWithPermissions links={links} userPermissions={userPermissions} />
     </div>

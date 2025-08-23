@@ -8,6 +8,8 @@ import { botaPraRodarLoader } from "~/handlers/loaders/bota-pra-rodar";
 import { botaPraRodarAction } from "~/handlers/actions/bota-pra-rodar";
 import { BotaPraRodarGestao } from "~/components/BotaPraRodarGestao";
 import { PaginacaoBicicletas } from "~/components/PaginacaoBicicletas";
+import { useDevUser } from "~/utils/useDevUser";
+import { createDevTelegramUserWithCategories } from "~/utils/devTelegram";
 
 export const loader = botaPraRodarLoader;
 export const action = botaPraRodarAction;
@@ -23,35 +25,35 @@ export default function BotaPraRodar() {
 
   const submit = useSubmit();
 
-  useEffect(() => {
-    try {
-      telegramInit();
-      const userData = getTelegramUsersInfo();
-      
-      if (process.env.NODE_ENV === "development" && !userData) {
-        setUser({
-          id: 123456789,
-          first_name: "João",
-          last_name: "Silva",
-          username: "joaosilva"
-        } as UserData);
-      } else {
-        setUser(userData);
-      }
-    } catch (error) {
-      console.error('Erro ao inicializar Telegram:', error);
-      setUser(null);
-    }
-  }, []);
+  const { devUser, isDevMode } = useDevUser();
 
   useEffect(() => {
-    if (user?.id && users[user.id]) {
+    if (isDevMode && devUser) {
+      const devTelegramUser = createDevTelegramUserWithCategories(devUser);
+      setUserPermissions(devTelegramUser.categories);
+      setUser({
+        id: devUser.id,
+        first_name: devUser.name.split(" ")[0],
+        last_name: devUser.name.split(" ").slice(1).join(" ")
+      });
+    } else {
+      try {
+        telegramInit();
+        const userData = getTelegramUsersInfo();
+        setUser(userData);
+      } catch (error) {
+        console.error('Erro ao inicializar Telegram:', error);
+        setUser(null);
+      }
+    }
+  }, [devUser, isDevMode]);
+
+  useEffect(() => {
+    if (!isDevMode && user?.id && users[user.id]) {
       const userRole = users[user.id].role;
       setUserPermissions([userRole]);
-    } else if (process.env.NODE_ENV === "development") {
-      setUserPermissions([UserCategory.ANY_USER]);
     }
-  }, [user, users]);
+  }, [user, users, isDevMode]);
 
   const bicicletasComDisponibilidade = bicicletas.map((bicicleta: Bicicleta) => {
     return {
@@ -98,7 +100,7 @@ export default function BotaPraRodar() {
           📊 Estatísticas
         </Link>
         
-        {user && (process.env.NODE_ENV === "development" || isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) && (
+        {user && (isDevMode || isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) && (
           <button
             onClick={() => setMostrarGestao(!mostrarGestao)}
             className="w-full bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition-colors text-lg"
@@ -188,7 +190,7 @@ export default function BotaPraRodar() {
           <PaginacaoBicicletas 
             bicicletas={bicicletasFiltradas}
             onSolicitar={() => {}}
-            userCanRequest={!!user && (process.env.NODE_ENV === "development" || isAuth(userPermissions, UserCategory.AMECICLISTAS))}
+            userCanRequest={!!user && (isDevMode || isAuth(userPermissions, UserCategory.AMECICLISTAS))}
             userId={user?.id}
           />
         </>
