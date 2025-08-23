@@ -40,6 +40,12 @@ const links = [
     requiredPermission: UserCategory.ANY_USER,
   },
   {
+    to: "/registro-emprestimos",
+    label: "Registro de Empréstimos",
+    icon: "📦",
+    requiredPermission: UserCategory.AMECICLISTAS,
+  },
+  {
     to: "/recursos-independentes",
     label: "Controle de Recursos Independentes",
     icon: "🏪",

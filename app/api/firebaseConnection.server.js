@@ -753,6 +753,36 @@ export async function criarSolicitacaoBiblioteca(userId, subcodigo) {
   });
 }
 
+export async function criarSolicitacaoInventario(userId, codigoItem) {
+  return new Promise((resolve, reject) => {
+    const ref = db.ref("solicitacoes_inventario");
+    const key = ref.push().key;
+
+    if (!key) {
+      return reject(new Error("Falha ao gerar chave para a solicitação."));
+    }
+
+    const solicitacao = {
+      id: key,
+      usuario_id: userId,
+      codigo_item: codigoItem, // Mantém o código original
+      data_solicitacao: new Date().toISOString().split('T')[0],
+      status: 'pendente',
+      created_at: new Date().toISOString()
+    };
+
+    ref
+      .child(key)
+      .update(solicitacao)
+      .then((snapshot) => {
+        resolve(snapshot);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
 export async function criarSolicitacaoBicicleta(userId, codigoBicicleta) {
   return new Promise((resolve, reject) => {
     const ref = db.ref("solicitacoes_bicicletas");
@@ -780,5 +810,180 @@ export async function criarSolicitacaoBicicleta(userId, codigoBicicleta) {
       .catch((err) => {
         reject(err);
       });
+  });
+}
+
+// Função para sanitizar códigos para uso no Firebase (substitui pontos por underscores)
+function sanitizeFirebaseKey(key) {
+  return key.replace(/\./g, '_');
+}
+
+// Função para dessanitizar códigos vindos do Firebase
+function desanitizeFirebaseKey(key) {
+  return key.replace(/_/g, '.');
+}
+
+// Funções para o sistema de empréstimos de inventário
+export async function getItensInventario() {
+  const ref = db.ref("inventario");
+  const snapshot = await ref.once("value");
+  const data = snapshot.val();
+  
+  if (!data) return null;
+  
+  // Dessanitizar as chaves ao retornar
+  const result = {};
+  Object.keys(data).forEach(key => {
+    const originalKey = desanitizeFirebaseKey(key);
+    result[originalKey] = {
+      ...data[key],
+      codigo: originalKey
+    };
+  });
+  
+  return result;
+}
+
+export async function getEmprestimosInventario() {
+  const ref = db.ref("emprestimos_inventario");
+  const snapshot = await ref.once("value");
+  return snapshot.val();
+}
+
+export async function getSolicitacoesInventario() {
+  const ref = db.ref("solicitacoes_inventario");
+  const snapshot = await ref.once("value");
+  return snapshot.val();
+}
+
+export async function cadastrarItemInventario(dadosItem) {
+  return new Promise((resolve, reject) => {
+    const ref = db.ref("inventario");
+    const key = sanitizeFirebaseKey(dadosItem.codigo);
+
+    if (!dadosItem.codigo) {
+      return reject(new Error("Código do item é obrigatório."));
+    }
+
+    ref
+      .child(key)
+      .set(dadosItem)
+      .then((snapshot) => {
+        resolve(snapshot);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export async function solicitarEmprestimoInventario(userId, codigoItem) {
+  return new Promise((resolve, reject) => {
+    const ref = db.ref("solicitacoes_inventario");
+    const key = ref.push().key;
+
+    if (!key) {
+      return reject(new Error("Falha ao gerar chave para a solicitação."));
+    }
+
+    const solicitacao = {
+      id: key,
+      usuario_id: userId,
+      codigo_item: codigoItem, // Mantém o código original na solicitação
+      data_solicitacao: new Date().toISOString().split('T')[0],
+      status: 'pendente'
+    };
+
+    ref
+      .child(key)
+      .update(solicitacao)
+      .then((snapshot) => {
+        resolve(snapshot);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export async function aprovarSolicitacaoInventario(solicitacaoId, userId, codigoItem, direto = false) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (!direto) {
+        const solicitacaoRef = db.ref(`solicitacoes_inventario/${solicitacaoId}`);
+        const solicitacaoSnapshot = await solicitacaoRef.once("value");
+        const solicitacao = solicitacaoSnapshot.val();
+        
+        if (!solicitacao) {
+          return reject(new Error("Solicitação não encontrada."));
+        }
+        
+        userId = solicitacao.usuario_id;
+        codigoItem = solicitacao.codigo_item;
+        
+        await solicitacaoRef.update({ status: 'aprovada' });
+      }
+      
+      const emprestimoRef = db.ref("emprestimos_inventario");
+      const emprestimoKey = emprestimoRef.push().key;
+      
+      const emprestimo = {
+        id: emprestimoKey,
+        usuario_id: userId,
+        codigo_item: codigoItem,
+        data_saida: new Date().toISOString().split('T')[0],
+        status: 'emprestado'
+      };
+      
+      await emprestimoRef.child(emprestimoKey).update(emprestimo);
+      
+      const itemRef = db.ref(`inventario/${sanitizeFirebaseKey(codigoItem)}`);
+      await itemRef.update({ disponivel: false, emprestado: true });
+      
+      resolve(true);
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+
+export async function rejeitarSolicitacaoInventario(solicitacaoId) {
+  return new Promise((resolve, reject) => {
+    const ref = db.ref(`solicitacoes_inventario/${solicitacaoId}`);
+    
+    ref
+      .update({ status: 'rejeitada' })
+      .then((snapshot) => {
+        resolve(snapshot);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export async function registrarDevolucaoInventario(emprestimoId) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const emprestimoRef = db.ref(`emprestimos_inventario/${emprestimoId}`);
+      const emprestimoSnapshot = await emprestimoRef.once("value");
+      const emprestimo = emprestimoSnapshot.val();
+      
+      if (!emprestimo) {
+        return reject(new Error("Empréstimo não encontrado."));
+      }
+      
+      await emprestimoRef.update({ 
+        status: 'devolvido',
+        data_devolucao: new Date().toISOString().split('T')[0]
+      });
+      
+      const itemRef = db.ref(`inventario/${sanitizeFirebaseKey(emprestimo.codigo_item)}`);
+      await itemRef.update({ disponivel: true, emprestado: false });
+      
+      resolve(true);
+    } catch (err) {
+      reject(err);
+    }
   });
 }
