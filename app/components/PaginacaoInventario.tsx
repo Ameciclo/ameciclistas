@@ -1,25 +1,25 @@
 import { useState } from "react";
 import { Link } from "@remix-run/react";
-import type { Bicicleta } from "~/utils/types";
+import type { ItemInventario } from "~/utils/types";
 
-interface PaginacaoBicicletasProps {
-  bicicletas: Bicicleta[];
+interface PaginacaoInventarioProps {
+  itens: ItemInventario[];
   onSolicitar: (codigo: string) => void;
   userCanRequest: boolean;
   userId?: number;
 }
 
-export function PaginacaoBicicletas({ bicicletas, onSolicitar, userCanRequest, userId }: PaginacaoBicicletasProps) {
+export function PaginacaoInventario({ itens, onSolicitar, userCanRequest, userId }: PaginacaoInventarioProps) {
   const [paginaAtual, setPaginaAtual] = useState(1);
   const itensPorPagina = 12;
   
-  const totalPaginas = Math.ceil(bicicletas.length / itensPorPagina);
+  const totalPaginas = Math.ceil(itens.length / itensPorPagina);
   const indiceInicial = (paginaAtual - 1) * itensPorPagina;
-  const bicicletasPagina = bicicletas.slice(indiceInicial, indiceInicial + itensPorPagina);
+  const itensPagina = itens.slice(indiceInicial, indiceInicial + itensPorPagina);
 
   const handleSolicitar = (codigo: string) => {
     if (!userId) {
-      alert("Você precisa estar logado para solicitar uma bicicleta");
+      alert("Você precisa estar logado para solicitar um item");
       return;
     }
     onSolicitar(codigo);
@@ -28,28 +28,37 @@ export function PaginacaoBicicletas({ bicicletas, onSolicitar, userCanRequest, u
   return (
     <div>
       <div className="mb-4 text-sm text-gray-600">
-        Mostrando {bicicletasPagina.length} de {bicicletas.length} bicicletas
+        Mostrando {itensPagina.length} de {itens.length} itens
       </div>
 
       <div className="grid grid-cols-1 gap-6 mb-8">
-        {bicicletasPagina.map((bicicleta) => (
-          <div key={bicicleta.codigo} className="bg-white rounded-lg shadow-md p-6 border">
+        {itensPagina.map((item) => (
+          <div key={item.codigo} className="bg-white rounded-lg shadow-md p-6 border">
             <div className="mb-4">
-              <h3 className="text-xl font-bold text-gray-800 mb-2">{bicicleta.nome}</h3>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">{item.nome}</h3>
               <p className="text-gray-600 mb-1">
-                <strong>Código:</strong> {bicicleta.codigo}
+                <strong>Código:</strong> {item.codigo}
               </p>
               <p className="text-gray-600 mb-1">
-                <strong>Tipo:</strong> {bicicleta.tipo}
+                <strong>Categoria:</strong> {item.categoria}
               </p>
-
-              {bicicleta.descricao && (
-                <p className="text-gray-600 text-sm mt-2">{bicicleta.descricao}</p>
+              {item.subcategoria && (
+                <p className="text-gray-600 mb-1">
+                  <strong>Subcategoria:</strong> {item.subcategoria}
+                </p>
+              )}
+              {item.detalhamento && (
+                <p className="text-gray-600 text-sm mt-2">
+                  <strong>Detalhamento:</strong> {item.detalhamento}
+                </p>
+              )}
+              {item.descricao && (
+                <p className="text-gray-600 text-sm mt-2">{item.descricao}</p>
               )}
             </div>
 
             <div className="flex flex-col gap-2">
-              {bicicleta.disponivel ? (
+              {item.disponivel ? (
                 <div>
                   <div className="flex items-center mb-2">
                     <span className="inline-block w-3 h-3 bg-green-500 rounded-full mr-2"></span>
@@ -57,7 +66,7 @@ export function PaginacaoBicicletas({ bicicletas, onSolicitar, userCanRequest, u
                   </div>
                   {userCanRequest && (
                     <Link
-                      to={`/solicitar-emprestimo-bicicleta?codigo=${bicicleta.codigo}`}
+                      to={`/solicitar-emprestimo-inventario?codigo=${item.codigo}`}
                       className="w-full bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700 transition-colors block text-center no-underline"
                     >
                       Solicitar Empréstimo
@@ -68,7 +77,7 @@ export function PaginacaoBicicletas({ bicicletas, onSolicitar, userCanRequest, u
                 <div>
                   <div className="flex items-center mb-2">
                     <span className="inline-block w-3 h-3 bg-red-500 rounded-full mr-2"></span>
-                    <span className="text-red-600 font-semibold">Emprestada</span>
+                    <span className="text-red-600 font-semibold">Emprestado</span>
                   </div>
                   <button
                     disabled

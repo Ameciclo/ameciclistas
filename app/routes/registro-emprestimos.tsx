@@ -1,89 +1,90 @@
 import { useState, useEffect } from "react";
-import { useLoaderData, Form, useSubmit, Link } from "@remix-run/react";
-import { UserCategory, type Bicicleta, type EmprestimoBicicleta, type UserData } from "~/utils/types";
+import { useLoaderData, Form, Link } from "@remix-run/react";
+import { UserCategory, type ItemInventario, type EmprestimoInventario, type UserData } from "~/utils/types";
 import { getTelegramUsersInfo } from "~/utils/users";
 import telegramInit from "~/utils/telegramInit";
 import { isAuth } from "~/utils/isAuthorized";
-import { botaPraRodarLoader } from "~/handlers/loaders/bota-pra-rodar";
-import { botaPraRodarAction } from "~/handlers/actions/bota-pra-rodar";
-import { BotaPraRodarGestao } from "~/components/BotaPraRodarGestao";
-import { PaginacaoBicicletas } from "~/components/PaginacaoBicicletas";
-import { useDevUser } from "~/utils/useDevUser";
-import { createDevTelegramUserWithCategories } from "~/utils/devTelegram";
+import { registroEmprestimosLoader } from "~/handlers/loaders/registro-emprestimos";
+import { registroEmprestimosAction } from "~/handlers/actions/registro-emprestimos";
+import { RegistroEmprestimosGestao } from "~/components/RegistroEmprestimosGestao";
+import { PaginacaoInventario } from "~/components/PaginacaoInventario";
 
-export const loader = botaPraRodarLoader;
-export const action = botaPraRodarAction;
+export const loader = registroEmprestimosLoader;
+export const action = registroEmprestimosAction;
 
-export default function BotaPraRodar() {
-  const { bicicletas, emprestimos, solicitacoes, users } = useLoaderData<typeof loader>();
+export default function RegistroEmprestimos() {
+  const { itens, emprestimos, solicitacoes, users } = useLoaderData<typeof loader>();
   const [user, setUser] = useState<UserData | null>(null);
   const [busca, setBusca] = useState("");
   const [mostrarGestao, setMostrarGestao] = useState(false);
   const [userPermissions, setUserPermissions] = useState<string[]>([UserCategory.ANY_USER]);
   const [filtroDisponibilidade, setFiltroDisponibilidade] = useState("todos");
-  const [filtroTipo, setFiltroTipo] = useState("");
-
-  const submit = useSubmit();
-
-  const { devUser, isDevMode } = useDevUser();
+  const [filtroCategoria, setFiltroCategoria] = useState("");
 
   useEffect(() => {
-    if (isDevMode && devUser) {
-      const devTelegramUser = createDevTelegramUserWithCategories(devUser);
-      setUserPermissions(devTelegramUser.categories);
-      setUser({
-        id: devUser.id,
-        first_name: devUser.name.split(" ")[0],
-        last_name: devUser.name.split(" ").slice(1).join(" ")
-      });
-    } else {
-      try {
-        telegramInit();
-        const userData = getTelegramUsersInfo();
+    try {
+      telegramInit();
+      const userData = getTelegramUsersInfo();
+      
+      if (process.env.NODE_ENV === "development" && !userData) {
+        setUser({
+          id: 123456789,
+          first_name: "João",
+          last_name: "Silva",
+          username: "joaosilva"
+        } as UserData);
+      } else {
         setUser(userData);
-      } catch (error) {
-        console.error('Erro ao inicializar Telegram:', error);
-        setUser(null);
       }
+    } catch (error) {
+      console.error('Erro ao inicializar Telegram:', error);
+      setUser(null);
     }
-  }, [devUser, isDevMode]);
+  }, []);
 
   useEffect(() => {
-    if (!isDevMode && user?.id && users[user.id]) {
+    if (user?.id && users[user.id]) {
       const userRole = users[user.id].role;
       setUserPermissions([userRole]);
+    } else if (process.env.NODE_ENV === "development") {
+      setUserPermissions([UserCategory.PROJECT_COORDINATORS]);
     }
-  }, [user, users, isDevMode]);
+  }, [user, users]);
 
-  const bicicletasComDisponibilidade = bicicletas.map((bicicleta: Bicicleta) => {
+  const itensComDisponibilidade = itens.map((item: ItemInventario) => {
     return {
-      ...bicicleta,
-      indisponivel: !bicicleta.disponivel
+      ...item,
+      indisponivel: !item.disponivel
     };
   });
 
   // Aplicar filtros
-  const bicicletasFiltradas = bicicletasComDisponibilidade.filter((bicicleta: any) => {
+  const itensFiltrados = itensComDisponibilidade.filter((item: any) => {
+    // Filtro por busca
+    const buscaLower = busca.toLowerCase();
+    const matchBusca = !busca || 
+      (item.nome?.toLowerCase() || "").includes(buscaLower) ||
+      (item.codigo?.toLowerCase() || "").includes(buscaLower) ||
+      (item.categoria?.toLowerCase() || "").includes(buscaLower);
+    
+    if (!matchBusca) return false;
+    
     // Filtro por disponibilidade
-    if (filtroDisponibilidade === "disponiveis" && !bicicleta.disponivel) return false;
-    if (filtroDisponibilidade === "indisponiveis" && bicicleta.disponivel) return false;
+    if (filtroDisponibilidade === "disponiveis" && !item.disponivel) return false;
+    if (filtroDisponibilidade === "indisponiveis" && item.disponivel) return false;
     
-    // Filtro por tipo
-    if (filtroTipo && bicicleta.tipo !== filtroTipo) return false;
-    
-
+    // Filtro por categoria
+    if (filtroCategoria && item.categoria !== filtroCategoria) return false;
     
     return true;
   });
 
   // Obter opções únicas para os filtros
-  const tiposUnicos = [...new Set(bicicletasComDisponibilidade.map((b: any) => b.tipo).filter(Boolean))].sort();
-
-
+  const categoriasUnicas = [...new Set(itensComDisponibilidade.map((i: any) => i.categoria).filter(Boolean))].sort();
 
   return (
     <div className="container mx-auto py-8 px-4">
-      <h1 className="text-3xl font-bold text-teal-600 mb-6">🚴‍♀️ Bota pra Rodar</h1>
+      <h1 className="text-3xl font-bold text-teal-600 mb-6">📦 Registro de Empréstimos</h1>
       
       <div className="space-y-3 mb-6">
         <Link 
@@ -93,19 +94,12 @@ export default function BotaPraRodar() {
           ⬅️ Voltar
         </Link>
         
-        <Link 
-          to="/estatisticas-bota-pra-rodar" 
-          className="w-full bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors text-lg block text-center no-underline"
-        >
-          📊 Estatísticas
-        </Link>
-        
-        {user && (isDevMode || isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) && (
+        {user && (process.env.NODE_ENV === "development" || isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) && (
           <button
             onClick={() => setMostrarGestao(!mostrarGestao)}
             className="w-full bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition-colors text-lg"
           >
-            🔧 {mostrarGestao ? "Ver Bicicletas" : "Gestão"}
+            🔧 {mostrarGestao ? "Ver Itens" : "Gestão"}
           </button>
         )}
       </div>
@@ -120,7 +114,7 @@ export default function BotaPraRodar() {
                   name="busca"
                   value={busca}
                   onChange={(e) => setBusca(e.target.value)}
-                  placeholder="Buscar por nome ou código..."
+                  placeholder="Buscar por nome, código ou categoria..."
                   className="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
                 />
                 <button
@@ -152,32 +146,32 @@ export default function BotaPraRodar() {
                     onChange={(e) => setFiltroDisponibilidade(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                   >
-                    <option value="todos">Todas</option>
+                    <option value="todos">Todos</option>
                     <option value="disponiveis">Disponíveis</option>
-                    <option value="indisponiveis">Emprestadas</option>
+                    <option value="indisponiveis">Emprestados</option>
                   </select>
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
                   <select
-                    value={filtroTipo}
-                    onChange={(e) => setFiltroTipo(e.target.value)}
+                    value={filtroCategoria}
+                    onChange={(e) => setFiltroCategoria(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                   >
-                    <option value="">Todos os tipos</option>
-                    {tiposUnicos.map(tipo => (
-                      <option key={tipo} value={tipo}>{tipo}</option>
+                    <option value="">Todas as categorias</option>
+                    {categoriasUnicas.map(categoria => (
+                      <option key={categoria} value={categoria}>{categoria}</option>
                     ))}
                   </select>
                 </div>
               </div>
               
-              {(filtroDisponibilidade !== "todos" || filtroTipo) && (
+              {(filtroDisponibilidade !== "todos" || filtroCategoria) && (
                 <button
                   onClick={() => {
                     setFiltroDisponibilidade("todos");
-                    setFiltroTipo("");
+                    setFiltroCategoria("");
                   }}
                   className="mt-3 text-sm text-teal-600 hover:underline"
                 >
@@ -187,18 +181,18 @@ export default function BotaPraRodar() {
             </div>
           </div>
 
-          <PaginacaoBicicletas 
-            bicicletas={bicicletasFiltradas}
+          <PaginacaoInventario 
+            itens={itensFiltrados}
             onSolicitar={() => {}}
-            userCanRequest={!!user && (isDevMode || isAuth(userPermissions, UserCategory.AMECICLISTAS))}
+            userCanRequest={!!user && (process.env.NODE_ENV === "development" || isAuth(userPermissions, UserCategory.AMECICLISTAS))}
             userId={user?.id}
           />
         </>
       ) : (
-        <BotaPraRodarGestao 
-          emprestimos={emprestimos.filter((emp: EmprestimoBicicleta) => emp.status === 'emprestado')}
+        <RegistroEmprestimosGestao 
+          emprestimos={emprestimos.filter((emp: EmprestimoInventario) => emp.status === 'emprestado')}
           solicitacoes={solicitacoes}
-          bicicletas={bicicletasComDisponibilidade}
+          itens={itensComDisponibilidade}
           users={users}
         />
       )}

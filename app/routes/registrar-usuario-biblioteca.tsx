@@ -1,8 +1,14 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, Form, useActionData, Link } from "@remix-run/react";
 import { json, type ActionFunctionArgs } from "@remix-run/node";
-import db from "~/api/firebaseAdmin.server.js";
-import { getUsersFirebase } from "~/api/firebaseConnection.server";
+import { 
+  getUsersFirebase, 
+  getUserById, 
+  updateUserAmecicloRegister, 
+  createUserWithAmecicloRegister,
+  criarSolicitacaoBiblioteca,
+  criarSolicitacaoBicicleta
+} from "~/api/firebaseConnection.server";
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
@@ -52,42 +58,34 @@ export async function action({ request }: ActionFunctionArgs) {
       // Gerar ID único baseado no CPF
       const userId = `cpf_${cpf.replace(/\D/g, "")}`;
       
-      // Criar usuário no Firebase
-      const userRef = db.ref(`subscribers/${userId}`);
-      await userRef.set({
-        id: userId,
-        name: nome,
-        role: "ANY_USER",
-        ameciclo_register: {
+      // Verificar se usuário já existe e preservar dados existentes
+      const existingUser = await getUserById(userId);
+      
+      if (existingUser) {
+        // Usuário já existe, apenas adicionar ameciclo_register
+        await updateUserAmecicloRegister(userId, {
           cpf,
           nome,
           telefone,
-          email,
-          created_at: new Date().toISOString()
-        }
-      });
+          email
+        });
+      } else {
+        // Usuário não existe, criar novo
+        await createUserWithAmecicloRegister(userId, {
+          cpf,
+          nome,
+          telefone,
+          email
+        });
+      }
       
       // Criar solicitação de empréstimo (livro ou bicicleta)
       const isBicicleta = !!formData.get("bicicleta");
       
       if (isBicicleta) {
-        const solicitacaoRef = db.ref("solicitacoes_bicicletas");
-        await solicitacaoRef.push({
-          usuario_id: userId,
-          codigo_bicicleta: formData.get("bicicleta") as string,
-          data_solicitacao: new Date().toISOString().split('T')[0],
-          status: 'pendente',
-          created_at: new Date().toISOString()
-        });
+        await criarSolicitacaoBicicleta(userId, formData.get("bicicleta") as string);
       } else {
-        const solicitacaoRef = db.ref("biblioteca_solicitacoes");
-        await solicitacaoRef.push({
-          usuario_id: userId,
-          subcodigo,
-          data_solicitacao: new Date().toISOString().split('T')[0],
-          status: 'pendente',
-          created_at: new Date().toISOString()
-        });
+        await criarSolicitacaoBiblioteca(userId, subcodigo);
       }
       
       return json({ 
@@ -107,23 +105,9 @@ export async function action({ request }: ActionFunctionArgs) {
     
     try {
       if (isBicicleta) {
-        const solicitacaoRef = db.ref("solicitacoes_bicicletas");
-        await solicitacaoRef.push({
-          usuario_id: userId,
-          codigo_bicicleta: formData.get("bicicleta") as string,
-          data_solicitacao: new Date().toISOString().split('T')[0],
-          status: 'pendente',
-          created_at: new Date().toISOString()
-        });
+        await criarSolicitacaoBicicleta(userId, formData.get("bicicleta") as string);
       } else {
-        const solicitacaoRef = db.ref("biblioteca_solicitacoes");
-        await solicitacaoRef.push({
-          usuario_id: userId,
-          subcodigo,
-          data_solicitacao: new Date().toISOString().split('T')[0],
-          status: 'pendente',
-          created_at: new Date().toISOString()
-        });
+        await criarSolicitacaoBiblioteca(userId, subcodigo);
       }
       
       return json({ 

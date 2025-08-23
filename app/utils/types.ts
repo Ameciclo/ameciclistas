@@ -383,3 +383,32 @@ export interface SolicitacaoEmprestimoBicicleta {
   data_solicitacao: string;
   status: 'pendente' | 'aprovada' | 'rejeitada';
 }
+
+// Inventário types
+export interface ItemInventario {
+  codigo: string;
+  nome: string;
+  categoria: string;
+  subcategoria?: string;
+  detalhamento?: string;
+  disponivel: boolean;
+  emprestado?: boolean;
+  descricao?: string;
+}
+
+export interface EmprestimoInventario {
+  id: string;
+  usuario_id: number;
+  codigo_item: string;
+  data_saida: string;
+  data_devolucao?: string;
+  status: 'emprestado' | 'devolvido' | 'solicitado';
+}
+
+export interface SolicitacaoEmprestimoInventario {
+  id: string;
+  usuario_id: number;
+  codigo_item: string;
+  data_solicitacao: string;
+  status: 'pendente' | 'aprovada' | 'rejeitada';
+}
