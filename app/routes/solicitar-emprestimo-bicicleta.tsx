@@ -38,13 +38,20 @@ export async function action({ request }: ActionFunctionArgs) {
   
   try {
     const users = await getUsersFirebase();
-    const telegramUser = getTelegramUsersInfo();
     
-    let userId = telegramUser?.id;
+    // Obter userId do formData (mais confiável)
+    let userId = formData.get("user_id") as string;
+    
+    // Se não tiver no formData, tentar do Telegram
+    if (!userId) {
+      const telegramUser = getTelegramUsersInfo();
+      userId = telegramUser?.id?.toString();
+    }
+    
     let userPermissions = [UserCategory.ANY_USER];
     
     if (process.env.NODE_ENV === "development" && !userId) {
-      userId = 123456789;
+      userId = "123456789";
       userPermissions = [UserCategory.PROJECT_COORDINATORS];
     } else if (userId && users[userId]) {
       userPermissions = [users[userId].role];
@@ -56,9 +63,9 @@ export async function action({ request }: ActionFunctionArgs) {
     
     // Se é coordenador de projeto, vai direto para emprestado
     if (isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) {
-      await aprovarSolicitacaoBicicleta("", userId, codigo, true);
+      await aprovarSolicitacaoBicicleta("", parseInt(userId), codigo, true);
     } else {
-      await solicitarEmprestimoBicicleta(userId, codigo);
+      await solicitarEmprestimoBicicleta(parseInt(userId), codigo);
     }
     return json({ success: true, message: "Solicitação enviada com sucesso!" });
   } catch (error) {
