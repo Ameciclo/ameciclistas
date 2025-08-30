@@ -15,10 +15,12 @@ export async function botaPraRodarAction({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const action = formData.get("action") as string;
   
-  console.log("=== BOTA PRA RODAR ACTION ===");
-  console.log("Action:", action);
-  console.log("FormData:", Object.fromEntries(formData));
-  console.log("==============================");
+  if (process.env.NODE_ENV === "development") {
+    console.log("=== BOTA PRA RODAR ACTION ===");
+    console.log("Action:", action);
+    console.log("FormData:", Object.fromEntries(formData));
+    console.log("==============================");
+  }
 
   try {
     const users = await getUsersFirebase();
@@ -32,6 +34,12 @@ export async function botaPraRodarAction({ request }: ActionFunctionArgs) {
       userPermissions = [UserCategory.PROJECT_COORDINATORS];
     } else if (userId && users[userId]) {
       userPermissions = [users[userId].role];
+    }
+    
+    // Validação crítica para produção
+    if (!userId) {
+      console.error("Usuário não identificado em produção. TelegramUser:", telegramUser);
+      throw new Error("Usuário não identificado. Tente recarregar a página.");
     }
 
     switch (action) {

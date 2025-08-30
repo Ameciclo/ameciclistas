@@ -108,6 +108,11 @@ export function BotaPraRodarGestao({ emprestimos, solicitacoes, bicicletas, user
                       <button
                         type="submit"
                         className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600"
+                        onClick={(e) => {
+                          if (!confirm('Confirmar devolução da bicicleta?')) {
+                            e.preventDefault();
+                          }
+                        }}
                       >
                         Registrar Devolução
                       </button>
@@ -144,6 +149,11 @@ export function BotaPraRodarGestao({ emprestimos, solicitacoes, bicicletas, user
                       <button
                         type="submit"
                         className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600"
+                        onClick={(e) => {
+                          if (!confirm('Aprovar esta solicitação?')) {
+                            e.preventDefault();
+                          }
+                        }}
                       >
                         Aprovar
                       </button>
@@ -154,6 +164,11 @@ export function BotaPraRodarGestao({ emprestimos, solicitacoes, bicicletas, user
                       <button
                         type="submit"
                         className="bg-red-500 text-white px-6 py-2 rounded hover:bg-red-600"
+                        onClick={(e) => {
+                          if (!confirm('Rejeitar esta solicitação?')) {
+                            e.preventDefault();
+                          }
+                        }}
                       >
                         Rejeitar
                       </button>
