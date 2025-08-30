@@ -26,6 +26,10 @@ export async function botaPraRodarAction({ request }: ActionFunctionArgs) {
     const users = await getUsersFirebase();
     const telegramUser = getTelegramUsersInfo();
     
+    console.log("[DEBUG] TelegramUser:", JSON.stringify(telegramUser));
+    console.log("[DEBUG] TelegramUser.id:", telegramUser?.id);
+    console.log("[DEBUG] typeof telegramUser?.id:", typeof telegramUser?.id);
+    
     let userId = telegramUser?.id;
     let userPermissions = [UserCategory.ANY_USER];
     
@@ -36,10 +40,12 @@ export async function botaPraRodarAction({ request }: ActionFunctionArgs) {
       userPermissions = [users[userId].role];
     }
     
+    console.log("[DEBUG] Final userId:", userId);
+    console.log("[DEBUG] Final userPermissions:", userPermissions);
+    
     // Validação crítica para produção
     if (!userId) {
-      console.error("Usuário não identificado em produção. TelegramUser:", telegramUser);
-      throw new Error("Usuário não identificado. Tente recarregar a página.");
+      throw new Error("Usuário não identificado");
     }
     
 
