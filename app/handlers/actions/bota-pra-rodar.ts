@@ -24,26 +24,25 @@ export async function botaPraRodarAction({ request }: ActionFunctionArgs) {
 
   try {
     const users = await getUsersFirebase();
-    const telegramUser = getTelegramUsersInfo();
     
-    console.log("[DEBUG] TelegramUser:", JSON.stringify(telegramUser));
-    console.log("[DEBUG] TelegramUser.id:", telegramUser?.id);
-    console.log("[DEBUG] typeof telegramUser?.id:", typeof telegramUser?.id);
+    // Tentar obter userId do formData primeiro (mais confiável)
+    let userId = formData.get("user_id") as string;
     
-    let userId = telegramUser?.id;
+    // Se não tiver no formData, tentar do Telegram
+    if (!userId) {
+      const telegramUser = getTelegramUsersInfo();
+      userId = telegramUser?.id?.toString();
+    }
+    
     let userPermissions = [UserCategory.ANY_USER];
     
     if (process.env.NODE_ENV === "development" && !userId) {
-      userId = 123456789;
+      userId = "123456789";
       userPermissions = [UserCategory.PROJECT_COORDINATORS];
     } else if (userId && users[userId]) {
       userPermissions = [users[userId].role];
     }
     
-    console.log("[DEBUG] Final userId:", userId);
-    console.log("[DEBUG] Final userPermissions:", userPermissions);
-    
-    // Validação crítica para produção
     if (!userId) {
       throw new Error("Usuário não identificado");
     }

@@ -43,6 +43,9 @@ export function BotaPraRodarGestao({ emprestimos, solicitacoes, bicicletas, user
     const formData = new FormData();
     formData.append("action", "registrar_devolucao");
     formData.append("emprestimo_id", emprestimoId);
+    if (typeof window !== 'undefined' && window.Telegram?.WebApp?.initDataUnsafe?.user?.id) {
+      formData.append("user_id", window.Telegram.WebApp.initDataUnsafe.user.id.toString());
+    }
     submit(formData, { method: "post" });
   };
 
@@ -50,6 +53,9 @@ export function BotaPraRodarGestao({ emprestimos, solicitacoes, bicicletas, user
     const formData = new FormData();
     formData.append("action", "aprovar_solicitacao");
     formData.append("solicitacao_id", solicitacaoId);
+    if (typeof window !== 'undefined' && window.Telegram?.WebApp?.initDataUnsafe?.user?.id) {
+      formData.append("user_id", window.Telegram.WebApp.initDataUnsafe.user.id.toString());
+    }
     submit(formData, { method: "post" });
   };
 
@@ -57,6 +63,9 @@ export function BotaPraRodarGestao({ emprestimos, solicitacoes, bicicletas, user
     const formData = new FormData();
     formData.append("action", "rejeitar_solicitacao");
     formData.append("solicitacao_id", solicitacaoId);
+    if (typeof window !== 'undefined' && window.Telegram?.WebApp?.initDataUnsafe?.user?.id) {
+      formData.append("user_id", window.Telegram.WebApp.initDataUnsafe.user.id.toString());
+    }
     submit(formData, { method: "post" });
   };
 

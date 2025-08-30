@@ -273,6 +273,7 @@ export default function SolicitarEmprestimoBicicleta() {
           <div className="text-center">
             <Form method="post">
               <input type="hidden" name="codigo" value={bicicleta.codigo} />
+              <input type="hidden" name="user_id" value={user?.id || ""} />
               {isCoordinator ? (
                 <div className="mb-4">
                   <div className="bg-green-50 p-3 rounded-lg mb-4">
