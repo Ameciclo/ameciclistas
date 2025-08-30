@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { useLoaderData, Form, useSubmit, Link } from "@remix-run/react";
-import { json, redirect, type LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-run/node";
+import { useLoaderData, Form, useActionData, Link } from "@remix-run/react";
+import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-run/node";
 import { getBicicletas, getUsersFirebase, solicitarEmprestimoBicicleta, aprovarSolicitacaoBicicleta } from "~/api/firebaseConnection.server";
 import { getTelegramUsersInfo } from "~/utils/users";
 import { UserCategory, type Bicicleta, type UserData } from "~/utils/types";
@@ -60,7 +60,7 @@ export async function action({ request }: ActionFunctionArgs) {
     } else {
       await solicitarEmprestimoBicicleta(userId, codigo);
     }
-    return redirect("/sucesso/emprestimo-bicicleta-solicitado");
+    return json({ success: true, message: "Solicitação enviada com sucesso!" });
   } catch (error) {
     console.error("Erro ao solicitar empréstimo:", error);
     return json({ error: error.message }, { status: 400 });
@@ -69,6 +69,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export default function SolicitarEmprestimoBicicleta() {
   const { bicicleta, users } = useLoaderData<typeof loader>();
+  const actionData = useActionData<typeof action>();
   const [user, setUser] = useState<UserData | null>(null);
   const [userPermissions, setUserPermissions] = useState<string[]>([UserCategory.ANY_USER]);
   const [userInfo, setUserInfo] = useState<any>(null);
@@ -118,10 +119,19 @@ export default function SolicitarEmprestimoBicicleta() {
 
   const userData = getUserData();
   const isCoordinator = isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS);
-  
 
-  
-
+  if (actionData?.success) {
+    return (
+      <div className="container mx-auto py-8 px-4">
+        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+          {actionData.message}
+        </div>
+        <Link to="/bota-pra-rodar" className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700">
+          Voltar ao Bota pra Rodar
+        </Link>
+      </div>
+    );
+  }
 
   if (!user) {
     return (
@@ -250,6 +260,12 @@ export default function SolicitarEmprestimoBicicleta() {
                 <p><strong>Telefone:</strong> {userData.telefone}</p>
                 <p><strong>Email:</strong> {userData.email}</p>
               </div>
+            </div>
+          )}
+
+          {actionData?.error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+              {actionData.error}
             </div>
           )}
 

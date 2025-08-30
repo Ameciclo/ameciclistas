@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Form } from "@remix-run/react";
+import { Form, useSubmit } from "@remix-run/react";
 import type { EmprestimoBicicleta, SolicitacaoEmprestimoBicicleta, Bicicleta } from "~/utils/types";
 
 interface BotaPraRodarGestaoProps {
@@ -37,6 +37,28 @@ export function BotaPraRodarGestao({ emprestimos, solicitacoes, bicicletas, user
   };
 
   const [activeTab, setActiveTab] = useState<'emprestados' | 'solicitacoes' | 'cadastrar'>('emprestados');
+  const submit = useSubmit();
+
+  const handleRegistrarDevolucao = (emprestimoId: string) => {
+    const formData = new FormData();
+    formData.append("action", "registrar_devolucao");
+    formData.append("emprestimo_id", emprestimoId);
+    submit(formData, { method: "post" });
+  };
+
+  const handleAprovarSolicitacao = (solicitacaoId: string) => {
+    const formData = new FormData();
+    formData.append("action", "aprovar_solicitacao");
+    formData.append("solicitacao_id", solicitacaoId);
+    submit(formData, { method: "post" });
+  };
+
+  const handleRejeitarSolicitacao = (solicitacaoId: string) => {
+    const formData = new FormData();
+    formData.append("action", "rejeitar_solicitacao");
+    formData.append("solicitacao_id", solicitacaoId);
+    submit(formData, { method: "post" });
+  };
 
   const getBicicletaInfo = (codigo: string) => {
     return bicicletas.find(b => b.codigo === codigo);
@@ -102,16 +124,12 @@ export function BotaPraRodarGestao({ emprestimos, solicitacoes, bicicletas, user
                     </p>
                   </div>
                   <div className="flex justify-center">
-                    <Form method="post" className="inline">
-                      <input type="hidden" name="action" value="registrar_devolucao" />
-                      <input type="hidden" name="emprestimo_id" value={emp.id} />
-                      <button
-                        type="submit"
-                        className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600"
-                      >
-                        Registrar Devolução
-                      </button>
-                    </Form>
+                    <button
+                      onClick={() => handleRegistrarDevolucao(emp.id)}
+                      className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600"
+                    >
+                      Registrar Devolução
+                    </button>
                   </div>
                 </div>
               );
@@ -138,26 +156,18 @@ export function BotaPraRodarGestao({ emprestimos, solicitacoes, bicicletas, user
                   </div>
 
                   <div className="flex gap-2 justify-center">
-                    <Form method="post" className="inline">
-                      <input type="hidden" name="action" value="aprovar_solicitacao" />
-                      <input type="hidden" name="solicitacao_id" value={sol.id} />
-                      <button
-                        type="submit"
-                        className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600"
-                      >
-                        Aprovar
-                      </button>
-                    </Form>
-                    <Form method="post" className="inline">
-                      <input type="hidden" name="action" value="rejeitar_solicitacao" />
-                      <input type="hidden" name="solicitacao_id" value={sol.id} />
-                      <button
-                        type="submit"
-                        className="bg-red-500 text-white px-6 py-2 rounded hover:bg-red-600"
-                      >
-                        Rejeitar
-                      </button>
-                    </Form>
+                    <button
+                      onClick={() => handleAprovarSolicitacao(sol.id)}
+                      className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600"
+                    >
+                      Aprovar
+                    </button>
+                    <button 
+                      onClick={() => handleRejeitarSolicitacao(sol.id)}
+                      className="bg-red-500 text-white px-6 py-2 rounded hover:bg-red-600"
+                    >
+                      Rejeitar
+                    </button>
                   </div>
                 </div>
               );
