@@ -36,9 +36,6 @@ export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const codigo = formData.get("codigo") as string;
   
-  console.log("=== SOLICITAR EMPRESTIMO BICICLETA ACTION ===");
-  console.log("Código da bicicleta:", codigo);
-  
   try {
     const users = await getUsersFirebase();
     const telegramUser = getTelegramUsersInfo();
@@ -46,20 +43,12 @@ export async function action({ request }: ActionFunctionArgs) {
     let userId = telegramUser?.id;
     let userPermissions = [UserCategory.ANY_USER];
     
-    console.log("TelegramUser:", telegramUser);
-    console.log("UserId:", userId);
-    
     if (process.env.NODE_ENV === "development" && !userId) {
       userId = 123456789;
       userPermissions = [UserCategory.PROJECT_COORDINATORS];
-      console.log("Modo desenvolvimento - forçando coordenador");
     } else if (userId && users[userId]) {
       userPermissions = [users[userId].role];
-      console.log("Usuário encontrado no Firebase:", users[userId]);
     }
-    
-    console.log("UserPermissions:", userPermissions);
-    console.log("É coordenador?", isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS));
 
     if (!userId) {
       throw new Error("Usuário não identificado");
@@ -67,14 +56,10 @@ export async function action({ request }: ActionFunctionArgs) {
     
     // Se é coordenador de projeto, vai direto para emprestado
     if (isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) {
-      console.log("Aprovando solicitação diretamente (coordenador)");
       await aprovarSolicitacaoBicicleta("", userId, codigo, true);
     } else {
-      console.log("Criando solicitação normal");
       await solicitarEmprestimoBicicleta(userId, codigo);
     }
-    
-    console.log("Redirecionando para sucesso");
     return redirect("/sucesso/emprestimo-bicicleta-solicitado");
   } catch (error) {
     console.error("Erro ao solicitar empréstimo:", error);
@@ -85,15 +70,8 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function SolicitarEmprestimoBicicleta() {
   const { bicicleta, users } = useLoaderData<typeof loader>();
   const [user, setUser] = useState<UserData | null>(null);
-  const [userPermissions, setUserPermissions] = useState<string[]>(["PROJECT_COORDINATORS"]); // Forçar coordenador
-  const [userInfo, setUserInfo] = useState<any>({
-    ameciclo_register: {
-      nome: "João Silva",
-      cpf: "123.456.789-00",
-      telefone: "(81) 99999-9999",
-      email: "joao@example.com"
-    }
-  });
+  const [userPermissions, setUserPermissions] = useState<string[]>([UserCategory.ANY_USER]);
+  const [userInfo, setUserInfo] = useState<any>(null);
   const [solicitarParaOutraPessoa, setSolicitarParaOutraPessoa] = useState(false);
 
   useEffect(() => {
@@ -123,7 +101,6 @@ export default function SolicitarEmprestimoBicicleta() {
       setUserPermissions([userRole]);
       setUserInfo(users[user.id]);
     }
-    // Não sobrescrever em desenvolvimento - manter valores iniciais
   }, [user, users]);
 
 
@@ -142,13 +119,7 @@ export default function SolicitarEmprestimoBicicleta() {
   const userData = getUserData();
   const isCoordinator = isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS);
   
-  // Debug no cliente
-  console.log("=== CLIENT DEBUG ===");
-  console.log("User:", user);
-  console.log("UserPermissions:", userPermissions);
-  console.log("IsCoordinator:", isCoordinator);
-  console.log("UserData:", userData);
-  console.log("===================");
+
   
 
 

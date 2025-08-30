@@ -41,6 +41,8 @@ export async function botaPraRodarAction({ request }: ActionFunctionArgs) {
       console.error("Usuário não identificado em produção. TelegramUser:", telegramUser);
       throw new Error("Usuário não identificado. Tente recarregar a página.");
     }
+    
+
 
     switch (action) {
       case "solicitar":
