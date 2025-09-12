@@ -78,8 +78,8 @@ export default function RegistrarConsumo() {
     // Verificar se é coordenador e definir permissões
     if (userData?.id && users[userData.id]) {
       const userRole = users[userData.id].role;
-      setIsCoordinator(userRole === UserCategory.PROJECT_COORDINATORS);
       setUserPermissions([userRole]);
+      setIsCoordinator(isAuth([userRole], UserCategory.PROJECT_COORDINATORS));
     }
   }, [users]);
 
