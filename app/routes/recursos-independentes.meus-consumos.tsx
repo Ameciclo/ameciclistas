@@ -320,6 +320,15 @@ export default function MeusConsumos() {
           </div>
         )
       )}
+      
+      <div className="mt-8">
+        <Link 
+          to="/recursos-independentes" 
+          className="button-secondary-full text-center"
+        >
+          ⬅️ Voltar ao Menu
+        </Link>
+      </div>
     </div>
   );
 }

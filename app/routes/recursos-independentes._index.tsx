@@ -108,6 +108,15 @@ export default function RecursosIndependentesIndex() {
         links={resourcesLinks} 
         userPermissions={userPermissions || [UserCategory.AMECICLISTAS]} 
       />
+      
+      <div className="mt-8">
+        <Link 
+          to="/" 
+          className="button-secondary-full text-center"
+        >
+          ⬅️ Voltar ao Menu Principal
+        </Link>
+      </div>
     </>
   );
 }

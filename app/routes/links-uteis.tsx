@@ -1,4 +1,4 @@
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData, Link } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import { BackButton, ButtonsListWithPermissions } from "~/components/Forms/Buttons";
 import { UserCategory, UserData } from "~/utils/types";
@@ -89,6 +89,12 @@ export default function LinksUteis() {
 
   return (
     <div className="container mx-auto p-4 flex flex-col">
+      <div className="mb-4">
+        <Link to="/" className="text-teal-600 hover:text-teal-700">
+          ← Voltar ao Menu Principal
+        </Link>
+      </div>
+      
       <h2 className="text-2xl font-bold text-teal-600 text-center">
         🔗 Links Úteis
       </h2>
@@ -115,8 +121,9 @@ export default function LinksUteis() {
         </div>
       </ProtectedComponent>
 
-      <br />
-      <BackButton />
+      <div className="mt-8">
+        <BackButton />
+      </div>
     </div>
   );
 }

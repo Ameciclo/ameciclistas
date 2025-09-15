@@ -234,6 +234,12 @@ export default function GestaoFornecedores() {
 
   return (
     <Form className="container mx-auto p-4" method="post">
+      <div className="mb-4">
+        <Link to="/" className="text-teal-600 hover:text-teal-700">
+          ← Voltar ao Menu Principal
+        </Link>
+      </div>
+      
       <FormTitle> 📦 Gestão de Fornecedores de Pagamentos </FormTitle>
 
       {/* Seção de busca para edição */}

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useLoaderData, Form } from "@remix-run/react";
+import { useLoaderData, Form, Link } from "@remix-run/react";
 import { UserCategory, UserData } from "~/utils/types";
 import { loader as originalLoader } from "~/handlers/loaders/users";
 import { action } from "~/handlers/actions/users-action";
@@ -45,6 +45,12 @@ const UserManagement: React.FC = () => {
 
     return (
         <div className="container mx-auto py-8 px-4">
+            <div className="mb-4">
+                <Link to="/" className="text-teal-600 hover:text-teal-700">
+                    ← Voltar ao Menu Principal
+                </Link>
+            </div>
+            
             <h1 className="text-3xl font-bold text-teal-600 text-center">
                 Gerenciamento de Usuários
             </h1>
@@ -105,8 +111,10 @@ const UserManagement: React.FC = () => {
                         ))}
                     </tbody>
                 </table>
-                <br />
-                <BackButton />
+                
+                <div className="mt-8">
+                    <BackButton />
+                </div>
             </div>
         </div>
     );

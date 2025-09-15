@@ -75,15 +75,15 @@ export default function RegistroEmprestimos() {
 
   return (
     <div className="container mx-auto py-8 px-4">
+      <div className="mb-4">
+        <Link to="/" className="text-teal-600 hover:text-teal-700">
+          ← Voltar ao Menu Principal
+        </Link>
+      </div>
+      
       <h1 className="text-3xl font-bold text-teal-600 mb-6">📦 Registro de Empréstimos</h1>
       
       <div className="space-y-3 mb-6">
-        <Link 
-          to="/" 
-          className="button-secondary-full text-center"
-        >
-          ⬅️ Voltar
-        </Link>
         
         {user && (process.env.NODE_ENV === "development" || isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) && (
           <button
@@ -187,6 +187,15 @@ export default function RegistroEmprestimos() {
           users={users}
         />
       )}
+      
+      <div className="mt-8">
+        <Link 
+          to="/" 
+          className="button-secondary-full text-center"
+        >
+          ⬅️ Voltar ao Menu Principal
+        </Link>
+      </div>
     </div>
   );
 }

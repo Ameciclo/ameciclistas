@@ -1,9 +1,7 @@
 import { useLoaderData } from "@remix-run/react";
-import { useEffect, useState } from "react";
-import { UserCategory, UserData } from "~/utils/types";
+import { UserCategory } from "~/utils/types";
 import Unauthorized from "~/components/Unauthorized";
 import { isAuth } from "~/utils/isAuthorized";
-import { getTelegramUsersInfo } from "~/utils/users";
 import { CardList } from "~/components/CardsList";
 import { BackButton } from "~/components/Forms/Buttons";
 
@@ -12,26 +10,7 @@ import FormTitle from "~/components/Forms/FormTitle";
 export { loader };
 
 export default function GruposTrabalho() {
-  const { usersInfo, currentUserCategories, workgroups } =
-    useLoaderData<LoaderData>();
-  const [userPermissions, setUserPermissions] = useState<UserCategory[]>(
-    currentUserCategories
-  );
-  const [user, setUser] = useState<UserData | null>(null);
-
-  // Obter informações do usuário pelo Telegram
-  useEffect(() => {
-    setUser(() => getTelegramUsersInfo());
-  }, []);
-
-  // Atualiza permissões com base no usuário
-  useEffect(() => {
-    if (user?.id && usersInfo[user.id]) {
-      setUserPermissions([
-        usersInfo[user.id] as unknown as UserCategory,
-      ]);
-    }
-  }, [user, usersInfo]);
+  const { currentUserCategories, workgroups } = useLoaderData<LoaderData>();
 
   // Mapear cores para as categorias
   const categoryColors: Record<string, string> = {
@@ -51,7 +30,7 @@ export default function GruposTrabalho() {
     badgeColor: categoryColors[group.directive.toLowerCase()] || "gray",
   }));
 
-  return isAuth(userPermissions, UserCategory.AMECICLISTAS) ? (
+  return isAuth(currentUserCategories, UserCategory.AMECICLISTAS) ? (
     <div className="container mx-auto p-4">
       <FormTitle>👥 Grupos de Trabalho da Ameciclo</FormTitle>
       <CardList items={cardItems} />

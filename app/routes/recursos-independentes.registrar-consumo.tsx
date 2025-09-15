@@ -300,6 +300,15 @@ export default function RegistrarConsumo() {
           Após registrar, você receberá as instruções para pagamento via PIX
         </p>
       </div>
+      
+      <div className="mt-8">
+        <Link 
+          to="/recursos-independentes" 
+          className="button-secondary-full text-center"
+        >
+          ⬅️ Voltar ao Menu
+        </Link>
+      </div>
     </div>
   );
 }

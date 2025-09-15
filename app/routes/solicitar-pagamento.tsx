@@ -186,6 +186,12 @@ export default function SolicitarPagamento() {
 
   return (
     <Form method="post" className="container">
+      <div className="mb-4">
+        <Link to="/" className="text-teal-600 hover:text-teal-700">
+          ← Voltar ao Menu Principal
+        </Link>
+      </div>
+      
       <FormTitle>💰 Solicitar Pagamentos</FormTitle>
 
       

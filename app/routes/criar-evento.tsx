@@ -1,4 +1,4 @@
-import { Form, useLoaderData } from "@remix-run/react";
+import { Form, useLoaderData, Link } from "@remix-run/react";
 import { useState, useEffect } from "react";
 import { getTelegramUsersInfo } from "../utils/users";
 import { UserCategory, UserData } from "~/utils/types";
@@ -81,6 +81,12 @@ export default function CriarEvento() {
 
   return (
     <Form className="container" method="post">
+      <div className="mb-4">
+        <Link to="/" className="text-teal-600 hover:text-teal-700">
+          ← Voltar ao Menu Principal
+        </Link>
+      </div>
+      
       <FormTitle>📅 Criar Evento</FormTitle>
 
       <TextInput
