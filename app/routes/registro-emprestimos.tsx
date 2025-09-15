@@ -20,6 +20,11 @@ export default function RegistroEmprestimos() {
   const [user, setUser] = useState<UserData | null>(null);
   const [busca, setBusca] = useState("");
   const [mostrarGestao, setMostrarGestao] = useState(false);
+  
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    setMostrarGestao(urlParams.get('gestao') === 'true');
+  }, []);
   const [filtroDisponibilidade, setFiltroDisponibilidade] = useState("todos");
   const [filtroCategoria, setFiltroCategoria] = useState("");
 
@@ -83,17 +88,7 @@ export default function RegistroEmprestimos() {
       
       <h1 className="text-3xl font-bold text-teal-600 mb-6">📦 Registro de Empréstimos</h1>
       
-      <div className="space-y-3 mb-6">
-        
-        {user && (process.env.NODE_ENV === "development" || isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) && (
-          <button
-            onClick={() => setMostrarGestao(!mostrarGestao)}
-            className="w-full bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition-colors text-lg"
-          >
-            🔧 {mostrarGestao ? "Ver Itens" : "Gestão"}
-          </button>
-        )}
-      </div>
+
 
       {!mostrarGestao ? (
         <>

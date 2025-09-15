@@ -1,4 +1,4 @@
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData, Link } from "@remix-run/react";
 import { UserCategory, UserData } from "~/utils/types";
 import { useEffect, useState } from "react";
 import { getTelegramUsersInfo } from "~/utils/users";
@@ -6,6 +6,7 @@ import telegramInit from "~/utils/telegramInit";
 import { ButtonsListWithPermissions } from "~/components/Forms/Buttons";
 import { useAuth } from "~/utils/useAuth";
 import { createDevTelegramUserWithCategories } from "~/utils/devTelegram";
+import { isAuth } from "~/utils/isAuthorized";
 
 import { loader } from "~/handlers/loaders/_index";
 export { loader };
@@ -76,7 +77,6 @@ const links = [
     label: "Gerenciamento de Usuários",
     icon: "🔧",
     requiredPermission: UserCategory.AMECICLO_COORDINATORS,
-    hide: true,
   },
 ];
 
@@ -116,7 +116,35 @@ export default function Index() {
       ) : (
         <p className="text-sm text-center mb-4">Olá, {user?.first_name}!</p>
       )}
-      <ButtonsListWithPermissions links={links} userPermissions={userPermissions} />
+      <div className="space-y-4">
+        {links.filter(link => !link.hide).map((link) => {
+          const hasPermission = isAuth(userPermissions, link.requiredPermission);
+          if (!hasPermission) return null;
+          
+          const hasGestao = ['biblioteca', 'bota-pra-rodar', 'registro-emprestimos'].some(path => link.to.includes(path));
+          const showGestaoButton = hasGestao && isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS);
+          
+          return (
+            <div key={link.to} className={showGestaoButton ? "flex gap-2" : ""}>
+              <Link
+                to={link.to}
+                className={`${showGestaoButton ? 'flex-1' : 'w-full'} bg-teal-600 text-white px-4 py-3 rounded-md hover:bg-teal-700 transition-colors text-lg font-medium text-center block no-underline`}
+              >
+                {link.icon} {link.label}
+              </Link>
+              {showGestaoButton && (
+                <Link
+                  to={`${link.to}?gestao=true`}
+                  className="bg-orange-500 text-white px-3 py-3 rounded-md hover:bg-orange-600 transition-colors text-lg block no-underline flex items-center justify-center"
+                  title="Gestão"
+                >
+                  🔧
+                </Link>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
