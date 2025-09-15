@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { getTelegramUsersInfo } from "~/utils/users";
 import telegramInit from "~/utils/telegramInit";
 import { ButtonsListWithPermissions } from "~/components/Forms/Buttons";
-import { useDevUser } from "~/utils/useDevUser";
+import { useAuth } from "~/utils/useAuth";
 import { createDevTelegramUserWithCategories } from "~/utils/devTelegram";
 
 import { loader } from "~/handlers/loaders/_index";
@@ -82,16 +82,12 @@ const links = [
 
 export default function Index() {
   const [user, setUser] = useState<UserData | null>({} as UserData);
-  const { devUser, isDevMode } = useDevUser();
+  const { devUser, isDevMode, userPermissions } = useAuth();
 
-  const { usersInfo, currentUserCategories } =
-    useLoaderData<typeof loader>();
-  const [userPermissions, setUserPermissions] = useState(currentUserCategories);
+  const { usersInfo, currentUserCategories } = useLoaderData<typeof loader>();
 
   useEffect(() => {
     if (isDevMode && devUser) {
-      const devTelegramUser = createDevTelegramUserWithCategories(devUser);
-      setUserPermissions(devTelegramUser.categories);
       setUser({
         id: devUser.id,
         first_name: devUser.name.split(" ")[0],
@@ -102,12 +98,6 @@ export default function Index() {
       setUser(() => getTelegramUsersInfo());
     }
   }, [devUser, isDevMode]);
-
-  useEffect(() => {
-    if (!isDevMode && user?.id && usersInfo[user.id]) {
-      setUserPermissions([usersInfo[user.id].role as UserCategory]);
-    }
-  }, [user, isDevMode]);
 
   return (
     <div className="container mx-auto py-8 px-4">

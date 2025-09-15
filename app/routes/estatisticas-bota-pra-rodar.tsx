@@ -3,8 +3,10 @@ import { useLoaderData, Link } from "@remix-run/react";
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { getBicicletas, getEmprestimosBicicletas } from "~/api/firebaseConnection.server";
 import type { Bicicleta, EmprestimoBicicleta } from "~/utils/types";
+import { requireAuth } from "~/utils/authMiddleware";
+import { UserCategory } from "~/utils/types";
 
-export async function loader({ request }: LoaderFunctionArgs) {
+const originalLoader = async ({ request }: LoaderFunctionArgs) => {
   try {
     const bicicletasData = await getBicicletas();
     const emprestimosData = await getEmprestimosBicicletas();
@@ -17,7 +19,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     console.error("Erro ao carregar estatísticas do Bota pra Rodar:", error);
     return json({ bicicletas: [], emprestimos: [] });
   }
-}
+};
+
+export const loader = requireAuth(UserCategory.AMECICLISTAS)(originalLoader);
 
 export default function EstatisticasBotaPraRodar() {
   const { bicicletas, emprestimos } = useLoaderData<typeof loader>();

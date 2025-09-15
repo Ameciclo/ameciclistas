@@ -4,22 +4,12 @@ import { BackButton, ButtonsListWithPermissions } from "~/components/Forms/Butto
 import { UserCategory, UserData } from "~/utils/types";
 import { loader } from "./_index";
 import { getTelegramUsersInfo } from "~/utils/users";
+import { ProtectedComponent } from "~/components/ProtectedComponent";
+import { useAuth } from "~/utils/useAuth";
 export { loader };
 
 export default function LinksUteis() {
-  const { currentUserCategories, usersInfo } = useLoaderData<typeof loader>();
-  const [userPermissions, setUserPermissions] = useState(currentUserCategories);
-  const [user, setUser] = useState<UserData | null>(null);
-
-  useEffect(() => {
-    setUser(() => getTelegramUsersInfo());
-  }, []);
-
-  useEffect(() => {
-    if (user?.id && usersInfo?.[user.id]) {
-      setUserPermissions([usersInfo[user.id].role as UserCategory]);
-    }
-  }, [user, usersInfo]);
+  const { userPermissions, isDevMode, devUser } = useAuth();
 
   const links = [
     {
@@ -103,10 +93,27 @@ export default function LinksUteis() {
         🔗 Links Úteis
       </h2>
 
+      {isDevMode && (
+        <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-4">
+          <p className="text-sm">
+            🧪 <strong>Modo Dev:</strong> Testando como {devUser?.name}
+          </p>
+          <p className="text-xs">Permissões: {userPermissions.join(", ")}</p>
+        </div>
+      )}
+
       <ButtonsListWithPermissions
         links={links}
         userPermissions={userPermissions || [UserCategory.ANY_USER]}
       />
+
+      <ProtectedComponent requiredPermission={UserCategory.AMECICLISTAS}>
+        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mt-4">
+          <p className="text-sm">
+            ✅ <strong>Área para Ameciclistas:</strong> Você tem acesso aos links internos!
+          </p>
+        </div>
+      </ProtectedComponent>
 
       <br />
       <BackButton />

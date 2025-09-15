@@ -1,6 +1,8 @@
 import { useLoaderData, Link } from "@remix-run/react";
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import db from "~/api/firebaseAdmin.server.js";
+import { requireAuth } from "~/utils/authMiddleware";
+import { UserCategory } from "~/utils/types";
 
 // Funções para buscar dados do Firebase
 async function buscarBibliotecaFirebase(): Promise<any[]> {
@@ -39,7 +41,7 @@ async function buscarTodosEmprestimosFirebase(): Promise<any[]> {
   }
 }
 
-export async function loader({ request }: LoaderFunctionArgs) {
+const originalLoader = async ({ request }: LoaderFunctionArgs) => {
   try {
     const emprestimos = await buscarTodosEmprestimosFirebase();
     const biblioteca = await buscarBibliotecaFirebase();
@@ -94,7 +96,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     return json({ estatisticas });
   }
-}
+};
+
+export const loader = requireAuth(UserCategory.AMECICLISTAS)(originalLoader);
 
 function getLivrosMaisEmprestados(emprestimos: any[], biblioteca: any[]) {
   const contagem: { [key: string]: { count: number; titulo: string } } = {};
