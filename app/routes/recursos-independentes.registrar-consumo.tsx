@@ -1,18 +1,15 @@
 import { ActionFunction, LoaderFunction, json, redirect } from "@remix-run/node";
 import { Form, useLoaderData, useActionData, Link } from "@remix-run/react";
 import { useEffect, useState } from "react";
-import { getTelegramUsersInfo } from "~/utils/users";
-import telegramInit from "~/utils/telegramInit";
 import { getProducts, saveSale, getUsersFirebase } from "~/api/firebaseConnection.server";
 import { Product, ProductCategory, SaleStatus, UserData, UserCategory } from "~/utils/types";
 import { requireAuth } from "~/utils/authMiddleware";
+import { useAuth } from "~/utils/useAuth";
+import { isAuth } from "~/utils/isAuthorized";
 
 const originalLoader: LoaderFunction = async () => {
-  const [products, users] = await Promise.all([
-    getProducts(),
-    getUsersFirebase()
-  ]);
-  return json({ products, users });
+  const products = await getProducts();
+  return json({ products });
 };
 
 export const loader = requireAuth(UserCategory.AMECICLISTAS)(originalLoader);
@@ -60,30 +57,22 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 export default function RegistrarConsumo() {
-  const { products, users } = useLoaderData<typeof loader>();
+  const { products } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const [user, setUser] = useState<UserData | null>(null);
+  const { userPermissions, isDevMode, devUser, realUser } = useAuth();
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedVariant, setSelectedVariant] = useState<string>("");
   const [quantity, setQuantity] = useState(1);
-  const [isCoordinator, setIsCoordinator] = useState(false);
   const [customerName, setCustomerName] = useState("");
-  const [customerSearch, setCustomerSearch] = useState("");
   const [showCustomerForm, setShowCustomerForm] = useState(false);
-  const [userPermissions, setUserPermissions] = useState<string[]>([]);
 
-  useEffect(() => {
-    telegramInit();
-    const userData = getTelegramUsersInfo();
-    setUser(userData);
-    
-    // Verificar se é coordenador e definir permissões
-    if (userData?.id && users[userData.id]) {
-      const userRole = users[userData.id].role;
-      setUserPermissions([userRole]);
-      setIsCoordinator(userRole === UserCategory.PROJECT_COORDINATORS);
-    }
-  }, [users]);
+  const user = isDevMode && devUser ? {
+    id: devUser.id,
+    first_name: devUser.name.split(" ")[0],
+    last_name: devUser.name.split(" ").slice(1).join(" ")
+  } : realUser;
+
+  const isCoordinator = isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS);
 
   const productsList = products ? Object.values(products) as Product[] : [];
   const currentPrice = selectedProduct?.variants?.find(v => v.id === selectedVariant)?.price || selectedProduct?.price || 0;
