@@ -49,9 +49,9 @@ const links = [
     requiredPermission: UserCategory.AMECICLISTAS,
   },
   {
-    to: "/recursos-independentes",
-    label: "Controle de Recursos Independentes",
-    icon: "🏪",
+    to: "/recursos-independentes/registrar-consumo",
+    label: "Registrar Consumo",
+    icon: "🛒",
     requiredPermission: UserCategory.AMECICLISTAS,
   },
   {
@@ -122,13 +122,15 @@ export default function Index() {
           if (!hasPermission) return null;
           
           const hasGestao = ['biblioteca', 'bota-pra-rodar', 'registro-emprestimos'].some(path => link.to.includes(path));
+          const isRecursosIndependentes = link.to.includes('recursos-independentes');
           const showGestaoButton = hasGestao && isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS);
+          const showRecursosButtons = isRecursosIndependentes && isAuth(userPermissions, UserCategory.AMECICLISTAS);
           
           return (
-            <div key={link.to} className={showGestaoButton ? "flex gap-2" : ""}>
+            <div key={link.to} className={showGestaoButton || showRecursosButtons ? "flex gap-2" : ""}>
               <Link
                 to={link.to}
-                className={`${showGestaoButton ? 'flex-1' : 'w-full'} bg-teal-600 text-white px-4 py-3 rounded-md hover:bg-teal-700 transition-colors text-lg font-medium text-center block no-underline`}
+                className={`${showGestaoButton || showRecursosButtons ? 'flex-1' : 'w-full'} bg-teal-600 text-white px-4 py-3 rounded-md hover:bg-teal-700 transition-colors text-lg font-medium text-center block no-underline`}
               >
                 {link.icon} {link.label}
               </Link>
@@ -140,6 +142,33 @@ export default function Index() {
                 >
                   🔧
                 </Link>
+              )}
+              {showRecursosButtons && (
+                <>
+                  <Link
+                    to="/recursos-independentes/meus-consumos"
+                    className="bg-purple-500 text-white px-3 py-3 rounded-md hover:bg-purple-600 transition-colors text-lg block no-underline flex items-center justify-center"
+                    title="Meus Consumos"
+                  >
+                    📋
+                  </Link>
+                  <Link
+                    to="/recursos-independentes/historico"
+                    className="bg-blue-500 text-white px-3 py-3 rounded-md hover:bg-blue-600 transition-colors text-lg block no-underline flex items-center justify-center"
+                    title="Histórico de Vendas"
+                  >
+                    📊
+                  </Link>
+                  {isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS) && (
+                    <Link
+                      to="/recursos-independentes/gerenciar?gestao=true"
+                      className="bg-orange-500 text-white px-3 py-3 rounded-md hover:bg-orange-600 transition-colors text-lg block no-underline flex items-center justify-center"
+                      title="Gestão"
+                    >
+                      🔧
+                    </Link>
+                  )}
+                </>
               )}
             </div>
           );
