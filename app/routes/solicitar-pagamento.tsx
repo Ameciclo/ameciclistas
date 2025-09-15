@@ -41,19 +41,21 @@ interface PaymentItem {
 }
 
 import { getTelegramUsersInfo } from "~/utils/users";
-import { isAuth } from "~/utils/isAuthorized";
-import Unauthorized from "~/components/Unauthorized";
+import { useAuth } from "~/utils/useAuth";
+import { requireAuth } from "~/utils/authMiddleware";
 
 import { action } from "~/handlers/actions/solicitar-pagamento";
-import { loader } from "~/handlers/loaders/solicitar-pagamento";
-export { loader, action };
+import { loader as originalLoader } from "~/handlers/loaders/solicitar-pagamento";
+
+export const loader = requireAuth(UserCategory.PROJECT_COORDINATORS)(originalLoader);
+export { action };
 
 export default function SolicitarPagamento() {
   const { projects, suppliers, currentUserCategories, usersInfo } =
     useLoaderData<typeof loader>();
 
   const [user, setUser] = useState<UserData | null>(null);
-  const [userPermissions, setUserPermissions] = useState(currentUserCategories);
+  const { userPermissions, isDevMode, devUser } = useAuth();
   const [paymentItems, setPaymentItems] = useState<PaymentItem[]>([{
     id: crypto.randomUUID(),
     transactionType: "Solicitar Pagamento",
@@ -75,14 +77,16 @@ export default function SolicitarPagamento() {
 
 
   useEffect(() => {
-    setUser(() => getTelegramUsersInfo());
-  }, [usersInfo]);
-
-  useEffect(() => {
-    if (user?.id && usersInfo[user.id]) {
-      setUserPermissions([usersInfo[user.id].role as any]);
+    if (isDevMode && devUser) {
+      setUser({
+        id: devUser.id,
+        first_name: devUser.name.split(" ")[0],
+        last_name: devUser.name.split(" ").slice(1).join(" ")
+      });
+    } else {
+      setUser(() => getTelegramUsersInfo());
     }
-  }, [user]);
+  }, [devUser, isDevMode]);
 
   const addPaymentItem = () => {
     const newItem: PaymentItem = {
@@ -180,7 +184,7 @@ export default function SolicitarPagamento() {
 
   const isFormValid = paymentItems.every(item => getItemErrors(item).length === 0);
 
-  return isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS) ? (
+  return (
     <Form method="post" className="container">
       <FormTitle>💰 Solicitar Pagamentos</FormTitle>
 
@@ -418,10 +422,5 @@ export default function SolicitarPagamento() {
       />
       <BackButton />
     </Form>
-  ) : (
-    <Unauthorized
-      pageName="Solicitar Pagamentos"
-      requiredPermission="Coordenador de Projeto"
-    />
   );
 }

@@ -19,11 +19,16 @@
 
 ### **5. Páginas Migradas**
 - ✅ `routes/_index.tsx` - Menu principal usando novo sistema
-- ✅ `routes/estatisticas-biblioteca.tsx` - Protegida com middleware
-- ✅ `routes/estatisticas-bota-pra-rodar.tsx` - Protegida com middleware  
-- ✅ `routes/registrar-usuario-biblioteca.tsx` - Protegida com middleware
+- ✅ `routes/estatisticas-biblioteca.tsx` - Protegida com middleware (AMECICLISTAS)
+- ✅ `routes/estatisticas-bota-pra-rodar.tsx` - Protegida com middleware (AMECICLISTAS)
+- ✅ `routes/registrar-usuario-biblioteca.tsx` - Protegida com middleware (PROJECT_COORDINATORS)
 - ✅ `routes/links-uteis.tsx` - Exemplo de ProtectedComponent
 - ✅ `routes/unauthorized.tsx` - Página de acesso negado
+- ✅ `routes/criar-evento.tsx` - Protegida com middleware (AMECICLISTAS)
+- ✅ `routes/solicitar-pagamento.tsx` - Protegida com middleware (PROJECT_COORDINATORS)
+- ✅ `routes/gestao-fornecedores.tsx` - Protegida com middleware (PROJECT_COORDINATORS)
+- ✅ `routes/registro-emprestimos.tsx` - Protegida com middleware (AMECICLISTAS)
+- ✅ `routes/recursos-independentes._index.tsx` - Protegida com middleware (AMECICLISTAS)
 
 ## 🧪 Como Testar
 
@@ -37,10 +42,15 @@ npm run dev
 - ✅ Botões aparecem/desaparecem conforme permissão
 
 ### **2. Proteção de Rotas**
-Teste acessar diretamente:
+Teste acessar diretamente com **usuário comum**:
 - `/estatisticas-biblioteca` - Deve redirecionar para `/unauthorized`
 - `/estatisticas-bota-pra-rodar` - Deve redirecionar para `/unauthorized`
 - `/registrar-usuario-biblioteca` - Deve redirecionar para `/unauthorized`
+- `/criar-evento` - Deve redirecionar para `/unauthorized`
+- `/solicitar-pagamento` - Deve redirecionar para `/unauthorized`
+- `/gestao-fornecedores` - Deve redirecionar para `/unauthorized`
+- `/registro-emprestimos` - Deve redirecionar para `/unauthorized`
+- `/recursos-independentes` - Deve redirecionar para `/unauthorized`
 
 ### **3. Componentes Protegidos**
 Na página `/links-uteis`:
@@ -85,9 +95,9 @@ Teste com diferentes usuários:
 
 ## 📊 Status Atual
 
-**Implementado**: 60% da Fase 1
-**Funcionando**: Sistema base operacional
-**Próximo**: Migração em massa das páginas restantes
+**Implementado**: 95% da Fase 1
+**Funcionando**: Sistema base + principais páginas protegidas
+**Próximo**: Fase 2 - Expansão para demais páginas
 
 ---
 

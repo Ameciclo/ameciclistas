@@ -1,48 +1,44 @@
 import { useState, useEffect } from "react";
 import { Form, Link, useLoaderData } from "@remix-run/react";
-import { isAuth } from "~/utils/isAuthorized";
+import { useAuth } from "~/utils/useAuth";
 import { getTelegramUsersInfo } from "~/utils/users";
 import { UserCategory, UserData } from "~/utils/types";
-import Unauthorized from "~/components/Unauthorized";
 import { formatEmail, formatIdNumber, formatPhone } from "~/utils/format";
 import { validateIdNumber } from "~/utils/idNumber";
 import { BackButton } from "~/components/Forms/Buttons";
+import { requireAuth } from "~/utils/authMiddleware";
 
 import { action } from "../handlers/actions/gestao-fornecedores";
-import { loader, LoaderData } from "~/handlers/loaders/gestao-fornecedores";
+import { loader as originalLoader, LoaderData } from "~/handlers/loaders/gestao-fornecedores";
 import SendToAction from "~/components/Forms/SendToAction";
 import SelectInput from "~/components/Forms/Inputs/SelectInput";
 import FormTitle from "~/components/Forms/FormTitle";
-export { loader, action };
+
+export const loader = requireAuth(UserCategory.PROJECT_COORDINATORS)(originalLoader);
+export { action };
 
 export default function GestaoFornecedores() {
   const loaderData = useLoaderData<LoaderData>();
   const { usersInfo, currentUserCategories, suppliers } = loaderData || {};
-  const [userPermissions, setUserPermissions] = useState<UserCategory[]>(
-    currentUserCategories || []
-  );
+  const { userPermissions, isDevMode, devUser } = useAuth();
   const [user, setUser] = useState<UserData | null>(null);
 
   useEffect(() => {
-    try {
-      setUser(getTelegramUsersInfo());
-    } catch (error) {
-      console.error("Erro ao obter dados do Telegram:", error);
-      setUser(null);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (user?.id) {
-      // Tenta pegar do Firebase
-      if (usersInfo && usersInfo[user.id]) {
-        setUserPermissions([usersInfo[user.id].role as UserCategory]);
-      } else {
-        // Fallback para desenvolvimento
-        setUserPermissions([UserCategory.DEVELOPMENT]);
+    if (isDevMode && devUser) {
+      setUser({
+        id: devUser.id,
+        first_name: devUser.name.split(" ")[0],
+        last_name: devUser.name.split(" ").slice(1).join(" ")
+      });
+    } else {
+      try {
+        setUser(getTelegramUsersInfo());
+      } catch (error) {
+        console.error("Erro ao obter dados do Telegram:", error);
+        setUser(null);
       }
     }
-  }, [user, usersInfo]);
+  }, [devUser, isDevMode]);
 
   const [personType, setPersonType] = useState<"fisica" | "juridica">(
     "juridica"
@@ -236,12 +232,7 @@ export default function GestaoFornecedores() {
   const missingFields = getMissingFields();
   const isFormValid = missingFields.length === 0;
 
-  // Verificação de segurança para userPermissions
-  const safeUserPermissions = Array.isArray(userPermissions)
-    ? userPermissions
-    : [];
-
-  return isAuth(safeUserPermissions, UserCategory.PROJECT_COORDINATORS) ? (
+  return (
     <Form className="container mx-auto p-4" method="post">
       <FormTitle> 📦 Gestão de Fornecedores de Pagamentos </FormTitle>
 
@@ -663,10 +654,5 @@ export default function GestaoFornecedores() {
 
       <BackButton />
     </Form>
-  ) : (
-    <Unauthorized
-      pageName="Adicionar Fornecedor"
-      requiredPermission="Coordenador de Projeto"
-    />
   );
 }

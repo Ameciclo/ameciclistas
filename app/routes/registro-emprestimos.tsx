@@ -4,52 +4,43 @@ import { UserCategory, type ItemInventario, type EmprestimoInventario, type User
 import { getTelegramUsersInfo } from "~/utils/users";
 import telegramInit from "~/utils/telegramInit";
 import { isAuth } from "~/utils/isAuthorized";
+import { useAuth } from "~/utils/useAuth";
+import { requireAuth } from "~/utils/authMiddleware";
 import { registroEmprestimosLoader } from "~/handlers/loaders/registro-emprestimos";
 import { registroEmprestimosAction } from "~/handlers/actions/registro-emprestimos";
 import { RegistroEmprestimosGestao } from "~/components/RegistroEmprestimosGestao";
 import { PaginacaoInventario } from "~/components/PaginacaoInventario";
 
-export const loader = registroEmprestimosLoader;
+export const loader = requireAuth(UserCategory.AMECICLISTAS)(registroEmprestimosLoader);
 export const action = registroEmprestimosAction;
 
 export default function RegistroEmprestimos() {
   const { itens, emprestimos, solicitacoes, users } = useLoaderData<typeof loader>();
+  const { userPermissions, isDevMode, devUser } = useAuth();
   const [user, setUser] = useState<UserData | null>(null);
   const [busca, setBusca] = useState("");
   const [mostrarGestao, setMostrarGestao] = useState(false);
-  const [userPermissions, setUserPermissions] = useState<string[]>([UserCategory.ANY_USER]);
   const [filtroDisponibilidade, setFiltroDisponibilidade] = useState("todos");
   const [filtroCategoria, setFiltroCategoria] = useState("");
 
   useEffect(() => {
-    try {
-      telegramInit();
-      const userData = getTelegramUsersInfo();
-      
-      if (process.env.NODE_ENV === "development" && !userData) {
-        setUser({
-          id: 123456789,
-          first_name: "João",
-          last_name: "Silva",
-          username: "joaosilva"
-        } as UserData);
-      } else {
+    if (isDevMode && devUser) {
+      setUser({
+        id: devUser.id,
+        first_name: devUser.name.split(" ")[0],
+        last_name: devUser.name.split(" ").slice(1).join(" ")
+      });
+    } else {
+      try {
+        telegramInit();
+        const userData = getTelegramUsersInfo();
         setUser(userData);
+      } catch (error) {
+        console.error('Erro ao inicializar Telegram:', error);
+        setUser(null);
       }
-    } catch (error) {
-      console.error('Erro ao inicializar Telegram:', error);
-      setUser(null);
     }
-  }, []);
-
-  useEffect(() => {
-    if (user?.id && users[user.id]) {
-      const userRole = users[user.id].role;
-      setUserPermissions([userRole]);
-    } else if (process.env.NODE_ENV === "development") {
-      setUserPermissions([UserCategory.PROJECT_COORDINATORS]);
-    }
-  }, [user, users]);
+  }, [devUser, isDevMode]);
 
   const itensComDisponibilidade = itens.map((item: ItemInventario) => {
     return {

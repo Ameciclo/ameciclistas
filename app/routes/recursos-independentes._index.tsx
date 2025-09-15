@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import { getTelegramUsersInfo } from "~/utils/users";
 import telegramInit from "~/utils/telegramInit";
 import { ButtonsListWithPermissions } from "~/components/Forms/Buttons";
-import { isAuth } from "~/utils/isAuthorized";
+import { useAuth } from "~/utils/useAuth";
+import { requireAuth } from "~/utils/authMiddleware";
 
-import { loader } from "~/handlers/loaders/_index";
-export { loader };
+import { loader as originalLoader } from "~/handlers/loaders/_index";
+
+export const loader = requireAuth(UserCategory.AMECICLISTAS)(originalLoader);
 
 const resourcesLinks = [
   {
@@ -51,33 +53,20 @@ const resourcesLinks = [
 export default function RecursosIndependentesIndex() {
   const [user, setUser] = useState<UserData | null>({} as UserData);
   const { usersInfo, currentUserCategories } = useLoaderData<typeof loader>();
-  const [userPermissions, setUserPermissions] = useState(currentUserCategories);
+  const { userPermissions, isDevMode, devUser } = useAuth();
 
   useEffect(() => {
-    telegramInit();
-    setUser(() => getTelegramUsersInfo());
-  }, []);
-
-  useEffect(() => {
-    if (user?.id && usersInfo[user.id]) {
-      setUserPermissions([usersInfo[user.id].role as UserCategory]);
+    if (isDevMode && devUser) {
+      setUser({
+        id: devUser.id,
+        first_name: devUser.name.split(" ")[0],
+        last_name: devUser.name.split(" ").slice(1).join(" ")
+      });
+    } else {
+      telegramInit();
+      setUser(() => getTelegramUsersInfo());
     }
-  }, [user]);
-
-  if (!isAuth(userPermissions, UserCategory.AMECICLISTAS)) {
-    return (
-      <>
-        <div className="mb-4">
-          <Link to="/" className="text-teal-600 hover:text-teal-700">
-            ← Voltar ao Menu Principal
-          </Link>
-        </div>
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          <strong>Acesso Negado:</strong> Você precisa ser Ameciclista para acessar o Controle de Recursos Independentes.
-        </div>
-      </>
-    );
-  }
+  }, [devUser, isDevMode]);
 
   return (
     <>
