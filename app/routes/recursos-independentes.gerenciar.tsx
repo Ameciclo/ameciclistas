@@ -3,11 +3,11 @@ import { Form, useLoaderData, useActionData, Link } from "@remix-run/react";
 import { useState, useEffect } from "react";
 import { getSales, getDonations, updateSaleStatus, updateDonationStatus, getUsersFirebase } from "~/api/firebaseConnection.server";
 import { Sale, Donation, SaleStatus, UserCategory, UserData } from "~/utils/types";
-import { isAuth } from "~/utils/isAuthorized";
+import { requireAuth } from "~/utils/authMiddleware";
 import { getTelegramUsersInfo } from "~/utils/users";
 import telegramInit from "~/utils/telegramInit";
 
-export const loader: LoaderFunction = async () => {
+const originalLoader: LoaderFunction = async () => {
   const [sales, donations, users] = await Promise.all([
     getSales(),
     getDonations(),
@@ -15,6 +15,8 @@ export const loader: LoaderFunction = async () => {
   ]);
   return json({ sales, donations, users });
 };
+
+export const loader = requireAuth(UserCategory.PROJECT_COORDINATORS)(originalLoader);
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
@@ -104,21 +106,6 @@ export default function GerenciarRecursos() {
       minute: "2-digit"
     });
   };
-
-  if (!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) {
-    return (
-      <>
-        <div className="mb-4">
-          <Link to="/recursos-independentes" className="text-teal-600 hover:text-teal-700">
-            ← Voltar ao Menu
-          </Link>
-        </div>
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          <strong>Acesso Negado:</strong> Você precisa ser Coordenador de Projeto para acessar esta página.
-        </div>
-      </>
-    );
-  }
 
   return (
     <>

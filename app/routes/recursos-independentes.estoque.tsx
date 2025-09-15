@@ -3,17 +3,19 @@ import { Form, useLoaderData, useActionData, Link } from "@remix-run/react";
 import { useState, useEffect } from "react";
 import { getProducts, saveProduct, updateProduct, deleteProduct, updateProductStock, getUsersFirebase } from "~/api/firebaseConnection.server";
 import { Product, ProductCategory, UserCategory, UserData } from "~/utils/types";
-import { isAuth } from "~/utils/isAuthorized";
+import { requireAuth } from "~/utils/authMiddleware";
 import { getTelegramUsersInfo } from "~/utils/users";
 import telegramInit from "~/utils/telegramInit";
 
-export const loader: LoaderFunction = async () => {
+const originalLoader: LoaderFunction = async () => {
   const [products, users] = await Promise.all([
     getProducts(),
     getUsersFirebase()
   ]);
   return json({ products, users });
 };
+
+export const loader = requireAuth(UserCategory.PROJECT_COORDINATORS)(originalLoader);
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
@@ -30,7 +32,6 @@ export const action: ActionFunction = async ({ request }) => {
         stock: parseInt(formData.get("stock") as string),
       };
       
-      // Apenas adicionar description se tiver valor válido
       if (description && description.trim() !== "") {
         productData.description = description.trim();
       }
@@ -50,7 +51,6 @@ export const action: ActionFunction = async ({ request }) => {
         stock: parseInt(formData.get("stock") as string),
       };
       
-      // Apenas adicionar description se tiver valor válido
       if (description && description.trim() !== "") {
         productData.description = description.trim();
       }
@@ -65,30 +65,6 @@ export const action: ActionFunction = async ({ request }) => {
       return json({ success: "Produto removido com sucesso!" });
     }
     
-    if (action === "updateStock") {
-      const productId = formData.get("productId") as string;
-      const newStock = parseInt(formData.get("newStock") as string);
-      const variantId = formData.get("variantId") as string | null;
-      const variantIdValue = variantId || null;
-      
-      // Para atualização manual, calcular a diferença
-      const products = await getProducts();
-      const product = products[productId];
-      
-      if (variantIdValue && product?.variants) {
-        const variant = product.variants.find(v => v.id === variantIdValue);
-        const currentStock = variant?.stock || 0;
-        const stockChange = newStock - currentStock;
-        await updateProductStock(productId, stockChange, variantIdValue);
-      } else {
-        const currentStock = product?.stock || 0;
-        const stockChange = newStock - currentStock;
-        await updateProductStock(productId, stockChange);
-      }
-      
-      return json({ success: "Estoque atualizado com sucesso!" });
-    }
-    
     return json({ error: "Ação inválida" }, { status: 400 });
   } catch (error: any) {
     return json({ error: error.message }, { status: 500 });
@@ -100,19 +76,6 @@ export default function GerenciarEstoque() {
   const actionData = useActionData<typeof action>();
   const [activeTab, setActiveTab] = useState<"list" | "create" | "edit">("list");
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [user, setUser] = useState<UserData | null>(null);
-  const [userPermissions, setUserPermissions] = useState<string[]>([]);
-
-  useEffect(() => {
-    telegramInit();
-    const userData = getTelegramUsersInfo();
-    setUser(userData);
-    
-    if (userData?.id && users[userData.id]) {
-      const userRole = users[userData.id].role;
-      setUserPermissions([userRole]);
-    }
-  }, [users]);
 
   const productsList = products ? Object.values(products) as Product[] : [];
 
@@ -133,28 +96,12 @@ export default function GerenciarEstoque() {
     setActiveTab("edit");
   };
 
-  // Fechar aba de edição após sucesso
   useEffect(() => {
     if (actionData?.success && activeTab === "edit") {
       setEditingProduct(null);
       setActiveTab("list");
     }
   }, [actionData, activeTab]);
-
-  if (!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) {
-    return (
-      <>
-        <div className="mb-4">
-          <Link to="/recursos-independentes" className="text-teal-600 hover:text-teal-700">
-            ← Voltar ao Menu
-          </Link>
-        </div>
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          <strong>Acesso Negado:</strong> Você precisa ser Coordenador de Projeto para acessar esta página.
-        </div>
-      </>
-    );
-  }
 
   return (
     <>
@@ -180,7 +127,6 @@ export default function GerenciarEstoque() {
         </div>
       )}
 
-      {/* Tabs */}
       <div className="flex border-b border-gray-200 mb-6">
         <button
           onClick={() => setActiveTab("list")}
@@ -202,18 +148,6 @@ export default function GerenciarEstoque() {
         >
           Criar Produto
         </button>
-        {editingProduct && (
-          <button
-            onClick={() => setActiveTab("edit")}
-            className={`py-2 px-4 border-b-2 font-medium text-sm ${
-              activeTab === "edit"
-                ? "border-teal-500 text-teal-600"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            Editar: {editingProduct.name}
-          </button>
-        )}
       </div>
 
       {activeTab === "list" && (
@@ -240,9 +174,6 @@ export default function GerenciarEstoque() {
                     <p className="text-sm text-gray-600">
                       Estoque: {product.stock} unidades
                     </p>
-                    {product.description && (
-                      <p className="text-xs text-gray-500">{product.description}</p>
-                    )}
                   </div>
                   <div className="flex gap-2">
                     <button
@@ -263,62 +194,6 @@ export default function GerenciarEstoque() {
                     </Form>
                   </div>
                 </div>
-
-                {/* Variantes */}
-                {product.variants && product.variants.length > 0 && (
-                  <div className="mt-3 p-3 bg-gray-50 rounded">
-                    <h4 className="font-medium text-gray-900 mb-2">Variações:</h4>
-                    <div className="grid grid-cols-2 gap-2">
-                      {product.variants.map((variant) => (
-                        <div key={variant.id} className="flex justify-between items-center text-sm">
-                          <span>{variant.name}</span>
-                          <div className="flex items-center gap-2">
-                            <span>Estoque: {variant.stock}</span>
-                            <Form method="post" className="inline">
-                              <input type="hidden" name="action" value="updateStock" />
-                              <input type="hidden" name="productId" value={product.id} />
-                              <input type="hidden" name="variantId" value={variant.id} />
-                              <input
-                                type="number"
-                                name="newStock"
-                                defaultValue={variant.stock}
-                                className="w-16 p-1 border border-gray-300 rounded text-xs"
-                                min="0"
-                                onChange={(e) => {
-                                  if (e.target.form) {
-                                    e.target.form.requestSubmit();
-                                  }
-                                }}
-                              />
-                            </Form>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Atualizar estoque principal */}
-                {(!product.variants || product.variants.length === 0) && (
-                  <Form method="post" className="mt-3 flex items-center gap-2">
-                    <input type="hidden" name="action" value="updateStock" />
-                    <input type="hidden" name="productId" value={product.id} />
-                    <label className="text-sm text-gray-700">Atualizar estoque:</label>
-                    <input
-                      type="number"
-                      name="newStock"
-                      defaultValue={product.stock}
-                      className="w-20 p-1 border border-gray-300 rounded text-sm"
-                      min="0"
-                    />
-                    <button
-                      type="submit"
-                      className="bg-teal-600 text-white px-2 py-1 rounded text-sm hover:bg-teal-700"
-                    >
-                      Atualizar
-                    </button>
-                  </Form>
-                )}
               </div>
             ))
           )}
@@ -335,7 +210,6 @@ export default function GerenciarEstoque() {
               type="text"
               name="name"
               required
-              placeholder="ex: Cerveja Lata 350ml"
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
             />
           </div>
@@ -364,7 +238,6 @@ export default function GerenciarEstoque() {
               step="0.01"
               min="0"
               required
-              placeholder="6.00"
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
             />
           </div>
@@ -376,18 +249,7 @@ export default function GerenciarEstoque() {
               name="stock"
               min="0"
               required
-              placeholder="50"
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Descrição (opcional)</label>
-            <textarea
-              name="description"
-              placeholder="Descrição do produto..."
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
-              rows={3}
             />
           </div>
 
@@ -397,94 +259,6 @@ export default function GerenciarEstoque() {
           >
             Criar Produto
           </button>
-        </Form>
-      )}
-
-      {activeTab === "edit" && editingProduct && (
-        <Form method="post" className="max-w-md mx-auto space-y-4">
-          <input type="hidden" name="action" value="update" />
-          <input type="hidden" name="productId" value={editingProduct.id} />
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Nome</label>
-            <input
-              type="text"
-              name="name"
-              required
-              defaultValue={editingProduct.name}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Categoria</label>
-            <select
-              name="category"
-              required
-              defaultValue={editingProduct.category}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
-            >
-              {Object.values(ProductCategory).map((category) => (
-                <option key={category} value={category}>
-                  {getCategoryLabel(category)}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Preço (R$)</label>
-            <input
-              type="number"
-              name="price"
-              step="0.01"
-              min="0"
-              required
-              defaultValue={editingProduct.price}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Estoque</label>
-            <input
-              type="number"
-              name="stock"
-              min="0"
-              required
-              defaultValue={editingProduct.stock}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Descrição</label>
-            <textarea
-              name="description"
-              defaultValue={editingProduct.description || ""}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
-              rows={3}
-            />
-          </div>
-
-          <div className="flex gap-2">
-            <button
-              type="submit"
-              className="flex-1 bg-teal-600 text-white py-3 px-4 rounded-lg hover:bg-teal-700"
-            >
-              Atualizar Produto
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setEditingProduct(null);
-                setActiveTab("list");
-              }}
-              className="flex-1 bg-gray-600 text-white py-3 px-4 rounded-lg hover:bg-gray-700"
-            >
-              Cancelar
-            </button>
-          </div>
         </Form>
       )}
     </>

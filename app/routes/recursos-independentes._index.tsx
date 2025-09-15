@@ -1,10 +1,9 @@
-import { useLoaderData, Link } from "@remix-run/react";
+import { useLoaderData, Link, useOutletContext } from "@remix-run/react";
 import { UserCategory, UserData } from "~/utils/types";
 import { useEffect, useState } from "react";
 import { getTelegramUsersInfo } from "~/utils/users";
 import telegramInit from "~/utils/telegramInit";
 import { ButtonsListWithPermissions } from "~/components/Forms/Buttons";
-import { useAuth } from "~/utils/useAuth";
 import { requireAuth } from "~/utils/authMiddleware";
 
 import { loader as originalLoader } from "~/handlers/loaders/_index";
@@ -53,7 +52,7 @@ const resourcesLinks = [
 export default function RecursosIndependentesIndex() {
   const [user, setUser] = useState<UserData | null>({} as UserData);
   const { usersInfo, currentUserCategories } = useLoaderData<typeof loader>();
-  const { userPermissions, isDevMode, devUser } = useAuth();
+  const { userPermissions, isDevMode, devUser } = useOutletContext<any>();
 
   useEffect(() => {
     if (isDevMode && devUser) {
@@ -96,9 +95,18 @@ export default function RecursosIndependentesIndex() {
         </div>
       </div>
 
+      {isDevMode && (
+        <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4">
+          <p className="text-sm">
+            🧪 <strong>Debug:</strong> Usuário: {devUser?.name}
+          </p>
+          <p className="text-xs">Permissões: {JSON.stringify(userPermissions)}</p>
+        </div>
+      )}
+
       <ButtonsListWithPermissions 
         links={resourcesLinks} 
-        userPermissions={userPermissions} 
+        userPermissions={userPermissions || [UserCategory.AMECICLISTAS]} 
       />
     </>
   );
