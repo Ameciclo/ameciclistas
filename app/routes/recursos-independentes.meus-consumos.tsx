@@ -125,28 +125,32 @@ export default function MeusConsumos() {
         </div>
       )}
 
-      {/* Tabs */}
-      <div className="flex border-b border-gray-200 mb-6">
-        <button
-          onClick={() => setActiveTab("sales")}
-          className={`py-2 px-4 border-b-2 font-medium text-sm ${
-            activeTab === "sales"
-              ? "border-teal-500 text-teal-600"
-              : "border-transparent text-gray-500 hover:text-gray-700"
-          }`}
-        >
-          Consumos ({userSales.length})
-        </button>
-        <button
-          onClick={() => setActiveTab("donations")}
-          className={`py-2 px-4 border-b-2 font-medium text-sm ${
-            activeTab === "donations"
-              ? "border-teal-500 text-teal-600"
-              : "border-transparent text-gray-500 hover:text-gray-700"
-          }`}
-        >
-          Doações ({userDonations.length})
-        </button>
+      <div className="mb-6">
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <h3 className="font-medium text-gray-900 mb-3">Seção:</h3>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => setActiveTab("sales")}
+              className={`py-2 px-3 rounded text-sm font-medium ${
+                activeTab === "sales"
+                  ? "bg-teal-600 text-white"
+                  : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+              }`}
+            >
+              Consumos ({userSales.length})
+            </button>
+            <button
+              onClick={() => setActiveTab("donations")}
+              className={`py-2 px-3 rounded text-sm font-medium ${
+                activeTab === "donations"
+                  ? "bg-teal-600 text-white"
+                  : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+              }`}
+            >
+              Doações ({userDonations.length})
+            </button>
+          </div>
+        </div>
       </div>
 
       {activeTab === "sales" && (
