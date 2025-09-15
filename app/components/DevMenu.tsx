@@ -28,11 +28,6 @@ const DEV_USERS: DevUser[] = [
     id: 999996,
     name: "Ana Lima (Coord. Ameciclo)",
     categories: [UserCategory.AMECICLO_COORDINATORS]
-  },
-  {
-    id: 999995,
-    name: "Dev User (Desenvolvimento)",
-    categories: [UserCategory.DEVELOPMENT]
   }
 ];
 

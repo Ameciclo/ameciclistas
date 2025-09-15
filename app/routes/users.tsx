@@ -1,47 +1,49 @@
 import React, { useEffect, useState } from "react";
 import { useLoaderData, Form } from "@remix-run/react";
 import { UserCategory, UserData } from "~/utils/types";
-import { loader } from "~/handlers/loaders/users";
+import { loader as originalLoader } from "~/handlers/loaders/users";
 import { action } from "~/handlers/actions/users-action";
 import SendToAction from "~/components/Forms/SendToAction";
 import { BackButton } from "~/components/Forms/Buttons";
-import { isAuth } from "~/utils/isAuthorized";
+import { useAuth } from "~/utils/useAuth";
+import { requireAuth } from "~/utils/authMiddleware";
 import { getTelegramUsersInfo } from "~/utils/users";
-import Unauthorized from "~/components/Unauthorized";
-export { loader, action }
+
+export const loader = requireAuth(UserCategory.AMECICLO_COORDINATORS)(originalLoader);
+export { action };
 
 const roles = [
+    UserCategory.ANY_USER,
     UserCategory.AMECICLISTAS,
     UserCategory.PROJECT_COORDINATORS,
     UserCategory.AMECICLO_COORDINATORS,
-    UserCategory.ANY_USER,
-    UserCategory.DEVELOPMENT,
 ];
 
 const UserManagement: React.FC = () => {
     const { usersInfo, currentUserCategories } = useLoaderData<typeof loader>();
     const [search, setSearch] = useState("");
     const [newRole, setNewRole] = useState("");
-    const [userPermissions, setUserPermissions] = useState(currentUserCategories);
+    const { userPermissions, isDevMode, devUser } = useAuth();
     const [user, setUser] = useState<UserData | null>(null);
 
     useEffect(() => {
-        setUser(() => getTelegramUsersInfo());
-    }, []);
-
-
-    useEffect(() => {
-        if (user?.id && usersInfo[user.id]) {
-            setUserPermissions([usersInfo[user.id].role as any]);
+        if (isDevMode && devUser) {
+            setUser({
+                id: devUser.id,
+                first_name: devUser.name.split(" ")[0],
+                last_name: devUser.name.split(" ").slice(1).join(" ")
+            });
+        } else {
+            setUser(() => getTelegramUsersInfo());
         }
-    }, [user]);
+    }, [devUser, isDevMode]);
 
     const filteredUsers = Object.values(usersInfo).filter((user: any) =>
         user.name?.toLowerCase().includes(search.toLowerCase())
     );
 
 
-    return isAuth(userPermissions, UserCategory.AMECICLO_COORDINATORS) ? (
+    return (
         <div className="container mx-auto py-8 px-4">
             <h1 className="text-3xl font-bold text-teal-600 text-center">
                 Gerenciamento de Usuários
@@ -107,11 +109,6 @@ const UserManagement: React.FC = () => {
                 <BackButton />
             </div>
         </div>
-    ) : (
-        <Unauthorized
-            pageName="Gerenciamento de Usuários"
-            requiredPermission="Coordenador da Ameciclo"
-        />
     );
 };
 
