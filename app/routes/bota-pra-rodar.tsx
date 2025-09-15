@@ -96,14 +96,7 @@ export default function BotaPraRodar() {
       
       <h1 className="text-3xl font-bold text-teal-600 mb-6">🚴‍♀️ Bota pra Rodar</h1>
       
-      <div className="space-y-3 mb-6">
-        <Link 
-          to="/estatisticas-bota-pra-rodar" 
-          className="w-full bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors text-lg block text-center no-underline"
-        >
-          📊 Estatísticas
-        </Link>
-      </div>
+
 
       {!mostrarGestao ? (
         <>

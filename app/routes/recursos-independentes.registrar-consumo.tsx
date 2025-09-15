@@ -138,27 +138,32 @@ export default function RegistrarConsumo() {
       </h1>
       
       {isCoordinator && (
-        <div className="flex border-b border-gray-200 mb-6 max-w-md mx-auto">
-          <button
-            onClick={() => setActiveTab("consumo")}
-            className={`py-2 px-4 border-b-2 font-medium text-sm flex-1 ${
-              activeTab === "consumo"
-                ? "border-teal-500 text-teal-600"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            Registrar Consumo
-          </button>
-          <button
-            onClick={() => setActiveTab("doacao")}
-            className={`py-2 px-4 border-b-2 font-medium text-sm flex-1 ${
-              activeTab === "doacao"
-                ? "border-teal-500 text-teal-600"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            Registrar Doação Livre
-          </button>
+        <div className="mb-6 max-w-md mx-auto">
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h3 className="font-medium text-gray-900 mb-3">Tipo de registro:</h3>
+            <div className="space-y-3">
+              <label className="flex items-center space-x-3">
+                <input
+                  type="radio"
+                  name="registroTipo"
+                  checked={activeTab === "consumo"}
+                  onChange={() => setActiveTab("consumo")}
+                  className="text-teal-600"
+                />
+                <span>Registrar Consumo</span>
+              </label>
+              <label className="flex items-center space-x-3">
+                <input
+                  type="radio"
+                  name="registroTipo"
+                  checked={activeTab === "doacao"}
+                  onChange={() => setActiveTab("doacao")}
+                  className="text-teal-600"
+                />
+                <span>Registrar Doação Livre</span>
+              </label>
+            </div>
+          </div>
         </div>
       )}
 

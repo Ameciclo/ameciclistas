@@ -104,11 +104,12 @@ export default function GerenciarRecursos() {
   const [user, setUser] = useState<UserData | null>(null);
   const [userPermissions, setUserPermissions] = useState<string[]>([]);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [mostrarGestao, setMostrarGestao] = useState(false);
   
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    setMostrarGestao(urlParams.get('gestao') === 'true');
+    if (urlParams.get('gestao') === 'true') {
+      // Página está em modo gestão
+    }
   }, []);
 
   useEffect(() => {
@@ -184,7 +185,7 @@ export default function GerenciarRecursos() {
   };
 
   return (
-    <>
+    <div className="container mx-auto py-8 px-4">
       <div className="mb-4">
         <Link to="/" className="text-teal-600 hover:text-teal-700">
           ← Voltar ao Menu Principal
@@ -207,48 +208,52 @@ export default function GerenciarRecursos() {
         </div>
       )}
 
-      {/* Tabs */}
-      <div className="flex border-b border-gray-200 mb-6 overflow-x-auto">
-        <button
-          onClick={() => setActiveTab("pending")}
-          className={`py-2 px-4 border-b-2 font-medium text-sm whitespace-nowrap ${
-            activeTab === "pending"
-              ? "border-teal-500 text-teal-600"
-              : "border-transparent text-gray-500 hover:text-gray-700"
-          }`}
-        >
-          Pendentes ({pendingSales.length + pendingDonations.length})
-        </button>
-        <button
-          onClick={() => setActiveTab("confirmed")}
-          className={`py-2 px-4 border-b-2 font-medium text-sm whitespace-nowrap ${
-            activeTab === "confirmed"
-              ? "border-teal-500 text-teal-600"
-              : "border-transparent text-gray-500 hover:text-gray-700"
-          }`}
-        >
-          Confirmados ({confirmedSales.length + confirmedDonations.length})
-        </button>
-        <button
-          onClick={() => setActiveTab("products")}
-          className={`py-2 px-4 border-b-2 font-medium text-sm whitespace-nowrap ${
-            activeTab === "products"
-              ? "border-teal-500 text-teal-600"
-              : "border-transparent text-gray-500 hover:text-gray-700"
-          }`}
-        >
-          Produtos ({productsList.length})
-        </button>
-        <button
-          onClick={() => setActiveTab("createProduct")}
-          className={`py-2 px-4 border-b-2 font-medium text-sm whitespace-nowrap ${
-            activeTab === "createProduct"
-              ? "border-teal-500 text-teal-600"
-              : "border-transparent text-gray-500 hover:text-gray-700"
-          }`}
-        >
-          {editingProduct ? "Editar Produto" : "Criar Produto"}
-        </button>
+      <div className="mb-6">
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <h3 className="font-medium text-gray-900 mb-3">Seção:</h3>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => setActiveTab("pending")}
+              className={`py-2 px-3 rounded text-sm font-medium ${
+                activeTab === "pending"
+                  ? "bg-teal-600 text-white"
+                  : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+              }`}
+            >
+              Pendentes ({pendingSales.length + pendingDonations.length})
+            </button>
+            <button
+              onClick={() => setActiveTab("confirmed")}
+              className={`py-2 px-3 rounded text-sm font-medium ${
+                activeTab === "confirmed"
+                  ? "bg-teal-600 text-white"
+                  : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+              }`}
+            >
+              Confirmados ({confirmedSales.length + confirmedDonations.length})
+            </button>
+            <button
+              onClick={() => setActiveTab("products")}
+              className={`py-2 px-3 rounded text-sm font-medium ${
+                activeTab === "products"
+                  ? "bg-teal-600 text-white"
+                  : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+              }`}
+            >
+              Produtos ({productsList.length})
+            </button>
+            <button
+              onClick={() => setActiveTab("createProduct")}
+              className={`py-2 px-3 rounded text-sm font-medium ${
+                activeTab === "createProduct"
+                  ? "bg-teal-600 text-white"
+                  : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+              }`}
+            >
+              {editingProduct ? "Editar Produto" : "Criar Produto"}
+            </button>
+          </div>
+        </div>
       </div>
 
       {activeTab === "pending" && (
@@ -614,6 +619,6 @@ export default function GerenciarRecursos() {
           ⬅️ Voltar ao Menu Principal
         </Link>
       </div>
-    </>
+    </div>
   );
 }

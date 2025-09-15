@@ -104,8 +104,8 @@ export default function MeusConsumos() {
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="mb-4">
-        <Link to="/recursos-independentes" className="text-teal-600 hover:text-teal-700">
-          ← Voltar ao Menu
+        <Link to="/" className="text-teal-600 hover:text-teal-700">
+          ← Voltar ao Menu Principal
         </Link>
       </div>
       
@@ -323,10 +323,10 @@ export default function MeusConsumos() {
       
       <div className="mt-8">
         <Link 
-          to="/recursos-independentes" 
+          to="/" 
           className="button-secondary-full text-center"
         >
-          ⬅️ Voltar ao Menu
+          ⬅️ Voltar ao Menu Principal
         </Link>
       </div>
     </div>

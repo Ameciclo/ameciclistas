@@ -123,17 +123,28 @@ export default function Index() {
           
           const hasGestao = ['biblioteca', 'bota-pra-rodar', 'registro-emprestimos'].some(path => link.to.includes(path));
           const isRecursosIndependentes = link.to.includes('recursos-independentes');
+          const hasEstatisticas = ['biblioteca', 'bota-pra-rodar'].some(path => link.to.includes(path));
           const showGestaoButton = hasGestao && isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS);
           const showRecursosButtons = isRecursosIndependentes && isAuth(userPermissions, UserCategory.AMECICLISTAS);
+          const showEstatisticasButton = hasEstatisticas;
           
           return (
-            <div key={link.to} className={showGestaoButton || showRecursosButtons ? "flex gap-2" : ""}>
+            <div key={link.to} className={showGestaoButton || showRecursosButtons || showEstatisticasButton ? "flex gap-2" : ""}>
               <Link
                 to={link.to}
-                className={`${showGestaoButton || showRecursosButtons ? 'flex-1' : 'w-full'} bg-teal-600 text-white px-4 py-3 rounded-md hover:bg-teal-700 transition-colors text-lg font-medium text-center block no-underline`}
+                className={`${showGestaoButton || showRecursosButtons || showEstatisticasButton ? 'flex-1' : 'w-full'} bg-teal-600 text-white px-4 py-3 rounded-md hover:bg-teal-700 transition-colors text-lg font-medium text-center block no-underline`}
               >
                 {link.icon} {link.label}
               </Link>
+              {showEstatisticasButton && (
+                <Link
+                  to={link.to.includes('biblioteca') ? '/estatisticas-biblioteca' : '/estatisticas-bota-pra-rodar'}
+                  className="bg-blue-500 text-white px-3 py-3 rounded-md hover:bg-blue-600 transition-colors text-lg block no-underline flex items-center justify-center"
+                  title="Estatísticas"
+                >
+                  📊
+                </Link>
+              )}
               {showGestaoButton && (
                 <Link
                   to={`${link.to}?gestao=true`}
