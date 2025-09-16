@@ -1,4 +1,4 @@
-import { json, type ActionFunctionArgs } from "@remix-run/node";
+import { json, redirect, type ActionFunctionArgs } from "@remix-run/node";
 import db from "~/api/firebaseAdmin.server.js";
 import type { Emprestimo, SolicitacaoEmprestimo } from "~/utils/types";
 
@@ -59,7 +59,7 @@ export async function bibliotecaAction({ request }: ActionFunctionArgs) {
           await emprestimoRef.push(novoEmprestimo);
         }
         
-        return json({ success: true, message: "Solicitação aprovada e empréstimo registrado!" });
+        return redirect("/biblioteca?gestao=true");
       } catch (error) {
         console.error("Erro ao aprovar solicitação:", error);
         return json({ success: false, error: "Erro ao aprovar solicitação" });
@@ -76,7 +76,7 @@ export async function bibliotecaAction({ request }: ActionFunctionArgs) {
           updated_at: new Date().toISOString()
         });
         
-        return json({ success: true, message: "Solicitação rejeitada!" });
+        return redirect("/biblioteca?gestao=true");
       } catch (error) {
         console.error("Erro ao rejeitar solicitação:", error);
         return json({ success: false, error: "Erro ao rejeitar solicitação" });
@@ -94,7 +94,7 @@ export async function bibliotecaAction({ request }: ActionFunctionArgs) {
           updated_at: new Date().toISOString()
         });
         
-        return json({ success: true, message: "Devolução registrada com sucesso!" });
+        return redirect("/biblioteca?gestao=true");
       } catch (error) {
         console.error("Erro ao registrar devolução:", error);
         return json({ success: false, error: "Erro ao registrar devolução" });
@@ -118,7 +118,7 @@ export async function bibliotecaAction({ request }: ActionFunctionArgs) {
         const livroRef = db.ref("library");
         await livroRef.push(dadosLivro);
         
-        return json({ success: true, message: "Livro cadastrado com sucesso!" });
+        return redirect("/biblioteca?gestao=true");
       } catch (error) {
         console.error("Erro ao cadastrar livro:", error);
         return json({ success: false, error: "Erro ao cadastrar livro" });

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Form, useSubmit } from "@remix-run/react";
+import { Form, useSubmit, useNavigation } from "@remix-run/react";
 import type { Emprestimo, SolicitacaoEmprestimo, Livro } from "~/utils/types";
 
 interface BibliotecaGestaoProps {
@@ -55,19 +55,21 @@ export function BibliotecaGestao({ emprestimos, solicitacoes, livros, users }: B
   const [activeTab, setActiveTab] = useState<'emprestados' | 'solicitacoes' | 'cadastrar'>('emprestados');
 
   const submit = useSubmit();
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === "submitting";
 
   const handleRegistrarDevolucao = (emprestimoId: string) => {
     const formData = new FormData();
     formData.append("action", "registrar_devolucao");
     formData.append("emprestimo_id", emprestimoId);
-    submit(formData, { method: "post" });
+    submit(formData, { method: "post", action: "/biblioteca?gestao=true" });
   };
 
   const handleAprovarSolicitacao = (solicitacaoId: string) => {
     const formData = new FormData();
     formData.append("action", "aprovar_solicitacao");
     formData.append("solicitacao_id", solicitacaoId);
-    submit(formData, { method: "post" });
+    submit(formData, { method: "post", action: "/biblioteca?gestao=true" });
   };
 
   const getLivroInfo = (subcodigo: string) => {
@@ -83,7 +85,7 @@ export function BibliotecaGestao({ emprestimos, solicitacoes, livros, users }: B
     const formData = new FormData();
     formData.append("action", "rejeitar_solicitacao");
     formData.append("solicitacao_id", solicitacaoId);
-    submit(formData, { method: "post" });
+    submit(formData, { method: "post", action: "/biblioteca?gestao=true" });
   };
 
   return (
@@ -153,9 +155,10 @@ export function BibliotecaGestao({ emprestimos, solicitacoes, livros, users }: B
                   <div className="flex justify-center">
                     <button
                       onClick={() => handleRegistrarDevolucao(emp.id)}
-                      className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600"
+                      disabled={isSubmitting}
+                      className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
                     >
-                      Registrar Devolução
+                      {isSubmitting ? "Processando..." : "Registrar Devolução"}
                     </button>
                   </div>
                 </div>
@@ -185,15 +188,17 @@ export function BibliotecaGestao({ emprestimos, solicitacoes, livros, users }: B
                   <div className="flex gap-2 justify-center">
                     <button
                       onClick={() => handleAprovarSolicitacao(sol.id)}
-                      className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600"
+                      disabled={isSubmitting}
+                      className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
                     >
-                      Aprovar
+                      {isSubmitting ? "Processando..." : "Aprovar"}
                     </button>
                     <button 
                       onClick={() => handleRejeitarSolicitacao(sol.id)}
-                      className="bg-red-500 text-white px-6 py-2 rounded hover:bg-red-600"
+                      disabled={isSubmitting}
+                      className="bg-red-500 text-white px-6 py-2 rounded hover:bg-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
                     >
-                      Rejeitar
+                      {isSubmitting ? "Processando..." : "Rejeitar"}
                     </button>
                   </div>
                 </div>
@@ -317,9 +322,10 @@ export function BibliotecaGestao({ emprestimos, solicitacoes, livros, users }: B
 
             <button
               type="submit"
-              className="w-full bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700"
+              disabled={isSubmitting}
+              className="w-full bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              Cadastrar Livro
+              {isSubmitting ? "Cadastrando..." : "Cadastrar Livro"}
             </button>
           </Form>
         </div>
