@@ -59,7 +59,7 @@ export async function bibliotecaAction({ request }: ActionFunctionArgs) {
           await emprestimoRef.push(novoEmprestimo);
         }
         
-        return redirect("/biblioteca?gestao=true");
+        return redirect("/sucesso/biblioteca-aprovada");
       } catch (error) {
         console.error("Erro ao aprovar solicitação:", error);
         return json({ success: false, error: "Erro ao aprovar solicitação" });
@@ -76,7 +76,7 @@ export async function bibliotecaAction({ request }: ActionFunctionArgs) {
           updated_at: new Date().toISOString()
         });
         
-        return redirect("/biblioteca?gestao=true");
+        return redirect("/sucesso/biblioteca-rejeitada");
       } catch (error) {
         console.error("Erro ao rejeitar solicitação:", error);
         return json({ success: false, error: "Erro ao rejeitar solicitação" });
@@ -94,7 +94,7 @@ export async function bibliotecaAction({ request }: ActionFunctionArgs) {
           updated_at: new Date().toISOString()
         });
         
-        return redirect("/biblioteca?gestao=true");
+        return redirect("/sucesso/biblioteca-devolucao");
       } catch (error) {
         console.error("Erro ao registrar devolução:", error);
         return json({ success: false, error: "Erro ao registrar devolução" });
@@ -118,7 +118,7 @@ export async function bibliotecaAction({ request }: ActionFunctionArgs) {
         const livroRef = db.ref("library");
         await livroRef.push(dadosLivro);
         
-        return redirect("/biblioteca?gestao=true");
+        return redirect("/sucesso/biblioteca-cadastro");
       } catch (error) {
         console.error("Erro ao cadastrar livro:", error);
         return json({ success: false, error: "Erro ao cadastrar livro" });
