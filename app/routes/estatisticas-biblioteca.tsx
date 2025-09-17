@@ -1,6 +1,8 @@
 import { useLoaderData, Link } from "@remix-run/react";
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import db from "~/api/firebaseAdmin.server.js";
+import { requireAuth } from "~/utils/authMiddleware";
+import { UserCategory } from "~/utils/types";
 
 // Funções para buscar dados do Firebase
 async function buscarBibliotecaFirebase(): Promise<any[]> {
@@ -39,7 +41,7 @@ async function buscarTodosEmprestimosFirebase(): Promise<any[]> {
   }
 }
 
-export async function loader({ request }: LoaderFunctionArgs) {
+const originalLoader = async ({ request }: LoaderFunctionArgs) => {
   try {
     const emprestimos = await buscarTodosEmprestimosFirebase();
     const biblioteca = await buscarBibliotecaFirebase();
@@ -94,7 +96,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     return json({ estatisticas });
   }
-}
+};
+
+export const loader = requireAuth(UserCategory.ANY_USER)(originalLoader);
 
 function getLivrosMaisEmprestados(emprestimos: any[], biblioteca: any[]) {
   const contagem: { [key: string]: { count: number; titulo: string } } = {};
@@ -189,6 +193,12 @@ export default function BibliotecaEstatisticas() {
 
   return (
     <div className="container mx-auto py-8 px-4">
+      <div className="mb-4">
+        <Link to="/biblioteca" className="text-teal-600 hover:text-teal-700">
+          ← Voltar ao Menu
+        </Link>
+      </div>
+      
       <h1 className="text-3xl font-bold text-teal-600 mb-6">
         Estatísticas da Biblioteca
       </h1>
@@ -352,12 +362,12 @@ export default function BibliotecaEstatisticas() {
         </div>
       </div>
 
-      <div className="mt-8 text-center">
+      <div className="mt-8">
         <Link
           to="/biblioteca"
-          className="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 inline-block"
+          className="button-secondary-full text-center"
         >
-          Voltar ao Acervo
+          ⬅️ Voltar ao Acervo
         </Link>
       </div>
     </div>
