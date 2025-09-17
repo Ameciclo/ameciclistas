@@ -25,7 +25,7 @@ export async function getUserPermissions(request: Request): Promise<{ userPermis
   try {
     // Extrair dados do usuário do Telegram via headers ou cookies
     const url = new URL(request.url);
-    const userId = url.searchParams.get("user_id");
+    const userId = url.searchParams.get("userId") || url.searchParams.get("user_id");
     
     if (!userId) {
       return { userPermissions: [UserCategory.ANY_USER] };
