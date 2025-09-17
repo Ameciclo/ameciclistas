@@ -35,26 +35,45 @@ function getInitialDevUser(): DevUser | null {
 export function DevProvider({ children }: { children: ReactNode }) {
   const [devUser, setDevUser] = useState<DevUser | null>(getInitialDevUser);
   const [realUser, setRealUser] = useState<UserData | null>(null);
-
+  const [userPermissions, setUserPermissions] = useState<UserCategory[]>([UserCategory.ANY_USER]);
   const isDevMode = process.env.NODE_ENV === 'development';
 
-  // Obter permissões baseadas no contexto atual
-  const userPermissions = isDevMode && devUser 
-    ? devUser.categories 
-    : [UserCategory.ANY_USER]; // Será expandido para usuário real
-
-  // Carregar usuário real em produção
-  useEffect(() => {
+  // Carregar usuário real e suas permissões em produção
+    useEffect(() => {
     if (!isDevMode) {
       const telegramUser = getTelegramUsersInfo();
       setRealUser(telegramUser);
+      
+      // Buscar permissões do usuário no Firebase
+      if (telegramUser?.id) {
+        fetch(`/api/user-permissions?userId=${telegramUser.id}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.role) {
+              setUserPermissions([data.role as UserCategory]);
+            }
+          })
+          .catch(err => {
+            console.error('Erro ao buscar permissões:', err);
+            setUserPermissions([UserCategory.ANY_USER]);
+          });
+      }
+    } else if (devUser) {
+      setUserPermissions(devUser.categories);
     }
-  }, [isDevMode]);
+  }, [isDevMode, devUser]);
+
+  const handleSetDevUser = (user: DevUser) => {
+    setDevUser(user);
+    if (isDevMode) {
+      setUserPermissions(user.categories);
+    }
+  };
 
   return (
     <AuthContext.Provider value={{ 
       devUser, 
-      setDevUser, 
+      setDevUser: handleSetDevUser, 
       isDevMode, 
       userPermissions,
       realUser 
