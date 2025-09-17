@@ -1,11 +1,12 @@
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData, Link } from "@remix-run/react";
 import { UserCategory, UserData } from "~/utils/types";
 import { useEffect, useState } from "react";
 import { getTelegramUsersInfo } from "~/utils/users";
 import telegramInit from "~/utils/telegramInit";
 import { ButtonsListWithPermissions } from "~/components/Forms/Buttons";
-import { useDevUser } from "~/utils/useDevUser";
+import { useAuth } from "~/utils/useAuth";
 import { createDevTelegramUserWithCategories } from "~/utils/devTelegram";
+import { isAuth } from "~/utils/isAuthorized";
 
 import { loader } from "~/handlers/loaders/_index";
 export { loader };
@@ -48,9 +49,9 @@ const links = [
     requiredPermission: UserCategory.AMECICLISTAS,
   },
   {
-    to: "/recursos-independentes",
-    label: "Controle de Recursos Independentes",
-    icon: "🏪",
+    to: "/recursos-independentes/registrar-consumo",
+    label: "Registrar Consumo",
+    icon: "🛒",
     requiredPermission: UserCategory.AMECICLISTAS,
   },
   {
@@ -76,22 +77,17 @@ const links = [
     label: "Gerenciamento de Usuários",
     icon: "🔧",
     requiredPermission: UserCategory.AMECICLO_COORDINATORS,
-    hide: true,
   },
 ];
 
 export default function Index() {
   const [user, setUser] = useState<UserData | null>({} as UserData);
-  const { devUser, isDevMode } = useDevUser();
+  const { devUser, isDevMode, userPermissions } = useAuth();
 
-  const { usersInfo, currentUserCategories } =
-    useLoaderData<typeof loader>();
-  const [userPermissions, setUserPermissions] = useState(currentUserCategories);
+  const { usersInfo, currentUserCategories } = useLoaderData<typeof loader>();
 
   useEffect(() => {
     if (isDevMode && devUser) {
-      const devTelegramUser = createDevTelegramUserWithCategories(devUser);
-      setUserPermissions(devTelegramUser.categories);
       setUser({
         id: devUser.id,
         first_name: devUser.name.split(" ")[0],
@@ -102,12 +98,6 @@ export default function Index() {
       setUser(() => getTelegramUsersInfo());
     }
   }, [devUser, isDevMode]);
-
-  useEffect(() => {
-    if (!isDevMode && user?.id && usersInfo[user.id]) {
-      setUserPermissions([usersInfo[user.id].role as UserCategory]);
-    }
-  }, [user, isDevMode]);
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -126,7 +116,75 @@ export default function Index() {
       ) : (
         <p className="text-sm text-center mb-4">Olá, {user?.first_name}!</p>
       )}
-      <ButtonsListWithPermissions links={links} userPermissions={userPermissions} />
+      <div className="space-y-4">
+        {links.filter(link => !link.hide).map((link) => {
+          const hasPermission = isAuth(userPermissions, link.requiredPermission);
+          if (!hasPermission) return null;
+          
+          const hasGestao = ['biblioteca', 'bota-pra-rodar', 'registro-emprestimos'].some(path => link.to.includes(path));
+          const isRecursosIndependentes = link.to.includes('recursos-independentes');
+          const hasEstatisticas = ['biblioteca', 'bota-pra-rodar'].some(path => link.to.includes(path));
+          const showGestaoButton = hasGestao && isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS);
+          const showRecursosButtons = isRecursosIndependentes && isAuth(userPermissions, UserCategory.AMECICLISTAS);
+          const showEstatisticasButton = hasEstatisticas;
+          
+          return (
+            <div key={link.to} className={showGestaoButton || showRecursosButtons || showEstatisticasButton ? "flex gap-2" : ""}>
+              <Link
+                to={link.to}
+                className={`${showGestaoButton || showRecursosButtons || showEstatisticasButton ? 'flex-1' : 'w-full'} bg-teal-600 text-white px-4 py-3 rounded-md hover:bg-teal-700 transition-colors text-lg font-medium text-center block no-underline`}
+              >
+                {link.icon} {link.label}
+              </Link>
+              {showEstatisticasButton && (
+                <Link
+                  to={link.to.includes('biblioteca') ? '/estatisticas-biblioteca' : '/estatisticas-bota-pra-rodar'}
+                  className="bg-blue-500 text-white px-3 py-3 rounded-md hover:bg-blue-600 transition-colors text-lg block no-underline flex items-center justify-center"
+                  title="Estatísticas"
+                >
+                  📊
+                </Link>
+              )}
+              {showGestaoButton && (
+                <Link
+                  to={`${link.to}?gestao=true`}
+                  className="bg-orange-500 text-white px-3 py-3 rounded-md hover:bg-orange-600 transition-colors text-lg block no-underline flex items-center justify-center"
+                  title="Gestão"
+                >
+                  🔧
+                </Link>
+              )}
+              {showRecursosButtons && (
+                <>
+                  <Link
+                    to="/recursos-independentes/meus-consumos"
+                    className="bg-purple-500 text-white px-3 py-3 rounded-md hover:bg-purple-600 transition-colors text-lg block no-underline flex items-center justify-center"
+                    title="Meus Consumos"
+                  >
+                    📋
+                  </Link>
+                  <Link
+                    to="/recursos-independentes/historico"
+                    className="bg-blue-500 text-white px-3 py-3 rounded-md hover:bg-blue-600 transition-colors text-lg block no-underline flex items-center justify-center"
+                    title="Histórico de Vendas"
+                  >
+                    📊
+                  </Link>
+                  {isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS) && (
+                    <Link
+                      to="/recursos-independentes/gerenciar?gestao=true"
+                      className="bg-orange-500 text-white px-3 py-3 rounded-md hover:bg-orange-600 transition-colors text-lg block no-underline flex items-center justify-center"
+                      title="Gestão"
+                    >
+                      🔧
+                    </Link>
+                  )}
+                </>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

@@ -1,25 +1,15 @@
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData, Link } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import { BackButton, ButtonsListWithPermissions } from "~/components/Forms/Buttons";
 import { UserCategory, UserData } from "~/utils/types";
 import { loader } from "./_index";
 import { getTelegramUsersInfo } from "~/utils/users";
+import { ProtectedComponent } from "~/components/ProtectedComponent";
+import { useAuth } from "~/utils/useAuth";
 export { loader };
 
 export default function LinksUteis() {
-  const { currentUserCategories, usersInfo } = useLoaderData<typeof loader>();
-  const [userPermissions, setUserPermissions] = useState(currentUserCategories);
-  const [user, setUser] = useState<UserData | null>(null);
-
-  useEffect(() => {
-    setUser(() => getTelegramUsersInfo());
-  }, []);
-
-  useEffect(() => {
-    if (user?.id && usersInfo?.[user.id]) {
-      setUserPermissions([usersInfo[user.id].role as UserCategory]);
-    }
-  }, [user, usersInfo]);
+  const { userPermissions, isDevMode, devUser } = useAuth();
 
   const links = [
     {
@@ -99,17 +89,41 @@ export default function LinksUteis() {
 
   return (
     <div className="container mx-auto p-4 flex flex-col">
+      <div className="mb-4">
+        <Link to="/" className="text-teal-600 hover:text-teal-700">
+          ← Voltar ao Menu Principal
+        </Link>
+      </div>
+      
       <h2 className="text-2xl font-bold text-teal-600 text-center">
         🔗 Links Úteis
       </h2>
+
+      {isDevMode && (
+        <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-4">
+          <p className="text-sm">
+            🧪 <strong>Modo Dev:</strong> Testando como {devUser?.name}
+          </p>
+          <p className="text-xs">Permissões: {userPermissions.join(", ")}</p>
+        </div>
+      )}
 
       <ButtonsListWithPermissions
         links={links}
         userPermissions={userPermissions || [UserCategory.ANY_USER]}
       />
 
-      <br />
-      <BackButton />
+      <ProtectedComponent requiredPermission={UserCategory.AMECICLISTAS}>
+        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mt-4">
+          <p className="text-sm">
+            ✅ <strong>Área para Ameciclistas:</strong> Você tem acesso aos links internos!
+          </p>
+        </div>
+      </ProtectedComponent>
+
+      <div className="mt-8">
+        <BackButton />
+      </div>
     </div>
   );
 }

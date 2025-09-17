@@ -19,7 +19,7 @@ export const meta: MetaFunction = () => {
 };
 
 function AppContent() {
-  const { devUser, setDevUser, isDevMode } = useDevContext();
+  const { devUser, setDevUser, isDevMode, userPermissions, realUser } = useDevContext();
 
   return (
     <>
@@ -27,7 +27,12 @@ function AppContent() {
         <DevMenu currentUser={devUser} onUserChange={setDevUser} />
       )}
       <div className={isDevMode ? "pt-12" : ""}>
-        <Outlet context={{ devUser, isDevMode }} />
+        <Outlet context={{ 
+          devUser, 
+          isDevMode, 
+          userPermissions, 
+          realUser 
+        }} />
       </div>
     </>
   );

@@ -60,11 +60,11 @@ export async function botaPraRodarAction({ request }: ActionFunctionArgs) {
         // Se é coordenador de projeto, vai direto para emprestado
         if (isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) {
           await aprovarSolicitacaoBicicleta("", userId, codigoBicicleta, true);
+          return redirect("/sucesso/bicicleta-aprovada");
         } else {
           await solicitarEmprestimoBicicleta(userId, codigoBicicleta);
+          return redirect("/bota-pra-rodar");
         }
-        
-        return redirect("/bota-pra-rodar");
 
       case "aprovar_solicitacao":
         if (!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) {
@@ -73,7 +73,7 @@ export async function botaPraRodarAction({ request }: ActionFunctionArgs) {
         
         const solicitacaoId = formData.get("solicitacao_id") as string;
         await aprovarSolicitacaoBicicleta(solicitacaoId, userId!, "", false);
-        return redirect("/bota-pra-rodar");
+        return redirect("/sucesso/bicicleta-aprovada");
 
       case "rejeitar_solicitacao":
         if (!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) {
@@ -82,7 +82,7 @@ export async function botaPraRodarAction({ request }: ActionFunctionArgs) {
         
         const solicitacaoIdRejeitar = formData.get("solicitacao_id") as string;
         await rejeitarSolicitacaoBicicleta(solicitacaoIdRejeitar);
-        return redirect("/bota-pra-rodar");
+        return redirect("/sucesso/bicicleta-rejeitada");
 
       case "registrar_devolucao":
         if (!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) {
@@ -91,7 +91,7 @@ export async function botaPraRodarAction({ request }: ActionFunctionArgs) {
         
         const emprestimoId = formData.get("emprestimo_id") as string;
         await registrarDevolucaoBicicleta(emprestimoId);
-        return redirect("/bota-pra-rodar");
+        return redirect("/sucesso/bicicleta-devolucao");
 
       case "cadastrar_bicicleta":
         if (!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) {
@@ -108,7 +108,7 @@ export async function botaPraRodarAction({ request }: ActionFunctionArgs) {
         };
         
         await cadastrarBicicleta(dadosBicicleta);
-        return redirect("/bota-pra-rodar");
+        return redirect("/sucesso/bicicleta-cadastro");
 
       default:
         throw new Error("Ação não reconhecida");

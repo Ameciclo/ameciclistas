@@ -45,11 +45,11 @@ export async function registroEmprestimosAction({ request }: ActionFunctionArgs)
         // Se é coordenador de projeto, vai direto para emprestado
         if (isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) {
           await aprovarSolicitacaoInventario("", userId, codigoItem, true);
+          return redirect("/sucesso/inventario-aprovado");
         } else {
           await solicitarEmprestimoInventario(userId, codigoItem);
+          return redirect("/registro-emprestimos");
         }
-        
-        return redirect("/registro-emprestimos");
 
       case "aprovar_solicitacao":
         if (!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) {
@@ -58,7 +58,7 @@ export async function registroEmprestimosAction({ request }: ActionFunctionArgs)
         
         const solicitacaoId = formData.get("solicitacao_id") as string;
         await aprovarSolicitacaoInventario(solicitacaoId, userId!, "", false);
-        return redirect("/registro-emprestimos");
+        return redirect("/sucesso/inventario-aprovado");
 
       case "rejeitar_solicitacao":
         if (!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) {
@@ -67,7 +67,7 @@ export async function registroEmprestimosAction({ request }: ActionFunctionArgs)
         
         const solicitacaoIdRejeitar = formData.get("solicitacao_id") as string;
         await rejeitarSolicitacaoInventario(solicitacaoIdRejeitar);
-        return redirect("/registro-emprestimos");
+        return redirect("/sucesso/inventario-rejeitado");
 
       case "registrar_devolucao":
         if (!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) {
@@ -76,7 +76,7 @@ export async function registroEmprestimosAction({ request }: ActionFunctionArgs)
         
         const emprestimoId = formData.get("emprestimo_id") as string;
         await registrarDevolucaoInventario(emprestimoId);
-        return redirect("/registro-emprestimos");
+        return redirect("/sucesso/inventario-devolucao");
 
       case "cadastrar_item":
         if (!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) {
@@ -94,7 +94,7 @@ export async function registroEmprestimosAction({ request }: ActionFunctionArgs)
         };
         
         await cadastrarItemInventario(dadosItem);
-        return redirect("/registro-emprestimos");
+        return redirect("/sucesso/inventario-cadastro");
 
       default:
         throw new Error("Ação não reconhecida");

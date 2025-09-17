@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLoaderData, Form, useActionData, Link } from "@remix-run/react";
-import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-run/node";
+import { json, redirect, type LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-run/node";
 import { getBicicletas, getUsersFirebase, solicitarEmprestimoBicicleta, aprovarSolicitacaoBicicleta } from "~/api/firebaseConnection.server";
 import { getTelegramUsersInfo } from "~/utils/users";
 import { UserCategory, type Bicicleta, type UserData } from "~/utils/types";
@@ -64,10 +64,11 @@ export async function action({ request }: ActionFunctionArgs) {
     // Se é coordenador de projeto, vai direto para emprestado
     if (isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) {
       await aprovarSolicitacaoBicicleta("", parseInt(userId), codigo, true);
+      return redirect("/sucesso/emprestimo-bicicleta-solicitado?approved=true");
     } else {
       await solicitarEmprestimoBicicleta(parseInt(userId), codigo);
+      return redirect("/sucesso/emprestimo-bicicleta-solicitado");
     }
-    return json({ success: true, message: "Solicitação enviada com sucesso!" });
   } catch (error) {
     console.error("Erro ao solicitar empréstimo:", error);
     return json({ error: error.message }, { status: 400 });
@@ -127,18 +128,7 @@ export default function SolicitarEmprestimoBicicleta() {
   const userData = getUserData();
   const isCoordinator = isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS);
 
-  if (actionData?.success) {
-    return (
-      <div className="container mx-auto py-8 px-4">
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-          {actionData.message}
-        </div>
-        <Link to="/bota-pra-rodar" className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700">
-          Voltar ao Bota pra Rodar
-        </Link>
-      </div>
-    );
-  }
+
 
   if (!user) {
     return (

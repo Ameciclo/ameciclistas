@@ -77,37 +77,42 @@ export function BotaPraRodarGestao({ emprestimos, solicitacoes, bicicletas, user
     <div className="bg-white p-6 rounded-lg shadow-md">
       <h2 className="text-2xl font-bold mb-4">Gestão do Bota pra Rodar</h2>
       
-      <div className="flex mb-6 border-b">
-        <button
-          onClick={() => setActiveTab('emprestados')}
-          className={`px-4 py-2 font-semibold ${
-            activeTab === 'emprestados' 
-              ? 'text-teal-600 border-b-2 border-teal-600' 
-              : 'text-gray-500'
-          }`}
-        >
-          Bicicletas Emprestadas ({emprestimos.length})
-        </button>
-        <button
-          onClick={() => setActiveTab('solicitacoes')}
-          className={`px-4 py-2 font-semibold ml-4 ${
-            activeTab === 'solicitacoes' 
-              ? 'text-teal-600 border-b-2 border-teal-600' 
-              : 'text-gray-500'
-          }`}
-        >
-          Solicitações Pendentes ({solicitacoes.length})
-        </button>
-        <button
-          onClick={() => setActiveTab('cadastrar')}
-          className={`px-4 py-2 font-semibold ml-4 ${
-            activeTab === 'cadastrar' 
-              ? 'text-teal-600 border-b-2 border-teal-600' 
-              : 'text-gray-500'
-          }`}
-        >
-          Cadastrar Bicicleta
-        </button>
+      <div className="mb-6">
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <h3 className="font-medium text-gray-900 mb-3">Seção:</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+            <button
+              onClick={() => setActiveTab('emprestados')}
+              className={`py-2 px-3 rounded text-sm font-medium ${
+                activeTab === 'emprestados'
+                  ? "bg-teal-600 text-white"
+                  : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+              }`}
+            >
+              Bicicletas Emprestadas ({emprestimos.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('solicitacoes')}
+              className={`py-2 px-3 rounded text-sm font-medium ${
+                activeTab === 'solicitacoes'
+                  ? "bg-teal-600 text-white"
+                  : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+              }`}
+            >
+              Solicitações Pendentes ({solicitacoes.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('cadastrar')}
+              className={`py-2 px-3 rounded text-sm font-medium ${
+                activeTab === 'cadastrar'
+                  ? "bg-teal-600 text-white"
+                  : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+              }`}
+            >
+              Cadastrar Bicicleta
+            </button>
+          </div>
+        </div>
       </div>
 
       {activeTab === 'emprestados' && (

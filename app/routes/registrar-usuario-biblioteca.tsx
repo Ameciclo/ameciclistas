@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, Form, useActionData, Link } from "@remix-run/react";
-import { json, type ActionFunctionArgs } from "@remix-run/node";
+import { json, type ActionFunctionArgs, type LoaderFunctionArgs } from "@remix-run/node";
 import { 
   getUsersFirebase, 
   getUserById, 
@@ -9,6 +9,8 @@ import {
   criarSolicitacaoBiblioteca,
   criarSolicitacaoBicicleta
 } from "~/api/firebaseConnection.server";
+import { requireAuth } from "~/utils/authMiddleware";
+import { UserCategory } from "~/utils/types";
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
@@ -121,6 +123,12 @@ export async function action({ request }: ActionFunctionArgs) {
   
   return json({ success: false, error: "Ação inválida" });
 }
+
+const originalLoader = async ({ request }: LoaderFunctionArgs) => {
+  return json({});
+};
+
+export const loader = requireAuth(UserCategory.PROJECT_COORDINATORS)(originalLoader);
 
 export default function RegistrarUsuarioBiblioteca() {
   const [searchParams] = useSearchParams();

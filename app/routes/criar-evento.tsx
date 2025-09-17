@@ -1,13 +1,15 @@
-import { Form, useLoaderData } from "@remix-run/react";
+import { Form, useLoaderData, Link } from "@remix-run/react";
 import { useState, useEffect } from "react";
 import { getTelegramUsersInfo } from "../utils/users";
 import { UserCategory, UserData } from "~/utils/types";
-import { isAuth } from "~/utils/isAuthorized";
-import Unauthorized from "~/components/Unauthorized";
+import { useAuth } from "~/utils/useAuth";
 import { BackButton } from "~/components/Forms/Buttons";
+import { requireAuth } from "~/utils/authMiddleware";
 import { action } from "~/handlers/actions/criar-evento";
-import { loader } from "~/handlers/loaders/criar-evento";
-export { loader, action };
+import { loader as originalLoader } from "~/handlers/loaders/criar-evento";
+
+export const loader = requireAuth(UserCategory.AMECICLISTAS)(originalLoader);
+export { action };
 
 import SelectInput from "~/components/Forms/Inputs/SelectInput";
 import DescriptionInput from "~/components/Forms/Inputs/LongTextInput";
@@ -20,7 +22,7 @@ import TextInput from "~/components/Forms/Inputs/TextInput";
 
 export default function CriarEvento() {
   const { usersInfo, currentUserCategories } = useLoaderData<typeof loader>();
-  const [userPermissions, setUserPermissions] = useState(currentUserCategories);
+  const { userPermissions, isDevMode, devUser } = useAuth();
   const [user, setUser] = useState<UserData | null>({} as UserData);
   const [name, setName] = useState<string>("");
   const [date, setDate] = useState<string>("");
@@ -32,13 +34,17 @@ export default function CriarEvento() {
   const [calendarId, setCalendarId] = useState<string>("");
   const [workGroup, setWorkGroup] = useState<string>("");
 
-  useEffect(() => setUser(() => getTelegramUsersInfo()), []);
-
   useEffect(() => {
-    if (user?.id && usersInfo[user.id]) {
-      setUserPermissions([usersInfo[user.id].role as any]);
+    if (isDevMode && devUser) {
+      setUser({
+        id: devUser.id,
+        first_name: devUser.name.split(" ")[0],
+        last_name: devUser.name.split(" ").slice(1).join(" ")
+      });
+    } else {
+      setUser(() => getTelegramUsersInfo());
     }
-  }, [user]);
+  }, [devUser, isDevMode]);
 
   const isFormValid =
     name !== "" &&
@@ -73,8 +79,14 @@ export default function CriarEvento() {
     }
   }, [startTime, endTime]);
 
-  return isAuth(userPermissions, UserCategory.AMECICLISTAS) ? (
+  return (
     <Form className="container" method="post">
+      <div className="mb-4">
+        <Link to="/" className="text-teal-600 hover:text-teal-700">
+          ← Voltar ao Menu Principal
+        </Link>
+      </div>
+      
       <FormTitle>📅 Criar Evento</FormTitle>
 
       <TextInput
@@ -218,7 +230,5 @@ export default function CriarEvento() {
 
       <BackButton />
     </Form>
-  ) : (
-    <Unauthorized pageName="Criar Evento" requiredPermission="Ameciclista" />
   );
 }

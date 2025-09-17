@@ -3,8 +3,10 @@ import { useLoaderData, Link } from "@remix-run/react";
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { getBicicletas, getEmprestimosBicicletas } from "~/api/firebaseConnection.server";
 import type { Bicicleta, EmprestimoBicicleta } from "~/utils/types";
+import { requireAuth } from "~/utils/authMiddleware";
+import { UserCategory } from "~/utils/types";
 
-export async function loader({ request }: LoaderFunctionArgs) {
+const originalLoader = async ({ request }: LoaderFunctionArgs) => {
   try {
     const bicicletasData = await getBicicletas();
     const emprestimosData = await getEmprestimosBicicletas();
@@ -17,7 +19,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     console.error("Erro ao carregar estatísticas do Bota pra Rodar:", error);
     return json({ bicicletas: [], emprestimos: [] });
   }
-}
+};
+
+export const loader = requireAuth(UserCategory.AMECICLISTAS)(originalLoader);
 
 export default function EstatisticasBotaPraRodar() {
   const { bicicletas, emprestimos } = useLoaderData<typeof loader>();
@@ -75,15 +79,13 @@ export default function EstatisticasBotaPraRodar() {
 
   return (
     <div className="container mx-auto py-8 px-4">
-      <div className="mb-6">
-        <Link 
-          to="/bota-pra-rodar" 
-          className="button-secondary-full text-center mb-4"
-        >
-          ⬅️ Voltar para Bota pra Rodar
+      <div className="mb-4">
+        <Link to="/bota-pra-rodar" className="text-teal-600 hover:text-teal-700">
+          ← Voltar ao Menu
         </Link>
-        <h1 className="text-3xl font-bold text-teal-600">📊 Estatísticas - Bota pra Rodar</h1>
       </div>
+      
+      <h1 className="text-3xl font-bold text-teal-600 mb-6">📊 Estatísticas - Bota pra Rodar</h1>
 
       {/* Filtros */}
       <div className="bg-gray-50 p-4 rounded-lg mb-6">
@@ -240,6 +242,15 @@ export default function EstatisticasBotaPraRodar() {
           </div>
         </div>
       )}
+      
+      <div className="mt-8">
+        <Link 
+          to="/bota-pra-rodar" 
+          className="button-secondary-full text-center"
+        >
+          ⬅️ Voltar para Bota pra Rodar
+        </Link>
+      </div>
     </div>
   );
 }

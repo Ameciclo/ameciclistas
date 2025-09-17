@@ -4,52 +4,48 @@ import { UserCategory, type ItemInventario, type EmprestimoInventario, type User
 import { getTelegramUsersInfo } from "~/utils/users";
 import telegramInit from "~/utils/telegramInit";
 import { isAuth } from "~/utils/isAuthorized";
+import { useAuth } from "~/utils/useAuth";
+import { requireAuth } from "~/utils/authMiddleware";
 import { registroEmprestimosLoader } from "~/handlers/loaders/registro-emprestimos";
 import { registroEmprestimosAction } from "~/handlers/actions/registro-emprestimos";
 import { RegistroEmprestimosGestao } from "~/components/RegistroEmprestimosGestao";
 import { PaginacaoInventario } from "~/components/PaginacaoInventario";
 
-export const loader = registroEmprestimosLoader;
+export const loader = requireAuth(UserCategory.AMECICLISTAS)(registroEmprestimosLoader);
 export const action = registroEmprestimosAction;
 
 export default function RegistroEmprestimos() {
   const { itens, emprestimos, solicitacoes, users } = useLoaderData<typeof loader>();
+  const { userPermissions, isDevMode, devUser } = useAuth();
   const [user, setUser] = useState<UserData | null>(null);
   const [busca, setBusca] = useState("");
   const [mostrarGestao, setMostrarGestao] = useState(false);
-  const [userPermissions, setUserPermissions] = useState<string[]>([UserCategory.ANY_USER]);
+  
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    setMostrarGestao(urlParams.get('gestao') === 'true');
+  }, []);
   const [filtroDisponibilidade, setFiltroDisponibilidade] = useState("todos");
   const [filtroCategoria, setFiltroCategoria] = useState("");
 
   useEffect(() => {
-    try {
-      telegramInit();
-      const userData = getTelegramUsersInfo();
-      
-      if (process.env.NODE_ENV === "development" && !userData) {
-        setUser({
-          id: 123456789,
-          first_name: "João",
-          last_name: "Silva",
-          username: "joaosilva"
-        } as UserData);
-      } else {
+    if (isDevMode && devUser) {
+      setUser({
+        id: devUser.id,
+        first_name: devUser.name.split(" ")[0],
+        last_name: devUser.name.split(" ").slice(1).join(" ")
+      });
+    } else {
+      try {
+        telegramInit();
+        const userData = getTelegramUsersInfo();
         setUser(userData);
+      } catch (error) {
+        console.error('Erro ao inicializar Telegram:', error);
+        setUser(null);
       }
-    } catch (error) {
-      console.error('Erro ao inicializar Telegram:', error);
-      setUser(null);
     }
-  }, []);
-
-  useEffect(() => {
-    if (user?.id && users[user.id]) {
-      const userRole = users[user.id].role;
-      setUserPermissions([userRole]);
-    } else if (process.env.NODE_ENV === "development") {
-      setUserPermissions([UserCategory.PROJECT_COORDINATORS]);
-    }
-  }, [user, users]);
+  }, [devUser, isDevMode]);
 
   const itensComDisponibilidade = itens.map((item: ItemInventario) => {
     return {
@@ -84,25 +80,15 @@ export default function RegistroEmprestimos() {
 
   return (
     <div className="container mx-auto py-8 px-4">
+      <div className="mb-4">
+        <Link to="/" className="text-teal-600 hover:text-teal-700">
+          ← Voltar ao Menu Principal
+        </Link>
+      </div>
+      
       <h1 className="text-3xl font-bold text-teal-600 mb-6">📦 Registro de Empréstimos</h1>
       
-      <div className="space-y-3 mb-6">
-        <Link 
-          to="/" 
-          className="button-secondary-full text-center"
-        >
-          ⬅️ Voltar
-        </Link>
-        
-        {user && (process.env.NODE_ENV === "development" || isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) && (
-          <button
-            onClick={() => setMostrarGestao(!mostrarGestao)}
-            className="w-full bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition-colors text-lg"
-          >
-            🔧 {mostrarGestao ? "Ver Itens" : "Gestão"}
-          </button>
-        )}
-      </div>
+
 
       {!mostrarGestao ? (
         <>
@@ -196,6 +182,15 @@ export default function RegistroEmprestimos() {
           users={users}
         />
       )}
+      
+      <div className="mt-8">
+        <Link 
+          to="/" 
+          className="button-secondary-full text-center"
+        >
+          ⬅️ Voltar ao Menu Principal
+        </Link>
+      </div>
     </div>
   );
 }
