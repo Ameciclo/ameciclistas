@@ -19,6 +19,11 @@ export default function BotaPraRodar() {
   const [user, setUser] = useState<UserData | null>(null);
   const [busca, setBusca] = useState("");
   const [mostrarGestao, setMostrarGestao] = useState(false);
+  
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    setMostrarGestao(urlParams.get('gestao') === 'true');
+  }, []);
   const [userPermissions, setUserPermissions] = useState<string[]>([UserCategory.ANY_USER]);
   const [filtroDisponibilidade, setFiltroDisponibilidade] = useState("todos");
   const [filtroTipo, setFiltroTipo] = useState("");
@@ -83,32 +88,15 @@ export default function BotaPraRodar() {
 
   return (
     <div className="container mx-auto py-8 px-4">
+      <div className="mb-4">
+        <Link to="/" className="text-teal-600 hover:text-teal-700">
+          ← Voltar ao Menu Principal
+        </Link>
+      </div>
+      
       <h1 className="text-3xl font-bold text-teal-600 mb-6">🚴‍♀️ Bota pra Rodar</h1>
       
-      <div className="space-y-3 mb-6">
-        <Link 
-          to="/" 
-          className="button-secondary-full text-center"
-        >
-          ⬅️ Voltar
-        </Link>
-        
-        <Link 
-          to="/estatisticas-bota-pra-rodar" 
-          className="w-full bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors text-lg block text-center no-underline"
-        >
-          📊 Estatísticas
-        </Link>
-        
-        {user && (isDevMode || isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) && (
-          <button
-            onClick={() => setMostrarGestao(!mostrarGestao)}
-            className="w-full bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition-colors text-lg"
-          >
-            🔧 {mostrarGestao ? "Ver Bicicletas" : "Gestão"}
-          </button>
-        )}
-      </div>
+
 
       {!mostrarGestao ? (
         <>
@@ -202,6 +190,15 @@ export default function BotaPraRodar() {
           users={users}
         />
       )}
+      
+      <div className="mt-8">
+        <Link 
+          to="/" 
+          className="button-secondary-full text-center"
+        >
+          ⬅️ Voltar ao Menu Principal
+        </Link>
+      </div>
     </div>
   );
 }

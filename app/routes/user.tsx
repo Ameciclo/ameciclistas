@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Form, useLoaderData, useActionData } from "@remix-run/react";
+import { Form, useLoaderData, useActionData, Link } from "@remix-run/react";
 import { json, type ActionFunctionArgs } from "@remix-run/node";
 import { UserCategory, UserData } from "~/utils/types";
 import { getTelegramUsersInfo } from "~/utils/users";
@@ -152,6 +152,12 @@ export default function User() {
 
   return (
     <div className="container mx-auto py-8 px-4">
+      <div className="mb-4">
+        <Link to="/" className="text-teal-600 hover:text-teal-700">
+          ← Voltar ao Menu Principal
+        </Link>
+      </div>
+      
       <h1 className="text-3xl font-bold text-teal-600 text-center">
         Suas Informações
       </h1>
@@ -327,7 +333,7 @@ export default function User() {
         </div>
       )}
 
-      <div className="mt-6">
+      <div className="mt-8">
         <BackButton />
       </div>
     </div>

@@ -36,11 +36,10 @@ export function DevProvider({ children }: { children: ReactNode }) {
   const [devUser, setDevUser] = useState<DevUser | null>(getInitialDevUser);
   const [realUser, setRealUser] = useState<UserData | null>(null);
   const [userPermissions, setUserPermissions] = useState<UserCategory[]>([UserCategory.ANY_USER]);
-
   const isDevMode = process.env.NODE_ENV === 'development';
 
   // Carregar usuário real e suas permissões em produção
-  useEffect(() => {
+    useEffect(() => {
     if (!isDevMode) {
       const telegramUser = getTelegramUsersInfo();
       setRealUser(telegramUser);

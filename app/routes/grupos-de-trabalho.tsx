@@ -1,37 +1,15 @@
 import { useLoaderData } from "@remix-run/react";
-import { useEffect, useState } from "react";
-import { UserCategory, UserData } from "~/utils/types";
-import Unauthorized from "~/components/Unauthorized";
-import { isAuth } from "~/utils/isAuthorized";
-import { getTelegramUsersInfo } from "~/utils/users";
+import { UserCategory } from "~/utils/types";
 import { CardList } from "~/components/CardsList";
 import { BackButton } from "~/components/Forms/Buttons";
-
-import { loader, LoaderData } from "../handlers/loaders/grupos-de-trabalho";
+import { requireAuth } from "~/utils/authMiddleware";
+import { loader as originalLoader } from "~/handlers/loaders/grupos-de-trabalho";
 import FormTitle from "~/components/Forms/FormTitle";
-export { loader };
+
+export const loader = requireAuth(UserCategory.AMECICLISTAS)(originalLoader);
 
 export default function GruposTrabalho() {
-  const { usersInfo, currentUserCategories, workgroups } =
-    useLoaderData<LoaderData>();
-  const [userPermissions, setUserPermissions] = useState<UserCategory[]>(
-    currentUserCategories
-  );
-  const [user, setUser] = useState<UserData | null>(null);
-
-  // Obter informações do usuário pelo Telegram
-  useEffect(() => {
-    setUser(() => getTelegramUsersInfo());
-  }, []);
-
-  // Atualiza permissões com base no usuário
-  useEffect(() => {
-    if (user?.id && usersInfo[user.id]) {
-      setUserPermissions([
-        usersInfo[user.id] as unknown as UserCategory,
-      ]);
-    }
-  }, [user, usersInfo]);
+  const { workgroups } = useLoaderData<typeof loader>();
 
   // Mapear cores para as categorias
   const categoryColors: Record<string, string> = {
@@ -41,26 +19,21 @@ export default function GruposTrabalho() {
   };
 
   // Transformar grupos de trabalho em formato para o CardList
-  const cardItems = workgroups.map((group) => ({
-    title: group.name,
-    description: group.description,
+  const cardItems = (workgroups || []).map((group) => ({
+    title: group.name || '',
+    description: group.description || '',
     imageUrl: group.icon?.url,
-    linkUrl: group.telegram_url,
+    linkUrl: group.telegram_url || '',
     linkText: "Entrar no Grupo",
-    badge: group.directive,
-    badgeColor: categoryColors[group.directive.toLowerCase()] || "gray",
+    badge: group.directive || '',
+    badgeColor: categoryColors[group.directive?.toLowerCase()] || "gray",
   }));
 
-  return isAuth(userPermissions, UserCategory.AMECICLISTAS) ? (
+  return (
     <div className="container mx-auto p-4">
       <FormTitle>👥 Grupos de Trabalho da Ameciclo</FormTitle>
       <CardList items={cardItems} />
       <BackButton />
     </div>
-  ) : (
-    <Unauthorized
-      pageName="Grupos de Trabalho"
-      requiredPermission="Ameciclistas"
-    />
   );
 }

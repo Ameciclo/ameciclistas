@@ -16,24 +16,19 @@ export const isAuth = (
       UserCategory.AMECICLISTAS,
       UserCategory.PROJECT_COORDINATORS,
       UserCategory.AMECICLO_COORDINATORS,
-      UserCategory.DEVELOPMENT,
     ],
     [UserCategory.AMECICLISTAS]: [
       UserCategory.AMECICLISTAS,
       UserCategory.PROJECT_COORDINATORS,
       UserCategory.AMECICLO_COORDINATORS,
-      UserCategory.DEVELOPMENT,
     ],
     [UserCategory.PROJECT_COORDINATORS]: [
       UserCategory.PROJECT_COORDINATORS,
       UserCategory.AMECICLO_COORDINATORS,
-      UserCategory.DEVELOPMENT,
     ],
     [UserCategory.AMECICLO_COORDINATORS]: [
       UserCategory.AMECICLO_COORDINATORS,
-      UserCategory.DEVELOPMENT,
     ],
-    [UserCategory.DEVELOPMENT]: [UserCategory.DEVELOPMENT],
   };
   
   const allowedCategories = accessHierarchy[category];

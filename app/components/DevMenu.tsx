@@ -28,11 +28,6 @@ const DEV_USERS: DevUser[] = [
     id: 999996,
     name: "Ana Lima (Coord. Ameciclo)",
     categories: [UserCategory.AMECICLO_COORDINATORS]
-  },
-  {
-    id: 999995,
-    name: "Dev User (Desenvolvimento)",
-    categories: [UserCategory.DEVELOPMENT]
   }
 ];
 
@@ -46,6 +41,10 @@ export function DevMenu({ currentUser, onUserChange }: DevMenuProps) {
 
   useEffect(() => {
     mockTelegramWebApp(currentUser);
+    // Salvar usuário atual no cookie para o middleware
+    if (currentUser && typeof document !== 'undefined') {
+      document.cookie = `devUser=${encodeURIComponent(JSON.stringify(currentUser))}; path=/`;
+    }
   }, [currentUser]);
 
   if (process.env.NODE_ENV === 'production') {
@@ -74,6 +73,10 @@ export function DevMenu({ currentUser, onUserChange }: DevMenuProps) {
                     onClick={() => {
                       onUserChange(user);
                       setIsOpen(false);
+                      // Forçar atualização do cookie
+                      if (typeof document !== 'undefined') {
+                        document.cookie = `devUser=${encodeURIComponent(JSON.stringify(user))}; path=/`;
+                      }
                     }}
                     className={`block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm ${
                       currentUser?.id === user.id ? 'bg-blue-50 font-semibold' : ''

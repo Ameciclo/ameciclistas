@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLoaderData, useSearchParams, Form, useActionData, Link } from "@remix-run/react";
-import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-run/node";
+import { json, redirect, type LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-run/node";
 import { getBiblioteca } from "~/api/firebaseConnection.server";
 import db from "~/api/firebaseAdmin.server.js";
 import { getTelegramUsersInfo } from "~/utils/users";
@@ -77,7 +77,7 @@ export async function action({ request }: ActionFunctionArgs) {
         created_at: new Date().toISOString()
       });
       
-      return json({ success: true, message: "Solicitação enviada com sucesso!" });
+      return redirect("/sucesso/emprestimo-solicitado");
     } catch (error) {
       console.error("Erro ao processar solicitação:", error);
       return json({ success: false, error: "Erro ao processar solicitação" });
@@ -138,18 +138,7 @@ export default function SolicitarEmprestimo() {
   const needsLibraryRegister = user && !hasLibraryRegister && (userRole === 'ANY_USER' || userRole === 'AMECICLISTAS');
   const canSolicitForOthers = userRole === 'PROJECT_COORDINATORS' || userRole === 'AMECICLO_COORDINATORS';
 
-  if (actionData?.success) {
-    return (
-      <div className="container mx-auto py-8 px-4">
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-          {actionData.message}
-        </div>
-        <Link to="/biblioteca" className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700">
-          Voltar à Biblioteca
-        </Link>
-      </div>
-    );
-  }
+
 
   // Se usuário precisa completar cadastro
   if (needsLibraryRegister) {
