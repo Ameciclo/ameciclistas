@@ -33,7 +33,7 @@ export function generateNewsletterHtml(events: CalendarEvent[]): string {
             </td>
             <td align="center" width="200">
               <a href="http://www.ameciclo.org/">
-                <img src="https://ameciclo.org/wp-content/uploads/2023/01/logo-ameciclo-branco.png" alt="Logo da Ameciclo" width="100" style="display: block;" />
+                <img src="${process.env.BASE_URL}/logo-ameciclo-branco.png" alt="Logo da Ameciclo" width="100" style="display: block;" />
               </a>
             </td>
             <td align="left" style="color: #ffffff; font-family: Ubuntu, sans-serif; font-size: 24px; font-weight: 100;">
@@ -60,7 +60,7 @@ export function generateNewsletterHtml(events: CalendarEvent[]): string {
           <tr>
             <td style="padding-right:15px">
               <a href="http://www.ameciclo.org/">
-                <img src="https://ameciclo.org/wp-content/uploads/2023/01/logo-ameciclo-branco.png" alt="Ameciclo" height="50" style="display: block;" border="0" />
+                <img src="${process.env.BASE_URL}/logo-ameciclo-branco.png" alt="Ameciclo" height="50" style="display: block;" border="0" />
               </a>
             </td>
             <td style="font-size: 0; line-height: 0;" width="20">
@@ -160,6 +160,8 @@ function generateSocialMediaHtml(): string {
     { name: "github", url: "https://github.com/ameciclo" }
   ];
 
+  const baseUrl = process.env.BASE_URL || 'http://localhost:5173';
+  
   return socialMedia.map(social => `
     <td>
       <a href="${social.url}">
