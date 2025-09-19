@@ -74,6 +74,12 @@ const links = [
     requiredPermission: UserCategory.ANY_USER,
   },
   {
+    to: "/newsletter",
+    label: "Newsletter",
+    icon: "📧",
+    requiredPermission: UserCategory.PROJECT_COORDINATORS,
+  },
+  {
     to: "/users",
     label: "Gerenciamento de Usuários",
     icon: "🔧",
@@ -133,7 +139,7 @@ export default function Index() {
           return (
             <div key={link.to} className={showGestaoButton || showRecursosButtons || showEstatisticasButton ? "flex gap-2" : ""}>
               <Link
-                to={link.to}
+                to={user?.id ? `${link.to}?userId=${user.id}` : link.to}
                 className={`${showGestaoButton || showRecursosButtons || showEstatisticasButton ? 'flex-1' : 'w-full'} bg-teal-600 text-white px-4 py-3 rounded-md hover:bg-teal-700 transition-colors text-lg font-medium text-center block no-underline`}
               >
                 {link.icon} {link.label}

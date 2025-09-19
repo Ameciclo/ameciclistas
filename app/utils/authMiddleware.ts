@@ -25,6 +25,7 @@ export async function getUserPermissions(request: Request): Promise<{ userPermis
   try {
     // Primeiro tentar do query params
     const url = new URL(request.url);
+
     let userId = url.searchParams.get("user_id");
     
     // Se não tiver, tentar do formData (para POSTs)

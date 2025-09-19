@@ -44,6 +44,7 @@ function getInitialDevUser(): DevUser | null {
 export function DevProvider({ children }: { children: ReactNode }) {
   const [devUser, setDevUser] = useState<DevUser | null>(null);
   const [realUser, setRealUser] = useState<UserData | null>(null);
+
   const [isClient, setIsClient] = useState(false);
 
   // Inicializar no cliente
@@ -66,7 +67,32 @@ export function DevProvider({ children }: { children: ReactNode }) {
     if (isClient && !isDevMode && isInTelegram) {
       const telegramUser = getTelegramUsersInfo();
       setRealUser(telegramUser);
+      
+      // Buscar permissões do usuário no Firebase
+      if (telegramUser?.id) {
+        fetch(`/api/user-permissions?userId=${telegramUser.id}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.role) {
+              setUserPermissions([data.role as UserCategory]);
+            }
+          })
+          .catch(err => {
+            console.error('Erro ao buscar permissões:', err);
+            setUserPermissions([UserCategory.ANY_USER]);
+          });
+      }
+    } else if (devUser) {
+      setUserPermissions(devUser.categories);
     }
+  }, [isDevMode, devUser]);
+
+  const handleSetDevUser = (user: DevUser) => {
+    setDevUser(user);
+    if (isDevMode) {
+      setUserPermissions(user.categories);
+    }
+
   }, [isClient, isDevMode, isInTelegram]);
 
   // Salvar usuário dev no localStorage
@@ -79,6 +105,7 @@ export function DevProvider({ children }: { children: ReactNode }) {
         console.warn('Erro ao salvar no localStorage:', e);
       }
     }
+
   };
 
   return (

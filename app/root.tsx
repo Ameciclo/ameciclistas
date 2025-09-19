@@ -8,6 +8,7 @@ import stylesheet from "~/tailwind.css?url";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: stylesheet },
+  { rel: "icon", href: "/images/apenas logo da ameciclo.svg", type: "image/svg+xml" },
 ];
 
 export const meta: MetaFunction = () => {

@@ -21,7 +21,7 @@ const originalLoader = async ({ request }: LoaderFunctionArgs) => {
   }
 };
 
-export const loader = requireAuth(UserCategory.AMECICLISTAS)(originalLoader);
+export const loader = requireAuth(UserCategory.ANY_USER)(originalLoader);
 
 export default function EstatisticasBotaPraRodar() {
   const { bicicletas, emprestimos } = useLoaderData<typeof loader>();

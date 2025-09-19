@@ -98,7 +98,7 @@ const originalLoader = async ({ request }: LoaderFunctionArgs) => {
   }
 };
 
-export const loader = requireAuth(UserCategory.AMECICLISTAS)(originalLoader);
+export const loader = requireAuth(UserCategory.ANY_USER)(originalLoader);
 
 function getLivrosMaisEmprestados(emprestimos: any[], biblioteca: any[]) {
   const contagem: { [key: string]: { count: number; titulo: string } } = {};
