@@ -73,6 +73,12 @@ const links = [
     requiredPermission: UserCategory.ANY_USER,
   },
   {
+    to: "/newsletter",
+    label: "Newsletter",
+    icon: "📧",
+    requiredPermission: UserCategory.PROJECT_COORDINATORS,
+  },
+  {
     to: "/users",
     label: "Gerenciamento de Usuários",
     icon: "🔧",
