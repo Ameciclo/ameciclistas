@@ -109,8 +109,11 @@ node scripts/populate-inventario.js
 ## 🚀 Desenvolvimento
 
 ```bash
-# Servidor de desenvolvimento
+# Servidor de desenvolvimento (Telegram + Web)
 npm run dev
+
+# Modo web otimizado (apenas navegador)
+npm run dev:web
 
 # Verificar tipos
 npm run typecheck
@@ -118,6 +121,13 @@ npm run typecheck
 # Linting
 npm run lint
 ```
+
+### 🌐 Modo Web
+O sistema agora suporta testes completos em navegador web comum:
+- Menu de desenvolvimento automático fora do Telegram
+- Simulação de diferentes tipos de usuário
+- Todas as funcionalidades disponíveis
+- Ver [WEB_MODE.md](WEB_MODE.md) para detalhes
 
 ## 📦 Deploy
 
@@ -153,6 +163,7 @@ npm start
 
 ## 📚 Documentação Específica
 
+- [Modo Web - Testes fora do Telegram](WEB_MODE.md)
 - [Sistema de Biblioteca](BIBLIOTECA_README.md)
 - [Recursos Independentes](RECURSOS_INDEPENDENTES.md)
 - [Registro de Empréstimos](REGISTRO_EMPRESTIMOS_README.md)

@@ -4,9 +4,8 @@ import { isAuth } from "~/utils/isAuthorized";
 import { getUsersFirebase } from "~/api/firebaseConnection.server";
 
 export async function getUserPermissions(request: Request): Promise<{ userPermissions: UserCategory[] }> {
-  // Em desenvolvimento, extrair do contexto ou cookies
+  // Em desenvolvimento, sempre usar cookie do DevMode
   if (process.env.NODE_ENV === "development") {
-    // Tentar obter do cookie do DevMode
     const cookieHeader = request.headers.get("Cookie");
     if (cookieHeader) {
       const devUserMatch = cookieHeader.match(/devUser=([^;]+)/);
@@ -15,17 +14,29 @@ export async function getUserPermissions(request: Request): Promise<{ userPermis
           const devUser = JSON.parse(decodeURIComponent(devUserMatch[1]));
           return { userPermissions: devUser.categories || [UserCategory.ANY_USER] };
         } catch (e) {
-          // Fallback para ANY_USER se não conseguir parsear
+          console.warn('Erro ao parsear devUser do cookie:', e);
         }
       }
     }
     return { userPermissions: [UserCategory.ANY_USER] };
   }
 
+  // Em produção, tentar obter do Telegram
   try {
-    // Extrair dados do usuário do Telegram via headers ou cookies
+    // Primeiro tentar do query params
     const url = new URL(request.url);
-    const userId = url.searchParams.get("userId") || url.searchParams.get("user_id");
+
+    let userId = url.searchParams.get("user_id");
+    
+    // Se não tiver, tentar do formData (para POSTs)
+    if (!userId && request.method === "POST") {
+      try {
+        const formData = await request.clone().formData();
+        userId = formData.get("user_id") as string;
+      } catch (e) {
+        // Ignorar erro de parsing
+      }
+    }
     
     if (!userId) {
       return { userPermissions: [UserCategory.ANY_USER] };

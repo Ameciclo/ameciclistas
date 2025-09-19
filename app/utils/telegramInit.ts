@@ -10,11 +10,13 @@ export default function telegramInit() {
             // Inicializa o Telegram Web App
             window.Telegram.WebApp.ready();
 
-            // Exemplo: Configurações iniciais opcionais
-            console.log("Plataforma:", window.Telegram.WebApp.platform);
-            console.log("Dados do usuário:", window.Telegram.WebApp.initDataUnsafe);
+            // Log apenas se realmente estiver no Telegram
+            if (window.Telegram.WebApp.platform !== 'unknown') {
+                console.log("Plataforma:", window.Telegram.WebApp.platform);
+                console.log("Dados do usuário:", window.Telegram.WebApp.initDataUnsafe);
+            }
         } else {
-            console.warn("Telegram WebApp SDK não está disponível.");
+            console.log("Executando em modo web (fora do Telegram)");
         }
     } catch (error) {
         console.error('Erro ao inicializar Telegram WebApp:', error);
