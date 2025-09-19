@@ -31,10 +31,11 @@ export function useAuthGuard(requiredPermission: UserCategory) {
   const navigate = useNavigate();
   
   useEffect(() => {
-    if (!isDevMode && !isAuth(userPermissions, requiredPermission)) {
+    // Verificar permissão tanto em dev quanto em produção
+    if (!isAuth(userPermissions, requiredPermission)) {
       navigate('/unauthorized');
     }
-  }, [userPermissions, isDevMode, requiredPermission, navigate]);
+  }, [userPermissions, requiredPermission, navigate]);
   
   return { userPermissions, isDevMode, devUser };
 }

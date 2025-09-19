@@ -15,17 +15,26 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 function getInitialDevUser(): DevUser | null {
-  if (process.env.NODE_ENV !== 'development') return null;
+  // Sempre permitir modo dev se não estiver no Telegram
+  const isInTelegram = typeof window !== 'undefined' && window.Telegram?.WebApp?.platform !== 'unknown';
   
-  // Tentar ler do cookie
-  if (typeof document !== 'undefined') {
-    const cookieMatch = document.cookie.match(/devUser=([^;]+)/);
-    if (cookieMatch) {
-      try {
-        return JSON.parse(decodeURIComponent(cookieMatch[1]));
-      } catch (e) {
-        // Fallback para primeiro usuário se não conseguir parsear
+  if (process.env.NODE_ENV === 'production' && isInTelegram) return null;
+  
+  // Tentar ler do localStorage primeiro
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = localStorage.getItem('devUser');
+      if (stored && stored.trim()) {
+        const parsed = JSON.parse(stored);
+        if (parsed && typeof parsed === 'object' && parsed.id) {
+          return parsed;
+        }
       }
+    } catch (e) {
+      // Limpar localStorage corrompido
+      try {
+        localStorage.removeItem('devUser');
+      } catch {}
     }
   }
   
@@ -33,28 +42,49 @@ function getInitialDevUser(): DevUser | null {
 }
 
 export function DevProvider({ children }: { children: ReactNode }) {
-  const [devUser, setDevUser] = useState<DevUser | null>(getInitialDevUser);
+  const [devUser, setDevUser] = useState<DevUser | null>(null);
   const [realUser, setRealUser] = useState<UserData | null>(null);
+  const [isClient, setIsClient] = useState(false);
 
-  const isDevMode = process.env.NODE_ENV === 'development';
+  // Inicializar no cliente
+  useEffect(() => {
+    setIsClient(true);
+    setDevUser(getInitialDevUser());
+  }, []);
+
+  // Detectar se está no Telegram
+  const isInTelegram = isClient && window.Telegram?.WebApp?.platform !== 'unknown';
+  const isDevMode = process.env.NODE_ENV === 'development' || (isClient && !isInTelegram);
 
   // Obter permissões baseadas no contexto atual
-  const userPermissions = isDevMode && devUser 
+  const userPermissions = (isDevMode && devUser) 
     ? devUser.categories 
     : [UserCategory.ANY_USER]; // Será expandido para usuário real
 
-  // Carregar usuário real em produção
+  // Carregar usuário real em produção no Telegram
   useEffect(() => {
-    if (!isDevMode) {
+    if (isClient && !isDevMode && isInTelegram) {
       const telegramUser = getTelegramUsersInfo();
       setRealUser(telegramUser);
     }
-  }, [isDevMode]);
+  }, [isClient, isDevMode, isInTelegram]);
+
+  // Salvar usuário dev no localStorage
+  const handleSetDevUser = (user: DevUser) => {
+    setDevUser(user);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('devUser', JSON.stringify(user));
+      } catch (e) {
+        console.warn('Erro ao salvar no localStorage:', e);
+      }
+    }
+  };
 
   return (
     <AuthContext.Provider value={{ 
       devUser, 
-      setDevUser, 
+      setDevUser: handleSetDevUser, 
       isDevMode, 
       userPermissions,
       realUser 

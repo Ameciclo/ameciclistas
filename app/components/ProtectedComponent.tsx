@@ -17,7 +17,11 @@ export function ProtectedComponent({
 }: ProtectedComponentProps) {
   const { userPermissions, isDevMode } = useAuth();
   
-  if (!isDevMode && !isAuth(userPermissions, requiredPermission)) {
+  // Em modo dev, sempre permitir acesso se o usuário tem a permissão
+  // Em produção, verificar normalmente
+  const hasPermission = isAuth(userPermissions, requiredPermission);
+  
+  if (!hasPermission) {
     return fallback ? <>{fallback}</> : null;
   }
   

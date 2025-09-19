@@ -3,9 +3,10 @@ import { Form, useLoaderData, useActionData, Link } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import { getProducts, saveSale, saveDonation, getUsersFirebase } from "~/api/firebaseConnection.server";
 import { Product, ProductCategory, SaleStatus, UserData, UserCategory } from "~/utils/types";
-import { requireAuth } from "~/utils/authMiddleware";
+import { requireAuth, getUserPermissions } from "~/utils/authMiddleware";
 import { useAuth } from "~/utils/useAuth";
 import { isAuth } from "~/utils/isAuthorized";
+import { TelegramUserInput } from "~/components/TelegramUserInput";
 
 const originalLoader: LoaderFunction = async () => {
   const products = await getProducts();
@@ -17,6 +18,12 @@ export const loader = requireAuth(UserCategory.AMECICLISTAS)(originalLoader);
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
   const actionType = formData.get("actionType") as string;
+  
+  // Verificar permissões
+  const { userPermissions } = await getUserPermissions(request);
+  if (!isAuth(userPermissions, UserCategory.AMECICLISTAS)) {
+    return json({ error: "Sem permissão para registrar consumo" }, { status: 403 });
+  }
   
   try {
     if (actionType === "donation") {
@@ -175,6 +182,7 @@ export default function RegistrarConsumo() {
 
       {activeTab === "consumo" ? (
         <Form method="post" className="max-w-md mx-auto space-y-4">
+          <TelegramUserInput />
           <input type="hidden" name="actionType" value="consumo" />
           <input type="hidden" name="userId" value={showCustomerForm ? "0" : (user?.id || "")} />
           <input type="hidden" name="userName" value={showCustomerForm ? customerName : (user?.first_name || "")} />
@@ -350,6 +358,7 @@ export default function RegistrarConsumo() {
         </Form>
       ) : (
         <Form method="post" className="max-w-md mx-auto space-y-4">
+          <TelegramUserInput />
           <input type="hidden" name="actionType" value="donation" />
           <input type="hidden" name="userId" value={showCustomerForm ? "0" : (user?.id || "")} />
           <input type="hidden" name="userName" value={showCustomerForm ? customerName : (user?.first_name || "")} />

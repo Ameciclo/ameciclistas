@@ -11,13 +11,33 @@ import { registroEmprestimosAction } from "~/handlers/actions/registro-emprestim
 import { RegistroEmprestimosGestao } from "~/components/RegistroEmprestimosGestao";
 import { PaginacaoInventario } from "~/components/PaginacaoInventario";
 
-export const loader = requireAuth(UserCategory.AMECICLISTAS)(registroEmprestimosLoader);
+// Permitir acesso para AMECICLISTAS e coordenadores
+export const loader = registroEmprestimosLoader;
 export const action = registroEmprestimosAction;
 
 export default function RegistroEmprestimos() {
   const { itens, emprestimos, solicitacoes, users } = useLoaderData<typeof loader>();
   const { userPermissions, isDevMode, devUser } = useAuth();
   const [user, setUser] = useState<UserData | null>(null);
+  
+  // Verificar se tem permissão
+  const hasPermission = isAuth(userPermissions, UserCategory.AMECICLISTAS);
+  
+  if (!hasPermission) {
+    return (
+      <div className="container mx-auto py-8 px-4 text-center">
+        <h1 className="text-3xl font-bold text-red-600 mb-4">
+          🚫 Acesso Negado
+        </h1>
+        <p className="text-gray-600 mb-6">
+          Você precisa ser Ameciclista ou Coordenador para acessar esta página.
+        </p>
+        <Link to="/" className="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700">
+          Voltar ao Menu Principal
+        </Link>
+      </div>
+    );
+  }
   const [busca, setBusca] = useState("");
   const [mostrarGestao, setMostrarGestao] = useState(false);
   

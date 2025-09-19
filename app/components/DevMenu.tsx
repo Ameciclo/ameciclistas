@@ -38,16 +38,21 @@ interface DevMenuProps {
 
 export function DevMenu({ currentUser, onUserChange }: DevMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    setIsClient(true);
     mockTelegramWebApp(currentUser);
-    // Salvar usuário atual no cookie para o middleware
-    if (currentUser && typeof document !== 'undefined') {
-      document.cookie = `devUser=${encodeURIComponent(JSON.stringify(currentUser))}; path=/`;
-    }
   }, [currentUser]);
 
-  if (process.env.NODE_ENV === 'production') {
+  // Não renderizar no servidor
+  if (!isClient) {
+    return null;
+  }
+
+  // Mostrar menu se estiver em desenvolvimento OU se não estiver no Telegram
+  const isInTelegram = window.Telegram?.WebApp?.platform !== 'unknown';
+  if (process.env.NODE_ENV === 'production' && isInTelegram) {
     return null;
   }
 
@@ -73,10 +78,6 @@ export function DevMenu({ currentUser, onUserChange }: DevMenuProps) {
                     onClick={() => {
                       onUserChange(user);
                       setIsOpen(false);
-                      // Forçar atualização do cookie
-                      if (typeof document !== 'undefined') {
-                        document.cookie = `devUser=${encodeURIComponent(JSON.stringify(user))}; path=/`;
-                      }
                     }}
                     className={`block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm ${
                       currentUser?.id === user.id ? 'bg-blue-50 font-semibold' : ''

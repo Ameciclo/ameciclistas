@@ -7,6 +7,7 @@ import { ButtonsListWithPermissions } from "~/components/Forms/Buttons";
 import { useAuth } from "~/utils/useAuth";
 import { createDevTelegramUserWithCategories } from "~/utils/devTelegram";
 import { isAuth } from "~/utils/isAuthorized";
+import { WebModeNotice } from "~/components/WebModeNotice";
 
 import { loader } from "~/handlers/loaders/_index";
 export { loader };
@@ -104,6 +105,7 @@ export default function Index() {
       <h1 className="text-3xl font-bold text-teal-600 text-center">
         Ameciclobot Miniapp
       </h1>
+      <WebModeNotice />
       {isDevMode ? (
         <div className="text-center mb-4">
           <p className="text-sm text-blue-600 font-semibold">

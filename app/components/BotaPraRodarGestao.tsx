@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Form, useSubmit } from "@remix-run/react";
 import type { EmprestimoBicicleta, SolicitacaoEmprestimoBicicleta, Bicicleta } from "~/utils/types";
+import { useAuth } from "~/utils/useAuth";
+import { TelegramUserInput } from "~/components/TelegramUserInput";
 
 interface BotaPraRodarGestaoProps {
   emprestimos: EmprestimoBicicleta[];
@@ -10,6 +12,7 @@ interface BotaPraRodarGestaoProps {
 }
 
 export function BotaPraRodarGestao({ emprestimos, solicitacoes, bicicletas, users }: BotaPraRodarGestaoProps) {
+  const { isDevMode, devUser } = useAuth();
   const getUserName = (userId: string) => {
     const user = users[userId];
     
@@ -43,9 +46,14 @@ export function BotaPraRodarGestao({ emprestimos, solicitacoes, bicicletas, user
     const formData = new FormData();
     formData.append("action", "registrar_devolucao");
     formData.append("emprestimo_id", emprestimoId);
-    if (typeof window !== 'undefined' && window.Telegram?.WebApp?.initDataUnsafe?.user?.id) {
+    
+    // Adicionar user_id baseado no contexto
+    if (isDevMode && devUser) {
+      formData.append("user_id", devUser.id.toString());
+    } else if (typeof window !== 'undefined' && window.Telegram?.WebApp?.initDataUnsafe?.user?.id) {
       formData.append("user_id", window.Telegram.WebApp.initDataUnsafe.user.id.toString());
     }
+    
     submit(formData, { method: "post" });
   };
 
@@ -53,9 +61,14 @@ export function BotaPraRodarGestao({ emprestimos, solicitacoes, bicicletas, user
     const formData = new FormData();
     formData.append("action", "aprovar_solicitacao");
     formData.append("solicitacao_id", solicitacaoId);
-    if (typeof window !== 'undefined' && window.Telegram?.WebApp?.initDataUnsafe?.user?.id) {
+    
+    // Adicionar user_id baseado no contexto
+    if (isDevMode && devUser) {
+      formData.append("user_id", devUser.id.toString());
+    } else if (typeof window !== 'undefined' && window.Telegram?.WebApp?.initDataUnsafe?.user?.id) {
       formData.append("user_id", window.Telegram.WebApp.initDataUnsafe.user.id.toString());
     }
+    
     submit(formData, { method: "post" });
   };
 
@@ -63,9 +76,14 @@ export function BotaPraRodarGestao({ emprestimos, solicitacoes, bicicletas, user
     const formData = new FormData();
     formData.append("action", "rejeitar_solicitacao");
     formData.append("solicitacao_id", solicitacaoId);
-    if (typeof window !== 'undefined' && window.Telegram?.WebApp?.initDataUnsafe?.user?.id) {
+    
+    // Adicionar user_id baseado no contexto
+    if (isDevMode && devUser) {
+      formData.append("user_id", devUser.id.toString());
+    } else if (typeof window !== 'undefined' && window.Telegram?.WebApp?.initDataUnsafe?.user?.id) {
       formData.append("user_id", window.Telegram.WebApp.initDataUnsafe.user.id.toString());
     }
+    
     submit(formData, { method: "post" });
   };
 
@@ -194,6 +212,7 @@ export function BotaPraRodarGestao({ emprestimos, solicitacoes, bicicletas, user
         <div className="max-w-md mx-auto">
           <Form method="post" className="space-y-4">
             <input type="hidden" name="action" value="cadastrar_bicicleta" />
+            <TelegramUserInput />
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
