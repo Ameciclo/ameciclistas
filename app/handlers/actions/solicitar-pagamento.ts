@@ -37,7 +37,10 @@ const createPaymentRequests = (formData: FormData) => {
 
     const unitValueFormatted = (parseFloat(item.unitValue || '0') / 100).toFixed(2).replace('.', ',');
     const totalValueFormatted = `R$ ${(parseFloat(item.totalValue || '0') / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    const description = `${item.description} (${item.quantity} ${item.unitName}${item.quantity > 1 ? 's' : ''} × R$ ${unitValueFormatted})`;
+    const description = `${item.description}`;
+    const quantity = item.quantity;
+    const unitName = item.unitName;
+    const unitValue = item.unitValue;
 
     return {
       from,
@@ -50,6 +53,10 @@ const createPaymentRequests = (formData: FormData) => {
       isRefund: item.isRefund,
       refundSupplier: refundSupplier || "",
       description,
+      quantity,
+      unitName,
+      unitValue,
+      unitValueFormatted,
       value: totalValueFormatted,
       from_chat_id: 0,
       group_message_id: 0,
