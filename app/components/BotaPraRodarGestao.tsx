@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Form, useSubmit } from "@remix-run/react";
 import type { EmprestimoBicicleta, SolicitacaoEmprestimoBicicleta, Bicicleta } from "~/utils/types";
 
@@ -10,6 +10,13 @@ interface BotaPraRodarGestaoProps {
 }
 
 export function BotaPraRodarGestao({ emprestimos, solicitacoes, bicicletas, users }: BotaPraRodarGestaoProps) {
+  const [currentUserId, setCurrentUserId] = useState<string>('');
+  
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.Telegram?.WebApp?.initDataUnsafe?.user?.id) {
+      setCurrentUserId(window.Telegram.WebApp.initDataUnsafe.user.id.toString());
+    }
+  }, []);
   const getUserName = (userId: string) => {
     const user = users[userId];
     
@@ -192,8 +199,25 @@ export function BotaPraRodarGestao({ emprestimos, solicitacoes, bicicletas, user
 
       {activeTab === 'cadastrar' && (
         <div className="max-w-md mx-auto">
+          {!currentUserId && (
+            <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4">
+              ⚠️ Usuário não identificado. Verifique se está logado no Telegram.
+            </div>
+          )}
+          
+          {currentUserId && (
+            <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-4 text-sm">
+              👤 Usuário: {currentUserId}
+            </div>
+          )}
+          
           <Form method="post" className="space-y-4">
             <input type="hidden" name="action" value="cadastrar_bicicleta" />
+            <input 
+              type="hidden" 
+              name="user_id" 
+              value={currentUserId} 
+            />
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">

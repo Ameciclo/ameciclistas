@@ -44,7 +44,16 @@ export async function botaPraRodarAction({ request }: ActionFunctionArgs) {
     }
     
     if (!userId) {
-      throw new Error("Usuário não identificado");
+      throw new Error("Usuário não identificado. Verifique se está logado no Telegram.");
+    }
+    
+    if (process.env.NODE_ENV === "development") {
+      console.log("Dados do usuário:", {
+        userId,
+        userExists: !!users[userId],
+        userRole: users[userId]?.role,
+        userPermissions
+      });
     }
     
 
@@ -94,8 +103,16 @@ export async function botaPraRodarAction({ request }: ActionFunctionArgs) {
         return redirect("/sucesso/bicicleta-devolucao");
 
       case "cadastrar_bicicleta":
+        if (process.env.NODE_ENV === "development") {
+          console.log("Verificando permissões para cadastro:", {
+            userId,
+            userPermissions,
+            hasPermission: isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)
+          });
+        }
+        
         if (!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) {
-          throw new Error("Sem permissão para cadastrar bicicletas");
+          throw new Error(`Sem permissão para cadastrar bicicletas. Usuário: ${userId}, Permissões: ${userPermissions.join(', ')}`);
         }
         
         const dadosBicicleta = {
