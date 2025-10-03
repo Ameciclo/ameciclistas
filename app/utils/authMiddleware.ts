@@ -23,9 +23,20 @@ export async function getUserPermissions(request: Request): Promise<{ userPermis
   }
 
   try {
-    // Extrair dados do usuário do Telegram via headers ou cookies
+    // Extrair dados do usuário do Telegram via headers, cookies ou initData
     const url = new URL(request.url);
-    const userId = url.searchParams.get("userId") || url.searchParams.get("user_id");
+    let userId = url.searchParams.get("userId") || url.searchParams.get("user_id");
+    
+    // Se não encontrou nos parâmetros, tentar extrair do Telegram initData
+    if (!userId) {
+      const cookieHeader = request.headers.get("Cookie");
+      if (cookieHeader) {
+        const telegramMatch = cookieHeader.match(/telegram_user_id=([^;]+)/);
+        if (telegramMatch) {
+          userId = telegramMatch[1];
+        }
+      }
+    }
     
     if (!userId) {
       return { userPermissions: [UserCategory.ANY_USER] };
@@ -49,6 +60,14 @@ export function requireAuth(permission: UserCategory) {
   return (loader: LoaderFunction) => {
     return async (args: LoaderFunctionArgs) => {
       const { userPermissions } = await getUserPermissions(args.request);
+      
+      // Debug log
+      console.log('🔐 Auth Debug:', {
+        url: args.request.url,
+        requiredPermission: permission,
+        userPermissions,
+        isAuthorized: isAuth(userPermissions, permission)
+      });
       
       if (!isAuth(userPermissions, permission)) {
         throw redirect('/unauthorized');

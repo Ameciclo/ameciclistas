@@ -38,6 +38,18 @@ export async function loader({ request }: LoaderFunctionArgs) {
         if (userData) {
           userRole = userData.role || 'ANY_USER';
           hasLibraryRegister = !!(userData.library_register || userData.ameciclo_register);
+          
+          // Debug log
+          console.log('🔍 User Debug:', {
+            userId,
+            userRole,
+            hasLibraryRegister,
+            userData: {
+              role: userData.role,
+              library_register: !!userData.library_register,
+              ameciclo_register: !!userData.ameciclo_register
+            }
+          });
         }
       } catch (error) {
         console.error("Erro ao buscar dados do usuário:", error);
@@ -137,11 +149,15 @@ export default function SolicitarEmprestimo() {
   // Verificar se usuário precisa completar cadastro
   const needsLibraryRegister = user && !hasLibraryRegister && (userRole === 'ANY_USER' || userRole === 'AMECICLISTAS');
   const canSolicitForOthers = userRole === 'PROJECT_COORDINATORS' || userRole === 'AMECICLO_COORDINATORS';
+  
+  // Coordenadores não precisam de cadastro completo
+  const isCoordinator = userRole === 'PROJECT_COORDINATORS' || userRole === 'AMECICLO_COORDINATORS';
+  const actuallyNeedsRegister = needsLibraryRegister && !isCoordinator;
 
 
 
   // Se usuário precisa completar cadastro
-  if (needsLibraryRegister) {
+  if (actuallyNeedsRegister) {
     return (
       <div className="container mx-auto py-8 px-4">
         <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-6">

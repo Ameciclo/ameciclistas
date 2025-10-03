@@ -10,6 +10,12 @@ export default function telegramInit() {
             // Inicializa o Telegram Web App
             window.Telegram.WebApp.ready();
 
+            // Salvar userId no cookie para uso no servidor
+            const user = window.Telegram.WebApp.initDataUnsafe?.user;
+            if (user?.id) {
+                document.cookie = `telegram_user_id=${user.id}; path=/; max-age=86400`;
+            }
+
             // Exemplo: Configurações iniciais opcionais
             console.log("Plataforma:", window.Telegram.WebApp.platform);
             console.log("Dados do usuário:", window.Telegram.WebApp.initDataUnsafe);

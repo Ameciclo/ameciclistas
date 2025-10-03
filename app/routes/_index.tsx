@@ -7,6 +7,7 @@ import { ButtonsListWithPermissions } from "~/components/Forms/Buttons";
 import { useAuth } from "~/utils/useAuth";
 import { createDevTelegramUserWithCategories } from "~/utils/devTelegram";
 import { isAuth } from "~/utils/isAuthorized";
+import { isTelegram } from "~/utils/isTelegram";
 
 import { loader } from "~/handlers/loaders/_index";
 export { loader };
@@ -89,10 +90,13 @@ const links = [
 export default function Index() {
   const [user, setUser] = useState<UserData | null>({} as UserData);
   const { devUser, isDevMode, userPermissions } = useAuth();
+  const [isInTelegram, setIsInTelegram] = useState(false);
 
   const { usersInfo, currentUserCategories } = useLoaderData<typeof loader>();
 
   useEffect(() => {
+    setIsInTelegram(isTelegram());
+    
     if (isDevMode && devUser) {
       setUser({
         id: devUser.id,
@@ -126,6 +130,9 @@ export default function Index() {
         {links.filter(link => !link.hide).map((link) => {
           const hasPermission = isAuth(userPermissions, link.requiredPermission);
           if (!hasPermission) return null;
+          
+          // Newsletter só funciona fora do Telegram
+          if (link.to === '/newsletter' && isInTelegram) return null;
           
           const hasGestao = ['biblioteca', 'bota-pra-rodar', 'registro-emprestimos'].some(path => link.to.includes(path));
           const isRecursosIndependentes = link.to.includes('recursos-independentes');
