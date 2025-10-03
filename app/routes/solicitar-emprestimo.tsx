@@ -73,26 +73,45 @@ export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const action = formData.get("action") as string;
   
+  if (process.env.NODE_ENV === "development") {
+    console.log('📝 Form data received:', Object.fromEntries(formData));
+  }
+  
   if (action === "solicitar") {
     const subcodigo = formData.get("subcodigo") as string;
     const usuario_id = formData.get("usuario_id") as string;
     
+    if (!usuario_id) {
+      console.error('❌ Usuário não identificado');
+      return json({ success: false, error: "Usuário não identificado. Verifique se está logado no Telegram." });
+    }
+    
+    if (!subcodigo) {
+      console.error('❌ Exemplar não selecionado');
+      return json({ success: false, error: "Selecione um exemplar para solicitar." });
+    }
+    
     try {
-      
-      // Criar solicitação
-      const solicitacaoRef = db.ref("biblioteca_solicitacoes");
-      await solicitacaoRef.push({
+      const solicitacaoData = {
         usuario_id,
         subcodigo,
         data_solicitacao: new Date().toISOString().split('T')[0],
         status: 'pendente',
         created_at: new Date().toISOString()
-      });
+      };
       
+      if (process.env.NODE_ENV === "development") {
+        console.log('💾 Salvando solicitação:', solicitacaoData);
+      }
+      
+      const solicitacaoRef = db.ref("biblioteca_solicitacoes");
+      await solicitacaoRef.push(solicitacaoData);
+      
+      console.log('✅ Solicitação criada com sucesso');
       return redirect("/sucesso/emprestimo-solicitado");
     } catch (error) {
-      console.error("Erro ao processar solicitação:", error);
-      return json({ success: false, error: "Erro ao processar solicitação" });
+      console.error("❌ Erro ao processar solicitação:", error);
+      return json({ success: false, error: `Erro ao processar solicitação: ${error.message}` });
     }
   }
   
@@ -104,25 +123,35 @@ export default function SolicitarEmprestimo() {
   const [searchParams] = useSearchParams();
   const actionData = useActionData<typeof action>();
   const [user, setUser] = useState<UserData | null>(null);
+  const [userLoaded, setUserLoaded] = useState(false);
 
   const [exemplaresDisponiveis, setExemplaresDisponiveis] = useState<any[]>([]);
   const [exemplarSelecionado, setExemplarSelecionado] = useState("");
   const [solicitarParaOutraPessoa, setSolicitarParaOutraPessoa] = useState(false);
 
   useEffect(() => {
-    telegramInit();
-    const telegramUser = getTelegramUsersInfo();
-    
-    // Em desenvolvimento, simular dados do usuário
-    if (process.env.NODE_ENV === "development" && !telegramUser) {
-      setUser({
-        id: 123456789,
-        first_name: "João",
-        last_name: "Silva",
-        username: "joaosilva"
-      } as UserData);
-    } else {
-      setUser(telegramUser);
+    try {
+      telegramInit();
+      const telegramUser = getTelegramUsersInfo();
+      
+      // Em desenvolvimento, simular dados do usuário
+      if (process.env.NODE_ENV === "development" && !telegramUser) {
+        const devUser = {
+          id: 123456789,
+          first_name: "João",
+          last_name: "Silva",
+          username: "joaosilva"
+        } as UserData;
+        setUser(devUser);
+        console.log('🔧 Dev user set:', devUser);
+      } else {
+        setUser(telegramUser);
+        console.log('📱 Telegram user set:', telegramUser);
+      }
+    } catch (error) {
+      console.error('❌ Erro ao inicializar usuário:', error);
+    } finally {
+      setUserLoaded(true);
     }
   }, []);
 
@@ -234,15 +263,18 @@ export default function SolicitarEmprestimo() {
 
       <Form method="post" className="space-y-6">
         <input type="hidden" name="action" value="solicitar" />
-        <input type="hidden" name="usuario_id" value={user?.id || ""} />
+        <input type="hidden" name="usuario_id" value={user?.id?.toString() || ""} />
 
         {/* Seleção de Exemplar */}
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h3 className="text-lg font-semibold mb-4">Selecione o Exemplar</h3>
           {exemplaresDisponiveis.length === 0 ? (
             <div className="text-center py-4">
-              <p className="text-gray-600 mb-2">Nenhum exemplar disponível para empréstimo no momento.</p>
-              <p className="text-sm text-gray-500">Exemplares terminados em .1 são apenas para consulta local na sede.</p>
+              <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
+                <p className="font-medium mb-2">⚠️ Nenhum exemplar disponível para empréstimo</p>
+                <p className="text-sm">Exemplares terminados em .1 são apenas para consulta local na sede.</p>
+                <p className="text-sm mt-2">Total de exemplares encontrados: {exemplares.length}</p>
+              </div>
             </div>
           ) : (
             <div className="space-y-3">
@@ -276,13 +308,25 @@ export default function SolicitarEmprestimo() {
           </div>
         )}
 
+        {/* Debug info */}
+        {process.env.NODE_ENV === "development" && (
+          <div className="bg-gray-100 p-4 rounded text-sm mb-4">
+            <p>🔍 Debug Info:</p>
+            <p>User ID: {user?.id || 'não definido'}</p>
+            <p>Exemplar selecionado: {exemplarSelecionado || 'nenhum'}</p>
+            <p>Exemplares disponíveis: {exemplaresDisponiveis.length}</p>
+            <p>Solicitar para outra pessoa: {solicitarParaOutraPessoa ? 'sim' : 'não'}</p>
+            <p>User loaded: {userLoaded ? 'sim' : 'não'}</p>
+          </div>
+        )}
+
         <div className="flex gap-4">
           <button
             type="submit"
-            disabled={!exemplarSelecionado || exemplaresDisponiveis.length === 0 || solicitarParaOutraPessoa}
+            disabled={!userLoaded || !user?.id || !exemplarSelecionado || exemplaresDisponiveis.length === 0 || solicitarParaOutraPessoa}
             className="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
-            Confirmar Solicitação
+            {!userLoaded ? 'Carregando...' : 'Confirmar Solicitação'}
           </button>
           <Link
             to="/biblioteca"
