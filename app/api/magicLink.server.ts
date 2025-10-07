@@ -43,17 +43,25 @@ export function verifyMagicToken(token: string): { email: string; valid: boolean
 
 export async function sendMagicLink(email: string, baseUrl: string): Promise<boolean> {
   try {
+    console.log('Iniciando envio de magic link para:', email);
+    
+    // Verificar se as variáveis de ambiente existem
+    if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
+      console.error('FIREBASE_SERVICE_ACCOUNT não configurado');
+      return false;
+    }
+    
     const token = generateMagicToken(email);
     const magicUrl = `${baseUrl}/auth/verify?token=${token}`;
     
-    // Usar as mesmas credenciais do newsletter
+    // Usar sempre as credenciais de produção para Gmail
     const credentials = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT!);
     
     const auth = new google.auth.JWT({
       email: credentials.client_email,
       key: credentials.private_key.replace(/\\n/g, '\n'),
       scopes: ['https://www.googleapis.com/auth/gmail.send'],
-      subject: 'contato@ameciclo.org'
+      subject: process.env.GOOGLE_SUBJECT || 'contato@ameciclo.org'
     });
 
     const gmail = google.gmail({ version: 'v1', auth });
@@ -77,9 +85,10 @@ export async function sendMagicLink(email: string, baseUrl: string): Promise<boo
       </div>
     `;
     
+    const fromEmail = process.env.GOOGLE_SUBJECT || 'contato@ameciclo.org';
     const message = [
       `To: ${email}`,
-      `From: contato@ameciclo.org`,
+      `From: ${fromEmail}`,
       `Subject: Acesso ao Sistema Ameciclo`,
       'Content-Type: text/html; charset=utf-8',
       '',
@@ -99,10 +108,10 @@ export async function sendMagicLink(email: string, baseUrl: string): Promise<boo
       },
     });
     
-    console.log(`Magic link enviado para: ${email}`);
+    console.log(`Magic link enviado com sucesso para: ${email}`);
     return true;
   } catch (error) {
-    console.error('Erro ao enviar magic link:', error);
+    console.error('Erro detalhado ao enviar magic link:', error);
     return false;
   }
 }

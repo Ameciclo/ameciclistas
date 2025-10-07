@@ -158,7 +158,7 @@ export default function Index() {
       ) : null}
       
       {/* Botão de login se não estiver logado via web */}
-      {!webUser && (!isInTelegram || !isDevMode) && (
+      {!webUser && !isInTelegram && (
         <div className="text-center mb-4">
           <Link 
             to="/login" 
@@ -245,7 +245,7 @@ export default function Index() {
         })}
         
         {/* Botão de login adicional na lista */}
-        {(!isInTelegram || !isDevMode) && (
+        {!isInTelegram && (
           <Link
             to="/login"
             className="w-full bg-green-600 text-white px-4 py-3 rounded-md hover:bg-green-700 transition-colors text-lg font-medium text-center block no-underline"
