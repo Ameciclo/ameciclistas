@@ -79,7 +79,7 @@ const links = [
     to: "/boletim-informativo",
     label: "Boletim Informativo",
     icon: "📧",
-    requiredPermission: UserCategory.PROJECT_COORDINATORS,
+    requiredPermission: UserCategory.AMECICLO_COORDINATORS,
   },
   {
     to: "/users",
