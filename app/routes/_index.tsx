@@ -94,11 +94,24 @@ export default function Index() {
   const { devUser, isDevMode, userPermissions } = useAuth();
   const [isInTelegram, setIsInTelegram] = useState(false);
   const { webUser } = useOutletContext<{ webUser?: WebUser }>();
+  
+  // Se tem usuário web no DEV_MODE, mostrar todas as opções
+  // Senão, usar permissões normais
+  const effectivePermissions = (webUser && isDevMode) 
+    ? Object.values(UserCategory) 
+    : webUser 
+      ? [webUser.category] 
+      : userPermissions;
 
   const { usersInfo, currentUserCategories } = useLoaderData<typeof loader>();
+  
+  // No modo dev, considerar "TESTE WEB" como não sendo Telegram
+  const isWebTest = isDevMode && devUser?.name.includes("TESTE WEB");
 
   useEffect(() => {
-    setIsInTelegram(isTelegram());
+    const telegramDetected = isTelegram();
+    // Se for teste web, forçar como não sendo Telegram
+    setIsInTelegram(isWebTest ? false : telegramDetected);
     
     if (isDevMode && devUser) {
       setUser({
@@ -110,7 +123,7 @@ export default function Index() {
       telegramInit();
       setUser(() => getTelegramUsersInfo());
     }
-  }, [devUser, isDevMode]);
+  }, [devUser, isDevMode, isWebTest]);
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -124,10 +137,10 @@ export default function Index() {
       {isDevMode ? (
         <div className="text-center mb-4">
           <p className="text-sm text-blue-600 font-semibold">
-            🧪 Testando como: {devUser?.name}
+            🧪 Testando como: {webUser ? `${webUser.name} (Logado via Web)` : devUser?.name}
           </p>
           <p className="text-xs text-gray-600">
-            Permissões: {userPermissions.join(", ")}
+            Permissões: {webUser && isDevMode ? 'TODAS (DEV_MODE)' : (webUser ? webUser.category : userPermissions.join(", "))}
           </p>
         </div>
       ) : !webUser ? (
@@ -151,7 +164,7 @@ export default function Index() {
       
       <div className="space-y-4">
         {links.filter(link => !link.hide).map((link) => {
-          const hasPermission = isAuth(userPermissions, link.requiredPermission);
+          const hasPermission = isAuth(effectivePermissions, link.requiredPermission);
           if (!hasPermission) return null;
           
           // Newsletter só funciona fora do Telegram
@@ -160,8 +173,8 @@ export default function Index() {
           const hasGestao = ['biblioteca', 'bota-pra-rodar', 'registro-emprestimos'].some(path => link.to.includes(path));
           const isRecursosIndependentes = link.to.includes('recursos-independentes');
           const hasEstatisticas = ['biblioteca', 'bota-pra-rodar'].some(path => link.to.includes(path));
-          const showGestaoButton = hasGestao && isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS);
-          const showRecursosButtons = isRecursosIndependentes && isAuth(userPermissions, UserCategory.AMECICLISTAS);
+          const showGestaoButton = hasGestao && isAuth(effectivePermissions, UserCategory.PROJECT_COORDINATORS);
+          const showRecursosButtons = isRecursosIndependentes && isAuth(effectivePermissions, UserCategory.AMECICLISTAS);
           const showEstatisticasButton = hasEstatisticas;
           
           return (
@@ -206,7 +219,7 @@ export default function Index() {
                   >
                     📊
                   </Link>
-                  {isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS) && (
+                  {isAuth(effectivePermissions, UserCategory.PROJECT_COORDINATORS) && (
                     <Link
                       to="/recursos-independentes/gerenciar?gestao=true"
                       className="bg-orange-500 text-white px-3 py-3 rounded-md hover:bg-orange-600 transition-colors text-lg block no-underline flex items-center justify-center"
@@ -220,6 +233,16 @@ export default function Index() {
             </div>
           );
         })}
+        
+        {/* Botão de login adicional na lista */}
+        {!isInTelegram && (
+          <Link
+            to="/login"
+            className="w-full bg-green-600 text-white px-4 py-3 rounded-md hover:bg-green-700 transition-colors text-lg font-medium text-center block no-underline"
+          >
+            🔑 {webUser ? 'Trocar Usuário' : 'Fazer Login Web'}
+          </Link>
+        )}
       </div>
     </div>
   );
