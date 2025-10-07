@@ -43,9 +43,14 @@ export function verifyMagicToken(token: string): { email: string; valid: boolean
 
 export async function sendMagicLink(email: string, baseUrl: string): Promise<boolean> {
   try {
-    console.log('Iniciando envio de magic link para:', email);
+    console.log('=== DEBUG MAGIC LINK ===');
+    console.log('Email:', email);
+    console.log('BaseURL:', baseUrl);
+    console.log('NODE_ENV:', process.env.NODE_ENV);
+    console.log('Has FIREBASE_SERVICE_ACCOUNT:', !!process.env.FIREBASE_SERVICE_ACCOUNT);
+    console.log('Has GOOGLE_SUBJECT:', !!process.env.GOOGLE_SUBJECT);
+    console.log('Has MAGIC_LINK_SECRET:', !!process.env.MAGIC_LINK_SECRET);
     
-    // Verificar se as variáveis de ambiente existem
     if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
       console.error('FIREBASE_SERVICE_ACCOUNT não configurado');
       return false;
@@ -53,17 +58,45 @@ export async function sendMagicLink(email: string, baseUrl: string): Promise<boo
     
     const token = generateMagicToken(email);
     const magicUrl = `${baseUrl}/auth/verify?token=${token}`;
+    console.log('Magic URL gerada:', magicUrl);
     
-    // Usar sempre as credenciais de produção para Gmail
-    const credentials = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT!);
+    let credentials;
+    try {
+      credentials = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+      console.log('Credenciais parseadas com sucesso. Client email:', credentials.client_email);
+    } catch (parseError) {
+      console.error('Erro ao parsear FIREBASE_SERVICE_ACCOUNT:', parseError);
+      return false;
+    }
+    
+    // Usar FIREBASE_PRIVATE_KEY separada se private_key estiver vazia
+    let privateKey = credentials.private_key;
+    if (!privateKey || privateKey.trim() === '') {
+      privateKey = process.env.FIREBASE_PRIVATE_KEY;
+      console.log('Usando FIREBASE_PRIVATE_KEY separada');
+    }
+    
+    // Garantir que a private key esteja formatada corretamente
+    if (privateKey && !privateKey.includes('\n')) {
+      privateKey = privateKey.replace(/\\n/g, '\n');
+    }
+    
+    console.log('Private key length:', privateKey?.length);
+    console.log('Private key starts with:', privateKey?.substring(0, 50));
+    
+    if (!privateKey) {
+      console.error('Private key não encontrada');
+      return false;
+    }
     
     const auth = new google.auth.JWT({
       email: credentials.client_email,
-      key: credentials.private_key.replace(/\\n/g, '\n'),
+      key: privateKey,
       scopes: ['https://www.googleapis.com/auth/gmail.send'],
       subject: process.env.GOOGLE_SUBJECT || 'contato@ameciclo.org'
     });
 
+    console.log('Criando cliente Gmail...');
     const gmail = google.gmail({ version: 'v1', auth });
     
     const html = `
@@ -101,6 +134,7 @@ export async function sendMagicLink(email: string, baseUrl: string): Promise<boo
       .replace(/\//g, '_')
       .replace(/=+$/, '');
 
+    console.log('Enviando email via Gmail API...');
     await gmail.users.messages.send({
       userId: 'me',
       requestBody: {
@@ -111,7 +145,14 @@ export async function sendMagicLink(email: string, baseUrl: string): Promise<boo
     console.log(`Magic link enviado com sucesso para: ${email}`);
     return true;
   } catch (error) {
-    console.error('Erro detalhado ao enviar magic link:', error);
+    console.error('=== ERRO MAGIC LINK ===');
+    console.error('Tipo do erro:', error.constructor.name);
+    console.error('Mensagem:', error.message);
+    console.error('Stack:', error.stack);
+    if (error.response) {
+      console.error('Response status:', error.response.status);
+      console.error('Response data:', error.response.data);
+    }
     return false;
   }
 }

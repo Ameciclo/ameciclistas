@@ -158,7 +158,7 @@ export default function Index() {
       ) : null}
       
       {/* Botão de login se não estiver logado via web */}
-      {!webUser && !isInTelegram && (
+      {!webUser && (
         <div className="text-center mb-4">
           <Link 
             to="/login" 
@@ -168,6 +168,9 @@ export default function Index() {
           </Link>
           <p className="text-xs text-gray-500 mt-1">
             Necessário para acessar Boletim Informativo e outras funções
+          </p>
+          <p className="text-xs text-red-500 mt-1">
+            DEBUG: webUser={webUser ? 'true' : 'false'}, isInTelegram={isInTelegram ? 'true' : 'false'}, isDevMode={isDevMode ? 'true' : 'false'}
           </p>
         </div>
       )}
@@ -245,14 +248,12 @@ export default function Index() {
         })}
         
         {/* Botão de login adicional na lista */}
-        {!isInTelegram && (
-          <Link
-            to="/login"
-            className="w-full bg-green-600 text-white px-4 py-3 rounded-md hover:bg-green-700 transition-colors text-lg font-medium text-center block no-underline"
-          >
-            🔑 {webUser ? 'Trocar Usuário' : 'Fazer Login Web'}
-          </Link>
-        )}
+        <Link
+          to="/login"
+          className="w-full bg-green-600 text-white px-4 py-3 rounded-md hover:bg-green-700 transition-colors text-lg font-medium text-center block no-underline"
+        >
+          🔑 {webUser ? 'Trocar Usuário' : 'Fazer Login Web'}
+        </Link>
       </div>
     </div>
   );
