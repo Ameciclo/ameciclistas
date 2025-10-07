@@ -125,6 +125,16 @@ export default function Index() {
     }
   }, [devUser, isDevMode, isWebTest]);
 
+  // Debug: log para verificar estado em produção
+  useEffect(() => {
+    console.log('Debug Login Button:', {
+      webUser: !!webUser,
+      isInTelegram,
+      isDevMode,
+      shouldShowLogin: !webUser && !isInTelegram
+    });
+  }, [webUser, isInTelegram, isDevMode]);
+
   return (
     <div className="container mx-auto py-8 px-4">
       <h1 className="text-3xl font-bold text-teal-600 text-center">
@@ -148,7 +158,7 @@ export default function Index() {
       ) : null}
       
       {/* Botão de login se não estiver logado via web */}
-      {!webUser && !isInTelegram && (
+      {!webUser && (!isInTelegram || !isDevMode) && (
         <div className="text-center mb-4">
           <Link 
             to="/login" 
@@ -235,7 +245,7 @@ export default function Index() {
         })}
         
         {/* Botão de login adicional na lista */}
-        {!isInTelegram && (
+        {(!isInTelegram || !isDevMode) && (
           <Link
             to="/login"
             className="w-full bg-green-600 text-white px-4 py-3 rounded-md hover:bg-green-700 transition-colors text-lg font-medium text-center block no-underline"
