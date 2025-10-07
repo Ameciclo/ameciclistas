@@ -16,19 +16,5 @@ export function isTelegram(): boolean {
   const userAgent = window.navigator?.userAgent || '';
   const isTelegramUserAgent = userAgent.includes('TelegramBot') || userAgent.includes('Telegram');
   
-  const isTelegramDetected = hasInitData || hasPlatform || hasUser || isTelegramUserAgent;
-  
-  // Debug sempre (remover em produção final)
-  console.log('Telegram Detection:', {
-    hasTelegramWebApp,
-    hasInitData,
-    hasPlatform,
-    hasUser,
-    isTelegramUserAgent,
-    isTelegramDetected,
-    platform: webApp.platform,
-    userAgent: userAgent.substring(0, 50) + '...'
-  });
-  
-  return isTelegramDetected;
+  return hasInitData || hasPlatform || hasUser || isTelegramUserAgent;
 }

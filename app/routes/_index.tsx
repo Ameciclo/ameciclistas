@@ -125,16 +125,6 @@ export default function Index() {
     }
   }, [devUser, isDevMode, isWebTest]);
 
-  // Debug: log para verificar estado em produção
-  useEffect(() => {
-    console.log('Debug Login Button:', {
-      webUser: !!webUser,
-      isInTelegram,
-      isDevMode,
-      shouldShowLogin: !webUser && !isInTelegram
-    });
-  }, [webUser, isInTelegram, isDevMode]);
-
   return (
     <div className="container mx-auto py-8 px-4">
       <h1 className="text-3xl font-bold text-teal-600 text-center">
