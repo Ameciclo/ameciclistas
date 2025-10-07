@@ -27,34 +27,47 @@ const { getSession, commitSession, destroySession } = createCookieSessionStorage
 export async function validateEmailAndGetUser(email: string): Promise<WebUser> {
   try {
     const users = await getUsersFirebase();
+    console.log('Buscando usuário para email:', email);
     
-    // Buscar usuário por email (contacts, ameciclo_register ou email direto)
+    // Buscar usuário por email
     const userEntry = Object.entries(users || {}).find(([id, user]) => {
+      // Verificar email direto
+      if (user.email === email) {
+        console.log('Encontrado por email direto:', user.name, user.role);
+        return true;
+      }
+      
+      // Verificar em ameciclo_register
+      if (user.ameciclo_register?.email === email) {
+        console.log('Encontrado por ameciclo_register:', user.name, user.role);
+        return true;
+      }
+      
       // Verificar em contacts
       if (user.contacts?.some((contact: any) => 
         contact.type === "E-mail" && contact.value === email
-      )) return true;
-      
-      // Verificar em ameciclo_register
-      if (user.ameciclo_register?.email === email) return true;
-      
-      // Verificar email direto
-      if (user.email === email) return true;
+      )) {
+        console.log('Encontrado por contacts:', user.name, user.role);
+        return true;
+      }
       
       return false;
     });
     
     if (userEntry) {
       const [firebaseId, userData] = userEntry;
-      return {
+      const webUser = {
         email,
-        cpf: userData.id_number,
+        cpf: userData.ameciclo_register?.cpf || userData.id_number,
         name: userData.name || userData.nickname || email,
         category: (userData.role as UserCategory) || UserCategory.AMECICLISTAS,
         firebaseId
       };
+      console.log('Usuário encontrado:', webUser);
+      return webUser;
     }
     
+    console.log('Usuário não encontrado, criando como ANY_USER');
     // Se não encontrou, usuário básico
     return {
       email,

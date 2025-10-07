@@ -142,7 +142,14 @@ export default function Index() {
       </h1>
       
       {/* Mostrar informações do usuário web se logado */}
-      {webUser && <WebUserInfo webUser={webUser} />}
+      {webUser && (
+        <>
+          <WebUserInfo webUser={webUser} />
+          <div className="text-center mb-4 p-2 bg-yellow-100 rounded text-xs">
+            DEBUG: Categoria = {webUser.category}, Permissões efetivas = {effectivePermissions.join(', ')}
+          </div>
+        </>
+      )}
       
       {isDevMode ? (
         <div className="text-center mb-4">
@@ -157,23 +164,7 @@ export default function Index() {
         <p className="text-sm text-center mb-4">Olá, {user?.first_name}!</p>
       ) : null}
       
-      {/* Botão de login se não estiver logado via web */}
-      {!webUser && (
-        <div className="text-center mb-4">
-          <Link 
-            to="/login" 
-            className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 transition-colors text-sm font-medium inline-block no-underline"
-          >
-            🔑 Fazer Login Web
-          </Link>
-          <p className="text-xs text-gray-500 mt-1">
-            Necessário para acessar Boletim Informativo e outras funções
-          </p>
-          <p className="text-xs text-red-500 mt-1">
-            DEBUG: webUser={webUser ? 'true' : 'false'}, isInTelegram={isInTelegram ? 'true' : 'false'}, isDevMode={isDevMode ? 'true' : 'false'}
-          </p>
-        </div>
-      )}
+
       
       <div className="space-y-4">
         {links.filter(link => !link.hide).map((link) => {
@@ -248,12 +239,14 @@ export default function Index() {
         })}
         
         {/* Botão de login adicional na lista */}
-        <Link
-          to="/login"
-          className="w-full bg-green-600 text-white px-4 py-3 rounded-md hover:bg-green-700 transition-colors text-lg font-medium text-center block no-underline"
-        >
-          🔑 {webUser ? 'Trocar Usuário' : 'Fazer Login Web'}
-        </Link>
+        {!isInTelegram && (
+          <Link
+            to="/login"
+            className="w-full bg-green-600 text-white px-4 py-3 rounded-md hover:bg-green-700 transition-colors text-lg font-medium text-center block no-underline"
+          >
+            🔑 {webUser ? 'Trocar Usuário' : 'Fazer Login Web'}
+          </Link>
+        )}
       </div>
     </div>
   );
