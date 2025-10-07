@@ -103,7 +103,7 @@ function EventPreview({ event }: { event: CalendarEvent }) {
     ? "" 
     : `Dia ${addZeroToInt(eventDate.getDate())} - `;
 
-  const imageUrl = event.imageUrl || "/images/event-placeholder.png";
+  const imageUrl = event.imageUrl || "/images/event-placeholder.jpg";
   
   // Limpar HTML mas manter formatação básica
   const description = event.description

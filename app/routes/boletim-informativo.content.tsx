@@ -15,15 +15,12 @@ async function originalLoader({ request }: LoaderFunctionArgs) {
   const { userPermissions } = await getUserPermissions(request);
   const canSend = isAuth(userPermissions, UserCategory.AMECICLO_COORDINATORS);
   
-  // Buscar email do usuário logado (web ou telegram)
   let userEmail = null;
   
-  // Primeiro, tentar usuário web
   const webUser = await getWebUser(request);
   if (webUser) {
     userEmail = webUser.email;
   } else {
-    // Fallback para usuário Telegram
     try {
       const url = new URL(request.url);
       const userId = url.searchParams.get("userId");
@@ -34,13 +31,11 @@ async function originalLoader({ request }: LoaderFunctionArgs) {
         userEmail = user?.ameciclo_register?.email || null;
       }
       
-      // Em desenvolvimento, usar email padrão se não encontrar
       if (!userEmail && process.env.NODE_ENV === "development") {
         userEmail = "ti@ameciclo.org";
       }
     } catch (error) {
       console.warn("Erro ao buscar email do usuário:", error);
-      // Fallback para desenvolvimento
       if (process.env.NODE_ENV === "development") {
         userEmail = "ti@ameciclo.org";
       }
@@ -100,13 +95,13 @@ function getSubject(monthOffset = -1) {
   return `Boletim informativo ${monthNames[targetMonth.getMonth()]} de ${targetMonth.getFullYear()}`;
 }
 
-export default function NewsletterContent() {
+export default function BoletimInformativoContent() {
   const { events, subject, error, canSend, userEmail, monthOffset } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const { userPermissions, isDevMode } = useAuth();
+  const { userPermissions } = useAuth();
   const [isTest, setIsTest] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   
-  // Verificar se pode enviar baseado nas permissões do cliente também
   const canSendClient = isAuth(userPermissions, UserCategory.AMECICLO_COORDINATORS);
 
   if (error) {
@@ -119,7 +114,7 @@ export default function NewsletterContent() {
 
   return (
     <div className="max-w-4xl mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Newsletter Ameciclo</h1>
+      <h1 className="text-2xl font-bold mb-4">Boletim Informativo</h1>
       
       <div className="mb-6 p-4 bg-gray-100 rounded">
         <div className="flex justify-between items-center mb-2">
@@ -127,24 +122,35 @@ export default function NewsletterContent() {
           <div className="flex gap-2">
             <a 
               href="?month=-1" 
+              onClick={() => setIsLoading(true)}
               className={`px-3 py-1 rounded text-sm ${monthOffset === -1 ? 'bg-teal-600 text-white' : 'bg-white text-teal-600 border'}`}
             >
               Mês Anterior
             </a>
             <a 
               href="?month=0" 
+              onClick={() => setIsLoading(true)}
               className={`px-3 py-1 rounded text-sm ${monthOffset === 0 ? 'bg-teal-600 text-white' : 'bg-white text-teal-600 border'}`}
             >
               Mês Atual
             </a>
           </div>
         </div>
-        <p className="text-sm text-gray-600">{events.length} eventos encontrados</p>
+        <p className="text-sm text-gray-600">
+          {isLoading ? "Carregando eventos..." : `${events.length} eventos encontrados`}
+        </p>
       </div>
 
-      <NewsletterPreview events={events} subject={subject} />
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mb-4"></div>
+          <p className="text-gray-600">Buscando eventos do calendário...</p>
+        </div>
+      ) : (
+        <NewsletterPreview events={events} subject={subject} />
+      )}
 
-      {(canSend || canSendClient) && (
+      {(canSend || canSendClient) && !isLoading && (
         <div className="mt-8 p-4 bg-teal-50 rounded">
           <h3 className="text-lg font-semibold mb-4">Enviar Newsletter</h3>
           

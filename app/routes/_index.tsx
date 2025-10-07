@@ -76,8 +76,8 @@ const links = [
     requiredPermission: UserCategory.ANY_USER,
   },
   {
-    to: "/newsletter",
-    label: "Newsletter",
+    to: "/boletim-informativo",
+    label: "Boletim Informativo",
     icon: "📧",
     requiredPermission: UserCategory.PROJECT_COORDINATORS,
   },
@@ -157,7 +157,7 @@ export default function Index() {
             🔑 Fazer Login Web
           </Link>
           <p className="text-xs text-gray-500 mt-1">
-            Necessário para acessar Newsletter e outras funções
+            Necessário para acessar Boletim Informativo e outras funções
           </p>
         </div>
       )}
@@ -167,8 +167,8 @@ export default function Index() {
           const hasPermission = isAuth(effectivePermissions, link.requiredPermission);
           if (!hasPermission) return null;
           
-          // Newsletter só funciona fora do Telegram
-          if (link.to === '/newsletter' && isInTelegram) return null;
+          // Boletim Informativo só funciona fora do Telegram
+          if (link.to === '/boletim-informativo' && isInTelegram) return null;
           
           const hasGestao = ['biblioteca', 'bota-pra-rodar', 'registro-emprestimos'].some(path => link.to.includes(path));
           const isRecursosIndependentes = link.to.includes('recursos-independentes');
