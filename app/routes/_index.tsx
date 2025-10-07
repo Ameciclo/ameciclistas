@@ -1,4 +1,4 @@
-import { useLoaderData, Link } from "@remix-run/react";
+import { useLoaderData, Link, useOutletContext } from "@remix-run/react";
 import { UserCategory, UserData } from "~/utils/types";
 import { useEffect, useState } from "react";
 import { getTelegramUsersInfo } from "~/utils/users";
@@ -8,6 +8,8 @@ import { useAuth } from "~/utils/useAuth";
 import { createDevTelegramUserWithCategories } from "~/utils/devTelegram";
 import { isAuth } from "~/utils/isAuthorized";
 import { isTelegram } from "~/utils/isTelegram";
+import { WebUserInfo } from "~/components/WebUserInfo";
+import type { WebUser } from "~/api/webAuth.server";
 
 import { loader } from "~/handlers/loaders/_index";
 export { loader };
@@ -91,6 +93,7 @@ export default function Index() {
   const [user, setUser] = useState<UserData | null>({} as UserData);
   const { devUser, isDevMode, userPermissions } = useAuth();
   const [isInTelegram, setIsInTelegram] = useState(false);
+  const { webUser } = useOutletContext<{ webUser?: WebUser }>();
 
   const { usersInfo, currentUserCategories } = useLoaderData<typeof loader>();
 
@@ -114,6 +117,10 @@ export default function Index() {
       <h1 className="text-3xl font-bold text-teal-600 text-center">
         Ameciclobot Miniapp
       </h1>
+      
+      {/* Mostrar informações do usuário web se logado */}
+      {webUser && <WebUserInfo webUser={webUser} />}
+      
       {isDevMode ? (
         <div className="text-center mb-4">
           <p className="text-sm text-blue-600 font-semibold">
@@ -123,9 +130,25 @@ export default function Index() {
             Permissões: {userPermissions.join(", ")}
           </p>
         </div>
-      ) : (
+      ) : !webUser ? (
         <p className="text-sm text-center mb-4">Olá, {user?.first_name}!</p>
+      ) : null}
+      
+      {/* Botão de login se não estiver logado via web */}
+      {!webUser && !isInTelegram && (
+        <div className="text-center mb-4">
+          <Link 
+            to="/login" 
+            className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 transition-colors text-sm font-medium inline-block no-underline"
+          >
+            🔑 Fazer Login Web
+          </Link>
+          <p className="text-xs text-gray-500 mt-1">
+            Necessário para acessar Newsletter e outras funções
+          </p>
+        </div>
       )}
+      
       <div className="space-y-4">
         {links.filter(link => !link.hide).map((link) => {
           const hasPermission = isAuth(userPermissions, link.requiredPermission);
@@ -144,7 +167,7 @@ export default function Index() {
           return (
             <div key={link.to} className={showGestaoButton || showRecursosButtons || showEstatisticasButton ? "flex gap-2" : ""}>
               <Link
-                to={user?.id ? `${link.to}?userId=${user.id}` : link.to}
+                to={webUser ? link.to : (user?.id ? `${link.to}?userId=${user.id}` : link.to)}
                 className={`${showGestaoButton || showRecursosButtons || showEstatisticasButton ? 'flex-1' : 'w-full'} bg-teal-600 text-white px-4 py-3 rounded-md hover:bg-teal-700 transition-colors text-lg font-medium text-center block no-underline`}
               >
                 {link.icon} {link.label}

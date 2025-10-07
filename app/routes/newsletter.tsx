@@ -6,6 +6,7 @@ import { sendNewsletter } from "~/api/newsletter.server";
 import { NewsletterPreview } from "~/components/NewsletterPreview";
 import { UserCategory } from "~/utils/types";
 import { requireAuth, getUserPermissions } from "~/utils/authMiddleware";
+import { getWebUser } from "~/api/webAuth.server";
 import { isAuth } from "~/utils/isAuthorized";
 import { useAuth } from "~/utils/useAuth";
 import { getUsersFirebase } from "~/api/firebaseConnection.server";
@@ -14,27 +15,35 @@ async function originalLoader({ request }: LoaderFunctionArgs) {
   const { userPermissions } = await getUserPermissions(request);
   const canSend = isAuth(userPermissions, UserCategory.AMECICLO_COORDINATORS);
   
-  // Buscar email do usuário logado
+  // Buscar email do usuário logado (web ou telegram)
   let userEmail = null;
-  try {
-    const url = new URL(request.url);
-    const userId = url.searchParams.get("userId");
-    
-    if (userId) {
-      const users = await getUsersFirebase();
-      const user = users?.[userId];
-      userEmail = user?.ameciclo_register?.email || null;
-    }
-    
-    // Em desenvolvimento, usar email padrão se não encontrar
-    if (!userEmail && process.env.NODE_ENV === "development") {
-      userEmail = "ti@ameciclo.org";
-    }
-  } catch (error) {
-    console.warn("Erro ao buscar email do usuário:", error);
-    // Fallback para desenvolvimento
-    if (process.env.NODE_ENV === "development") {
-      userEmail = "ti@ameciclo.org";
+  
+  // Primeiro, tentar usuário web
+  const webUser = await getWebUser(request);
+  if (webUser) {
+    userEmail = webUser.email;
+  } else {
+    // Fallback para usuário Telegram
+    try {
+      const url = new URL(request.url);
+      const userId = url.searchParams.get("userId");
+      
+      if (userId) {
+        const users = await getUsersFirebase();
+        const user = users?.[userId];
+        userEmail = user?.ameciclo_register?.email || null;
+      }
+      
+      // Em desenvolvimento, usar email padrão se não encontrar
+      if (!userEmail && process.env.NODE_ENV === "development") {
+        userEmail = "ti@ameciclo.org";
+      }
+    } catch (error) {
+      console.warn("Erro ao buscar email do usuário:", error);
+      // Fallback para desenvolvimento
+      if (process.env.NODE_ENV === "development") {
+        userEmail = "ti@ameciclo.org";
+      }
     }
   }
 

@@ -2,8 +2,15 @@ import { redirect, type LoaderFunction, type LoaderFunctionArgs } from "@remix-r
 import { UserCategory } from "~/utils/types";
 import { isAuth } from "~/utils/isAuthorized";
 import { getUsersFirebase } from "~/api/firebaseConnection.server";
+import { getWebUser } from "~/api/webAuth.server";
 
 export async function getUserPermissions(request: Request): Promise<{ userPermissions: UserCategory[] }> {
+  // Primeiro, verificar se é usuário web
+  const webUser = await getWebUser(request);
+  if (webUser) {
+    return { userPermissions: [webUser.category] };
+  }
+
   // Em desenvolvimento, extrair do contexto ou cookies
   if (process.env.NODE_ENV === "development") {
     // Tentar obter do cookie do DevMode
@@ -70,6 +77,11 @@ export function requireAuth(permission: UserCategory) {
       });
       
       if (!isAuth(userPermissions, permission)) {
+        // Se não tem sessão web, redirecionar para login
+        const webUser = await getWebUser(args.request);
+        if (!webUser) {
+          throw redirect('/login');
+        }
         throw redirect('/unauthorized');
       }
       

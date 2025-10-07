@@ -1,8 +1,10 @@
-import type { MetaFunction, LinksFunction } from "@remix-run/node";
-import { Links, LiveReload, Meta, Outlet, Scripts, ScrollRestoration } from "@remix-run/react";
+import type { MetaFunction, LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
+import { json } from "@remix-run/node";
+import { Links, LiveReload, Meta, Outlet, Scripts, ScrollRestoration, useLoaderData } from "@remix-run/react";
 import { DevProvider } from "~/utils/devContext";
 import { DevMenu } from "~/components/DevMenu";
 import { useDevContext } from "~/utils/devContext";
+import { getWebUser } from "~/api/webAuth.server";
 
 import stylesheet from "~/tailwind.css?url";
 
@@ -19,8 +21,14 @@ export const meta: MetaFunction = () => {
   ];
 };
 
+export async function loader({ request }: LoaderFunctionArgs) {
+  const webUser = await getWebUser(request);
+  return json({ webUser });
+}
+
 function AppContent() {
   const { devUser, setDevUser, isDevMode, userPermissions, realUser } = useDevContext();
+  const { webUser } = useLoaderData<typeof loader>();
 
   return (
     <>
@@ -32,7 +40,8 @@ function AppContent() {
           devUser, 
           isDevMode, 
           userPermissions, 
-          realUser 
+          realUser,
+          webUser
         }} />
       </div>
     </>
