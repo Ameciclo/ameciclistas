@@ -111,6 +111,7 @@ export default function Index() {
   useEffect(() => {
     const telegramDetected = isTelegram();
     // Se for teste web, forçar como não sendo Telegram
+    // Em produção, se não detectou Telegram, assumir que é web
     setIsInTelegram(isWebTest ? false : telegramDetected);
     
     if (isDevMode && devUser) {
@@ -120,8 +121,13 @@ export default function Index() {
         last_name: devUser.name.split(" ").slice(1).join(" ")
       });
     } else {
-      telegramInit();
-      setUser(() => getTelegramUsersInfo());
+      // Só inicializar Telegram se detectado
+      if (telegramDetected) {
+        telegramInit();
+        setUser(() => getTelegramUsersInfo());
+      } else {
+        setUser(null);
+      }
     }
   }, [devUser, isDevMode, isWebTest]);
 

@@ -17,9 +17,20 @@ interface CalendarEvent {
 export async function getCalendarEvents(monthOffset = -1): Promise<CalendarEvent[]> {
   const credentials = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT!);
   
+  // Usar FIREBASE_PRIVATE_KEY separada se private_key estiver vazia
+  let privateKey = credentials.private_key;
+  if (!privateKey || privateKey.trim() === '') {
+    privateKey = process.env.FIREBASE_PRIVATE_KEY;
+  }
+  
+  // Garantir que a private key esteja formatada corretamente
+  if (privateKey && !privateKey.includes('\n')) {
+    privateKey = privateKey.replace(/\\n/g, '\n');
+  }
+  
   const auth = new google.auth.JWT({
     email: credentials.client_email,
-    key: credentials.private_key.replace(/\\n/g, '\n'),
+    key: privateKey,
     scopes: ['https://www.googleapis.com/auth/calendar']
   });
 
