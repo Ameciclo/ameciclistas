@@ -244,7 +244,7 @@ export default function Index() {
           );
         })}
         
-        {/* Botão de login adicional na lista */}
+        {/* Botão de login - sempre mostrar se não estiver no Telegram */}
         {!isInTelegram && (
           <Link
             to="/login"
