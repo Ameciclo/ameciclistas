@@ -100,21 +100,38 @@ export async function sendMagicLink(email: string, baseUrl: string): Promise<boo
     const gmail = google.gmail({ version: 'v1', auth });
     
     const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #16a34a;">Acesso ao Sistema Ameciclo</h2>
-        <p>Olá!</p>
-        <p>Você solicitou acesso ao sistema da Ameciclo. Clique no botão abaixo para entrar:</p>
-        <div style="text-align: center; margin: 30px 0;">
-          <a href="${magicUrl}" style="background: #16a34a; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #008080; margin: 0; font-size: 28px; font-weight: bold;">Acesso ao Sistema Ameciclo</h1>
+        </div>
+        
+        <div style="background-color: #f8f9fa; padding: 25px; border-radius: 10px; margin-bottom: 25px;">
+          <p style="font-size: 16px; line-height: 1.6; margin: 0 0 15px 0; color: #333;">Olá!</p>
+          <p style="font-size: 16px; line-height: 1.6; margin: 0; color: #333;">Você solicitou acesso ao sistema da Ameciclo. Clique no botão abaixo para entrar:</p>
+        </div>
+        
+        <div style="text-align: center; margin: 40px 0;">
+          <a href="${magicUrl}" style="background: #008080; color: white; padding: 18px 40px; text-decoration: none; border-radius: 12px; display: inline-block; font-weight: bold; font-size: 18px; box-shadow: 0 4px 8px rgba(0,128,128,0.2); transition: all 0.3s ease;">
             🚴 Acessar Sistema
           </a>
         </div>
-        <p><small style="color: #666;">Este link expira em 24 horas por segurança.</small></p>
-        <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
-        <p style="font-size: 12px; color: #999;">
-          Ameciclo - Associação Metropolitana de Ciclistas do Recife<br>
-          Se você não solicitou este acesso, pode ignorar este email.
-        </p>
+        
+        <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; margin: 25px 0;">
+          <p style="margin: 0; font-size: 14px; color: #856404; text-align: center;">
+            ⏰ Este link expira em 24 horas por segurança.
+          </p>
+        </div>
+        
+        <hr style="margin: 40px 0; border: none; border-top: 2px solid #008080; opacity: 0.3;">
+        
+        <div style="text-align: center; padding: 20px; background-color: #f1f3f4; border-radius: 8px;">
+          <p style="font-size: 14px; color: #008080; font-weight: bold; margin: 0 0 8px 0;">
+            Ameciclo - Associação Metropolitana de Ciclistas do Recife
+          </p>
+          <p style="font-size: 12px; color: #666; margin: 0;">
+            Se você não solicitou este acesso, pode ignorar este email.
+          </p>
+        </div>
       </div>
     `;
     
