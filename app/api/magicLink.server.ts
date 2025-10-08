@@ -93,7 +93,7 @@ export async function sendMagicLink(email: string, baseUrl: string): Promise<boo
       email: credentials.client_email,
       key: privateKey,
       scopes: ['https://www.googleapis.com/auth/gmail.send'],
-      subject: process.env.GOOGLE_SUBJECT || 'contato@ameciclo.org'
+      subject: process.env.GOOGLE_SUBJECT
     });
 
     console.log('Criando cliente Gmail...');
@@ -118,7 +118,7 @@ export async function sendMagicLink(email: string, baseUrl: string): Promise<boo
       </div>
     `;
     
-    const fromEmail = process.env.GOOGLE_SUBJECT || 'contato@ameciclo.org';
+    const fromEmail = process.env.GOOGLE_SUBJECT;
     const message = [
       `To: ${email}`,
       `From: ${fromEmail}`,

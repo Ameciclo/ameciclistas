@@ -10,8 +10,8 @@ interface CalendarEvent {
   imageUrl?: string;
 }
 
-const DEV_EMAILS = ["ti@ameciclo.org"];
-const PROD_EMAILS = ["contato@ameciclo.org"];
+const DEV_EMAILS = [process.env.DEV_GOOGLE_SUBJECT];
+const PROD_EMAILS = [process.env.GOOGLE_SUBJECT];
 
 export async function sendNewsletter(events: CalendarEvent[], isTest = false, userEmail?: string) {
   let emails: string[];
@@ -29,7 +29,7 @@ export async function sendNewsletter(events: CalendarEvent[], isTest = false, us
     email: credentials.client_email,
     key: credentials.private_key.replace(/\\n/g, '\n'),
     scopes: ['https://www.googleapis.com/auth/gmail.send'],
-    subject: 'contato@ameciclo.org' // Email que vai impersonar
+    subject: process.env.GOOGLE_SUBJECT // Email que vai impersonar
   });
 
   const gmail = google.gmail({ version: 'v1', auth });
@@ -43,7 +43,7 @@ export async function sendNewsletter(events: CalendarEvent[], isTest = false, us
     try {
       const message = [
         `To: ${email}`,
-        `From: contato@ameciclo.org`,
+        `From: ${process.env.GOOGLE_SUBJECT}`,
         `Subject: ${subject}`,
         'Content-Type: text/html; charset=utf-8',
         '',

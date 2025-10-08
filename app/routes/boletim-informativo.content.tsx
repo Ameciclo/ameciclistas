@@ -32,12 +32,12 @@ async function originalLoader({ request }: LoaderFunctionArgs) {
       }
       
       if (!userEmail && process.env.NODE_ENV === "development") {
-        userEmail = "ti@ameciclo.org";
+        userEmail = process.env.DEV_GOOGLE_SUBJECT;
       }
     } catch (error) {
       console.warn("Erro ao buscar email do usuário:", error);
       if (process.env.NODE_ENV === "development") {
-        userEmail = "ti@ameciclo.org";
+        userEmail = process.env.DEV_GOOGLE_SUBJECT;
       }
     }
   }
@@ -49,10 +49,10 @@ async function originalLoader({ request }: LoaderFunctionArgs) {
     const events = await getCalendarEvents(monthOffset);
     const subject = getSubject(monthOffset);
     
-    return json({ events, subject, canSend, userEmail, monthOffset });
+    return json({ events, subject, canSend, userEmail, monthOffset, officialEmail: process.env.GOOGLE_SUBJECT });
   } catch (error) {
     console.error("Erro ao carregar eventos:", error);
-    return json({ events: [], subject: "", error: "Erro ao carregar eventos", canSend: false, userEmail, monthOffset: -1 });
+    return json({ events: [], subject: "", error: "Erro ao carregar eventos", canSend: false, userEmail, monthOffset: -1, officialEmail: process.env.GOOGLE_SUBJECT });
   }
 }
 
@@ -96,7 +96,7 @@ function getSubject(monthOffset = -1) {
 }
 
 export default function BoletimInformativoContent() {
-  const { events, subject, error, canSend, userEmail, monthOffset } = useLoaderData<typeof loader>();
+  const { events, subject, error, canSend, userEmail, monthOffset, officialEmail } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const { userPermissions } = useAuth();
   const [isTest, setIsTest] = useState(true);
@@ -178,7 +178,7 @@ export default function BoletimInformativoContent() {
                     checked={!isTest}
                     onChange={() => setIsTest(false)}
                   />
-                  <span>Envio oficial (contato@ameciclo.org)</span>
+                  <span>Envio oficial ({officialEmail})</span>
                 </label>
               </div>
               
