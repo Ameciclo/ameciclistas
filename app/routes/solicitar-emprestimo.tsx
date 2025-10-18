@@ -79,6 +79,64 @@ export async function action({ request }: ActionFunctionArgs) {
     console.log('📝 Form data received:', Object.fromEntries(formData));
   }
   
+  if (action === "buscar_cpf") {
+    const cpf = formData.get("cpf") as string;
+    
+    try {
+      const users = await getUsersFirebase();
+      let foundUser = null;
+      
+      console.log('🔍 DIAGNÓSTICO - Busca CPF:', {
+        cpfBuscado: cpf,
+        cpfSemFormatacao: cpf.replace(/\D/g, ""),
+        totalUsuarios: users ? Object.keys(users).length : 0
+      });
+      
+      if (users) {
+        const cpfSemFormatacao = cpf.replace(/\D/g, "");
+        let usuariosComCpf = [];
+        
+        for (const [userId, userData] of Object.entries(users)) {
+          const user = userData as any;
+          const userCpf = user.ameciclo_register?.cpf || 
+                         user.library_register?.cpf || 
+                         user.personal?.cpf;
+          
+          if (userCpf) {
+            usuariosComCpf.push({
+              userId,
+              cpfOriginal: userCpf,
+              cpfSemFormatacao: userCpf.replace(/\D/g, ""),
+              nome: user.ameciclo_register?.nome || user.library_register?.nome || user.name
+            });
+          }
+          
+          if (userCpf && userCpf.replace(/\D/g, "") === cpfSemFormatacao) {
+            foundUser = { 
+              id: userId, 
+              nome: user.ameciclo_register?.nome || user.library_register?.nome || user.name,
+              email: user.ameciclo_register?.email || user.library_register?.email || "",
+              telefone: user.ameciclo_register?.telefone || user.library_register?.telefone || "",
+              cpf: userCpf
+            };
+            break;
+          }
+        }
+        
+        console.log('🔍 DIAGNÓSTICO - Usuários com CPF:', usuariosComCpf);
+        console.log('🔍 DIAGNÓSTICO - Usuário encontrado:', foundUser);
+      }
+      
+      return json({ 
+        success: true, 
+        user: foundUser
+      });
+    } catch (error) {
+      console.log('❌ DIAGNÓSTICO - Erro:', error);
+      return json({ success: false, error: "Erro ao buscar usuário" });
+    }
+  }
+  
   if (action === "solicitar") {
     const subcodigo = formData.get("subcodigo") as string;
     const usuario_id = formData.get("usuario_id") as string;
@@ -206,7 +264,7 @@ export default function SolicitarEmprestimo() {
       formData.append("action", "buscar_cpf");
       formData.append("cpf", cpfCompleto);
       
-      const response = await fetch("/registrar-usuario", {
+      const response = await fetch(window.location.pathname, {
         method: "POST",
         body: formData
       });
