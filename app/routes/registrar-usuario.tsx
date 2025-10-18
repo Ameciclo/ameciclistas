@@ -27,13 +27,15 @@ export async function action({ request }: ActionFunctionArgs) {
       let foundUser = null;
       
       if (users) {
+        const cpfSemFormatacao = cpf.replace(/\D/g, "");
+        
         for (const [userId, userData] of Object.entries(users)) {
           const user = userData as any;
           const userCpf = user.ameciclo_register?.cpf || 
                          user.library_register?.cpf || 
                          user.personal?.cpf;
           
-          if (userCpf === cpf) {
+          if (userCpf && userCpf.replace(/\D/g, "") === cpfSemFormatacao) {
             foundUser = { 
               id: userId, 
               nome: user.ameciclo_register?.nome || user.library_register?.nome || user.name,

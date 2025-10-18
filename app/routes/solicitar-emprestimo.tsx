@@ -221,6 +221,7 @@ export default function SolicitarEmprestimo() {
         });
       } else {
         setUsuarioTerceiroEncontrado(null);
+        setDadosTerceiro({ nome: "", telefone: "", email: "" });
       }
     } catch (error) {
       console.error("Erro ao buscar usuário:", error);
