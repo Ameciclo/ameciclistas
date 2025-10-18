@@ -128,7 +128,13 @@ export default function SolicitarEmprestimoBicicleta() {
   
   const hasCompleteData = () => {
     const data = getUserData();
-    return data && data.cpf !== 'Não informado' && data.email !== 'Não informado' && data.telefone !== 'Não informado';
+    if (!data) return false;
+    
+    const hasCpf = data.cpf && data.cpf !== 'Não informado' && data.cpf.length > 0;
+    const hasEmail = data.email && data.email !== 'Não informado' && data.email.includes('@');
+    const hasTelefone = data.telefone && data.telefone !== 'Não informado' && data.telefone.replace(/\D/g, '').length >= 11;
+    
+    return hasCpf && hasEmail && hasTelefone;
   };
 
   const userData = getUserData();
@@ -156,6 +162,13 @@ export default function SolicitarEmprestimoBicicleta() {
   }
 
   if (!hasCompleteData()) {
+    if (process.env.NODE_ENV === "development") {
+      console.log('🔍 Debug - Dados do usuário:', {
+        userInfo,
+        userData: getUserData(),
+        hasCompleteData: hasCompleteData()
+      });
+    }
     window.location.href = '/user';
     return null;
   }
