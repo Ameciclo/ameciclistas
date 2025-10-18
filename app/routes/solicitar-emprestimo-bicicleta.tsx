@@ -10,6 +10,7 @@ import telegramInit from "~/utils/telegramInit";
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const codigo = url.searchParams.get("codigo");
+  const userId = url.searchParams.get("userId");
   
   if (!codigo) {
     throw new Response("Código da bicicleta não fornecido", { status: 400 });
@@ -25,7 +26,24 @@ export async function loader({ request }: LoaderFunctionArgs) {
       throw new Response("Bicicleta não encontrada", { status: 404 });
     }
 
-    return json({ bicicleta: { ...bicicleta, codigo }, users: usersData || {} });
+    // Buscar dados do usuário no Firebase
+    let userData = null;
+    let userRole = 'ANY_USER';
+    let hasBicycleRegister = false;
+    
+    if (userId && usersData[userId]) {
+      userData = usersData[userId];
+      userRole = userData.role || 'ANY_USER';
+      hasBicycleRegister = !!(userData.library_register || userData.ameciclo_register);
+    }
+
+    return json({ 
+      bicicleta: { ...bicicleta, codigo }, 
+      users: usersData || {},
+      userData,
+      userRole,
+      hasBicycleRegister
+    });
   } catch (error) {
     console.error("Erro ao carregar dados:", error);
     throw new Response("Erro interno do servidor", { status: 500 });
@@ -76,69 +94,42 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function SolicitarEmprestimoBicicleta() {
-  const { bicicleta, users } = useLoaderData<typeof loader>();
+  const { bicicleta, users, userData, userRole, hasBicycleRegister } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const [user, setUser] = useState<UserData | null>(null);
-  const [userPermissions, setUserPermissions] = useState<string[]>([UserCategory.ANY_USER]);
-  const [userInfo, setUserInfo] = useState<any>(null);
+  const [userLoaded, setUserLoaded] = useState(false);
   const [solicitarParaOutraPessoa, setSolicitarParaOutraPessoa] = useState(false);
 
 
   useEffect(() => {
     try {
       telegramInit();
-      const userData = getTelegramUsersInfo();
+      const telegramUser = getTelegramUsersInfo();
       
-      if (process.env.NODE_ENV === "development" && !userData) {
-        setUser({
+      if (process.env.NODE_ENV === "development" && !telegramUser) {
+        const devUser = {
           id: 123456789,
           first_name: "João",
           last_name: "Silva",
           username: "joaosilva"
-        } as UserData);
+        } as UserData;
+        setUser(devUser);
       } else {
-        setUser(userData);
+        setUser(telegramUser);
       }
     } catch (error) {
       console.error('Erro ao inicializar Telegram:', error);
-      setUser(null);
+    } finally {
+      setUserLoaded(true);
     }
   }, []);
 
-  useEffect(() => {
-    if (user?.id && users[user.id]) {
-      const userRole = users[user.id].role;
-      setUserPermissions([userRole]);
-      setUserInfo(users[user.id]);
-    }
-  }, [user, users]);
 
 
-
-  const getUserData = () => {
-    if (!userInfo) return null;
-    
-    return {
-      nome: userInfo.ameciclo_register?.nome || userInfo.library_register?.nome || userInfo.name || 'Não informado',
-      cpf: userInfo.ameciclo_register?.cpf || userInfo.library_register?.cpf || userInfo.personal?.cpf || 'Não informado',
-      telefone: userInfo.ameciclo_register?.telefone || userInfo.library_register?.telefone || userInfo.personal?.telefone || 'Não informado',
-      email: userInfo.ameciclo_register?.email || userInfo.library_register?.email || userInfo.personal?.email || 'Não informado'
-    };
-  };
-  
-  const hasCompleteData = () => {
-    const data = getUserData();
-    if (!data) return false;
-    
-    const hasCpf = data.cpf && data.cpf !== 'Não informado' && data.cpf.length > 0;
-    const hasEmail = data.email && data.email !== 'Não informado' && data.email.includes('@');
-    const hasTelefone = data.telefone && data.telefone !== 'Não informado' && data.telefone.replace(/\D/g, '').length >= 11;
-    
-    return hasCpf && hasEmail && hasTelefone;
-  };
-
-  const userData = getUserData();
-  const isCoordinator = isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS);
+  // Verificar se usuário precisa completar cadastro
+  const needsBicycleRegister = user && !hasBicycleRegister && (userRole === 'ANY_USER' || userRole === 'AMECICLISTAS');
+  const actuallyNeedsRegister = needsBicycleRegister;
+  const canSolicitForOthers = userRole === 'PROJECT_COORDINATORS' || userRole === 'AMECICLO_COORDINATORS';
 
 
 
@@ -161,14 +152,8 @@ export default function SolicitarEmprestimoBicicleta() {
     );
   }
 
-  if (!hasCompleteData()) {
-    if (process.env.NODE_ENV === "development") {
-      console.log('🔍 Debug - Dados do usuário:', {
-        userInfo,
-        userData: getUserData(),
-        hasCompleteData: hasCompleteData()
-      });
-    }
+  // Se usuário precisa completar cadastro, redirecionar para /user
+  if (actuallyNeedsRegister) {
     window.location.href = '/user';
     return null;
   }
@@ -189,7 +174,7 @@ export default function SolicitarEmprestimoBicicleta() {
           </h1>
           
           {/* Opções para coordenadores */}
-          {isCoordinator && (
+          {canSolicitForOthers && (
             <div className="bg-blue-50 p-6 rounded-lg shadow-md mb-6">
               <h3 className="text-lg font-semibold mb-4">Opções de Solicitação</h3>
               <div className="space-y-3">
@@ -268,7 +253,7 @@ export default function SolicitarEmprestimoBicicleta() {
             <Form method="post">
               <input type="hidden" name="codigo" value={bicicleta.codigo} />
               <input type="hidden" name="user_id" value={user?.id || ""} />
-              {isCoordinator ? (
+              {canSolicitForOthers ? (
                 <div className="mb-4">
                   <div className="bg-green-50 p-3 rounded-lg mb-4">
                     <p className="text-green-700 text-sm">

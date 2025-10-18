@@ -57,7 +57,7 @@ export function PaginacaoBicicletas({ bicicletas, onSolicitar, userCanRequest, u
                   </div>
                   {userCanRequest && (
                     <Link
-                      to={`/solicitar-emprestimo-bicicleta?codigo=${bicicleta.codigo}`}
+                      to={`/solicitar-emprestimo-bicicleta?codigo=${bicicleta.codigo}&userId=${userId || ''}`}
                       className="w-full bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700 transition-colors block text-center no-underline"
                     >
                       Solicitar Empréstimo
