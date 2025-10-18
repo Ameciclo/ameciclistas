@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { useLoaderData, useSearchParams, Form, useActionData, Link } from "@remix-run/react";
 import { json, redirect, type LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-run/node";
-import { getBiblioteca } from "~/api/firebaseConnection.server";
+import { getBiblioteca, getUsersFirebase, createUserWithAmecicloRegister, criarSolicitacaoBiblioteca } from "~/api/firebaseConnection.server";
 import db from "~/api/firebaseAdmin.server.js";
 import { getTelegramUsersInfo } from "~/utils/users";
 import telegramInit from "~/utils/telegramInit";
+import { formatCPF, formatPhone } from "~/utils/format";
+import { validateCPF } from "~/utils/idNumber";
 import type { UserData } from "~/utils/types";
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -92,26 +94,92 @@ export async function action({ request }: ActionFunctionArgs) {
     }
     
     try {
-      const solicitacaoData = {
-        usuario_id,
-        subcodigo,
-        data_solicitacao: new Date().toISOString().split('T')[0],
-        status: 'pendente',
-        created_at: new Date().toISOString()
-      };
+      // Verificar se é coordenador para aprovação automática
+      const userRef = db.ref(`subscribers/${usuario_id}`);
+      const userSnapshot = await userRef.once("value");
+      const userData = userSnapshot.val();
+      const userRole = userData?.role || 'ANY_USER';
+      const isCoordinator = userRole === 'PROJECT_COORDINATORS' || userRole === 'AMECICLO_COORDINATORS';
       
-      if (process.env.NODE_ENV === "development") {
-        console.log('💾 Salvando solicitação:', solicitacaoData);
+      if (isCoordinator) {
+        // Coordenadores: criar empréstimo direto
+        const emprestimoRef = db.ref("loan_record");
+        const emprestimoKey = emprestimoRef.push().key;
+        
+        const emprestimo = {
+          id: emprestimoKey,
+          usuario_id,
+          subcodigo,
+          data_saida: new Date().toISOString().split('T')[0],
+          status: 'emprestado',
+          created_at: new Date().toISOString()
+        };
+        
+        await emprestimoRef.child(emprestimoKey).update(emprestimo);
+        console.log('✅ Empréstimo criado diretamente para coordenador');
+        return redirect("/sucesso/emprestimo-aprovado");
+      } else {
+        // Usuários comuns: criar solicitação
+        const solicitacaoData = {
+          usuario_id,
+          subcodigo,
+          data_solicitacao: new Date().toISOString().split('T')[0],
+          status: 'pendente',
+          created_at: new Date().toISOString()
+        };
+        
+        const solicitacaoRef = db.ref("biblioteca_solicitacoes");
+        await solicitacaoRef.push(solicitacaoData);
+        console.log('✅ Solicitação criada com sucesso');
+        return redirect("/sucesso/emprestimo-solicitado");
       }
-      
-      const solicitacaoRef = db.ref("biblioteca_solicitacoes");
-      await solicitacaoRef.push(solicitacaoData);
-      
-      console.log('✅ Solicitação criada com sucesso');
-      return redirect("/sucesso/emprestimo-solicitado");
     } catch (error) {
       console.error("❌ Erro ao processar solicitação:", error);
       return json({ success: false, error: `Erro ao processar solicitação: ${error.message}` });
+    }
+  }
+  
+  if (action === "solicitar_terceiro") {
+    const subcodigo = formData.get("subcodigo") as string;
+    const coordinator_id = formData.get("coordinator_id") as string;
+    const cpf_terceiro = formData.get("cpf_terceiro") as string;
+    const nome_terceiro = formData.get("nome_terceiro") as string;
+    const telefone_terceiro = formData.get("telefone_terceiro") as string;
+    const email_terceiro = formData.get("email_terceiro") as string;
+    const usuario_terceiro_id = formData.get("usuario_terceiro_id") as string;
+    
+    try {
+      let finalUserId = usuario_terceiro_id;
+      
+      if (!usuario_terceiro_id) {
+        finalUserId = `cpf_${cpf_terceiro.replace(/\D/g, "")}`;
+        await createUserWithAmecicloRegister(finalUserId, {
+          cpf: cpf_terceiro,
+          nome: nome_terceiro,
+          telefone: telefone_terceiro,
+          email: email_terceiro
+        });
+      }
+      
+      // Coordenador: criar empréstimo direto
+      const emprestimoRef = db.ref("loan_record");
+      const emprestimoKey = emprestimoRef.push().key;
+      
+      const emprestimo = {
+        id: emprestimoKey,
+        usuario_id: finalUserId,
+        subcodigo,
+        data_saida: new Date().toISOString().split('T')[0],
+        status: 'emprestado',
+        created_at: new Date().toISOString()
+      };
+      
+      await emprestimoRef.child(emprestimoKey).update(emprestimo);
+      console.log('✅ Empréstimo criado diretamente para terceiro por coordenador');
+      return redirect("/sucesso/emprestimo-aprovado");
+    } catch (error) {
+      console.error("❌ Erro ao processar empréstimo para terceiro:", error);
+      return json({ success: false, error: `Erro ao processar empréstimo: ${error.message}` });
     }
   }
   
@@ -128,6 +196,36 @@ export default function SolicitarEmprestimo() {
   const [exemplaresDisponiveis, setExemplaresDisponiveis] = useState<any[]>([]);
   const [exemplarSelecionado, setExemplarSelecionado] = useState("");
   const [solicitarParaOutraPessoa, setSolicitarParaOutraPessoa] = useState(false);
+  const [cpfTerceiro, setCpfTerceiro] = useState("");
+  const [dadosTerceiro, setDadosTerceiro] = useState({ nome: "", telefone: "", email: "" });
+  const [usuarioTerceiroEncontrado, setUsuarioTerceiroEncontrado] = useState<any>(null);
+  
+  const buscarUsuarioTerceiro = async (cpfCompleto: string) => {
+    try {
+      const formData = new FormData();
+      formData.append("action", "buscar_cpf");
+      formData.append("cpf", cpfCompleto);
+      
+      const response = await fetch("/registrar-usuario", {
+        method: "POST",
+        body: formData
+      });
+      const result = await response.json();
+      
+      if (result.user) {
+        setUsuarioTerceiroEncontrado(result.user);
+        setDadosTerceiro({
+          nome: result.user.nome || "",
+          telefone: result.user.telefone || "",
+          email: result.user.email || ""
+        });
+      } else {
+        setUsuarioTerceiroEncontrado(null);
+      }
+    } catch (error) {
+      console.error("Erro ao buscar usuário:", error);
+    }
+  };
 
 
   useEffect(() => {
@@ -230,22 +328,111 @@ export default function SolicitarEmprestimo() {
             </label>
           </div>
           
+
+          
           {solicitarParaOutraPessoa && (
-            <div className="mt-4">
-              <Link 
-                to={`/registrar-usuario?livro=${encodeURIComponent(livroTitulo)}&codigo=${searchParams.get("codigo") || ""}`}
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-              >
-                Registrar Novo Usuário
-              </Link>
+            <div className="mt-6 p-4 border-t border-gray-200">
+              <h4 className="text-md font-semibold mb-4">Dados da Pessoa</h4>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">CPF</label>
+                  <input
+                    type="text"
+                    value={cpfTerceiro}
+                    onChange={(e) => {
+                      const cpfFormatado = formatCPF(e.target.value);
+                      setCpfTerceiro(cpfFormatado);
+                      if (cpfFormatado.length === 14 && validateCPF(cpfFormatado)) {
+                        // Buscar usuário
+                        buscarUsuarioTerceiro(cpfFormatado);
+                      } else {
+                        setUsuarioTerceiroEncontrado(null);
+                        setDadosTerceiro({ nome: "", telefone: "", email: "" });
+                      }
+                    }}
+                    placeholder="000.000.000-00"
+                    maxLength={14}
+                    className={`w-full px-3 py-2 border rounded-md ${
+                      cpfTerceiro && !validateCPF(cpfTerceiro) ? 'border-red-300' : 'border-gray-300'
+                    }`}
+                  />
+                  {cpfTerceiro && !validateCPF(cpfTerceiro) && (
+                    <p className="text-sm text-red-600 mt-1">CPF inválido</p>
+                  )}
+                </div>
+                
+                {usuarioTerceiroEncontrado && (
+                  <div className="bg-green-50 p-3 rounded">
+                    <p className="text-sm text-green-700">✅ Usuário encontrado no cadastro</p>
+                  </div>
+                )}
+                
+                {cpfTerceiro.length === 14 && validateCPF(cpfTerceiro) && !usuarioTerceiroEncontrado && (
+                  <div className="bg-yellow-50 p-3 rounded">
+                    <p className="text-sm text-yellow-700">⚠️ Pessoa não encontrada no cadastro</p>
+                  </div>
+                )}
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Nome Completo</label>
+                  <input
+                    type="text"
+                    value={dadosTerceiro.nome}
+                    onChange={(e) => setDadosTerceiro(prev => ({ ...prev, nome: e.target.value }))}
+                    disabled={!!usuarioTerceiroEncontrado}
+                    className={`w-full px-3 py-2 border rounded-md ${
+                      usuarioTerceiroEncontrado ? 'bg-gray-100' : 'border-gray-300'
+                    }`}
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Telefone</label>
+                  <input
+                    type="tel"
+                    value={dadosTerceiro.telefone}
+                    onChange={(e) => setDadosTerceiro(prev => ({ ...prev, telefone: formatPhone(e.target.value) }))}
+                    disabled={!!usuarioTerceiroEncontrado}
+                    placeholder="(81) 99999-9999"
+                    className={`w-full px-3 py-2 border rounded-md ${
+                      usuarioTerceiroEncontrado ? 'bg-gray-100' : 'border-gray-300'
+                    }`}
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <input
+                    type="email"
+                    value={dadosTerceiro.email}
+                    onChange={(e) => setDadosTerceiro(prev => ({ ...prev, email: e.target.value }))}
+                    disabled={!!usuarioTerceiroEncontrado}
+                    placeholder="usuario@email.com"
+                    className={`w-full px-3 py-2 border rounded-md ${
+                      usuarioTerceiroEncontrado ? 'bg-gray-100' : 'border-gray-300'
+                    }`}
+                  />
+                </div>
+              </div>
             </div>
           )}
         </div>
       )}
 
       <Form method="post" className="space-y-6">
-        <input type="hidden" name="action" value="solicitar" />
+        <input type="hidden" name="action" value={solicitarParaOutraPessoa ? "solicitar_terceiro" : "solicitar"} />
         <input type="hidden" name="usuario_id" value={user?.id?.toString() || ""} />
+        {solicitarParaOutraPessoa && (
+          <>
+            <input type="hidden" name="cpf_terceiro" value={cpfTerceiro} />
+            <input type="hidden" name="nome_terceiro" value={dadosTerceiro.nome} />
+            <input type="hidden" name="telefone_terceiro" value={dadosTerceiro.telefone} />
+            <input type="hidden" name="email_terceiro" value={dadosTerceiro.email} />
+            <input type="hidden" name="usuario_terceiro_id" value={usuarioTerceiroEncontrado?.id || ""} />
+            <input type="hidden" name="coordinator_id" value={user?.id?.toString() || ""} />
+          </>
+        )}
 
         {/* Seleção de Exemplar */}
         <div className="bg-white p-6 rounded-lg shadow-md">
@@ -305,7 +492,7 @@ export default function SolicitarEmprestimo() {
         <div className="flex gap-4">
           <button
             type="submit"
-            disabled={!userLoaded || !user?.id || !exemplarSelecionado || exemplaresDisponiveis.length === 0 || solicitarParaOutraPessoa}
+            disabled={!userLoaded || !user?.id || !exemplarSelecionado || exemplaresDisponiveis.length === 0 || (solicitarParaOutraPessoa && (!validateCPF(cpfTerceiro) || !dadosTerceiro.nome))}
             className="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             {!userLoaded ? 'Carregando...' : 'Confirmar Solicitação'}

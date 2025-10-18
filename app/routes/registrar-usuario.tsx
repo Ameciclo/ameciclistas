@@ -9,6 +9,7 @@ import {
   criarSolicitacaoBiblioteca,
   criarSolicitacaoBicicleta
 } from "~/api/firebaseConnection.server";
+import db from "~/api/firebaseAdmin.server.js";
 import { requireAuth } from "~/utils/authMiddleware";
 import { UserCategory } from "~/utils/types";
 import { formatCPF, formatPhone } from "~/utils/format";
@@ -60,6 +61,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const telefone = formData.get("telefone") as string;
     const email = formData.get("email") as string;
     const userId = formData.get("userId") as string;
+    const coordinatorId = formData.get("coordinatorId") as string;
     const isExistingUser = !!userId;
     
     try {
@@ -72,18 +74,65 @@ export async function action({ request }: ActionFunctionArgs) {
         });
       }
       
-      const isBicicleta = !!formData.get("bicicleta");
-      
-      if (isBicicleta) {
-        await criarSolicitacaoBicicleta(finalUserId, formData.get("bicicleta") as string);
-      } else {
-        await criarSolicitacaoBiblioteca(finalUserId, formData.get("subcodigo") as string);
+      // Verificar se quem está solicitando é coordenador
+      let isCoordinator = false;
+      if (coordinatorId) {
+        const userRef = db.ref(`subscribers/${coordinatorId}`);
+        const userSnapshot = await userRef.once("value");
+        const userData = userSnapshot.val();
+        const userRole = userData?.role || 'ANY_USER';
+        isCoordinator = userRole === 'PROJECT_COORDINATORS' || userRole === 'AMECICLO_COORDINATORS';
       }
       
-      return json({ 
-        success: true, 
-        message: `Solicitação registrada para ${nome}!` 
-      });
+      const isBicicleta = !!formData.get("bicicleta");
+      
+      if (isCoordinator) {
+        // Coordenador: criar empréstimo direto
+        if (isBicicleta) {
+          const emprestimoRef = db.ref("emprestimos_bicicletas");
+          const emprestimoKey = emprestimoRef.push().key;
+          
+          const emprestimo = {
+            id: emprestimoKey,
+            usuario_id: finalUserId,
+            codigo_bicicleta: formData.get("bicicleta") as string,
+            data_saida: new Date().toISOString().split('T')[0],
+            status: 'emprestado'
+          };
+          
+          await emprestimoRef.child(emprestimoKey).update(emprestimo);
+        } else {
+          const emprestimoRef = db.ref("loan_record");
+          const emprestimoKey = emprestimoRef.push().key;
+          
+          const emprestimo = {
+            id: emprestimoKey,
+            usuario_id: finalUserId,
+            subcodigo: formData.get("subcodigo") as string,
+            data_saida: new Date().toISOString().split('T')[0],
+            status: 'emprestado'
+          };
+          
+          await emprestimoRef.child(emprestimoKey).update(emprestimo);
+        }
+        
+        return json({ 
+          success: true, 
+          message: `Empréstimo aprovado para ${nome}!` 
+        });
+      } else {
+        // Usuário comum: criar solicitação
+        if (isBicicleta) {
+          await criarSolicitacaoBicicleta(finalUserId, formData.get("bicicleta") as string);
+        } else {
+          await criarSolicitacaoBiblioteca(finalUserId, formData.get("subcodigo") as string);
+        }
+        
+        return json({ 
+          success: true, 
+          message: `Solicitação registrada para ${nome}!` 
+        });
+      }
     } catch (error) {
       return json({ success: false, error: "Erro ao processar solicitação" });
     }
@@ -99,6 +148,16 @@ const originalLoader = async ({ request }: LoaderFunctionArgs) => {
 export const loader = requireAuth(UserCategory.PROJECT_COORDINATORS)(originalLoader);
 
 export default function RegistrarUsuario() {
+  const [coordinatorId, setCoordinatorId] = useState("");
+  
+  useEffect(() => {
+    // Pegar coordinator ID da URL ou contexto
+    const urlParams = new URLSearchParams(window.location.search);
+    const coordId = urlParams.get("coordinatorId");
+    if (coordId) {
+      setCoordinatorId(coordId);
+    }
+  }, []);
   const [searchParams] = useSearchParams();
   const actionData = useActionData<typeof action>();
   const [cpf, setCpf] = useState("");
@@ -200,6 +259,7 @@ export default function RegistrarUsuario() {
         <input type="hidden" name="subcodigo" value={codigo} />
         {isBicicleta && <input type="hidden" name="bicicleta" value={bicicletaCodigo} />}
         {usuarioEncontrado && <input type="hidden" name="userId" value={usuarioEncontrado.id} />}
+        <input type="hidden" name="coordinatorId" value={coordinatorId} />
         
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">CPF</label>

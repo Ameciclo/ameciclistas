@@ -122,8 +122,13 @@ export default function SolicitarEmprestimoBicicleta() {
       nome: userInfo.ameciclo_register?.nome || userInfo.library_register?.nome || userInfo.name || 'Não informado',
       cpf: userInfo.ameciclo_register?.cpf || userInfo.library_register?.cpf || userInfo.personal?.cpf || 'Não informado',
       telefone: userInfo.ameciclo_register?.telefone || userInfo.library_register?.telefone || userInfo.personal?.telefone || 'Não informado',
-      email: userInfo.ameciclo_register?.email || userInfo.library_register?.email || 'Não informado'
+      email: userInfo.ameciclo_register?.email || userInfo.library_register?.email || userInfo.personal?.email || 'Não informado'
     };
+  };
+  
+  const hasCompleteData = () => {
+    const data = getUserData();
+    return data && data.cpf !== 'Não informado' && data.email !== 'Não informado' && data.telefone !== 'Não informado';
   };
 
   const userData = getUserData();
@@ -150,7 +155,7 @@ export default function SolicitarEmprestimoBicicleta() {
     );
   }
 
-  if (!userData || userData.cpf === 'Não informado') {
+  if (!hasCompleteData()) {
     window.location.href = '/user';
     return null;
   }
