@@ -129,6 +129,7 @@ export default function SolicitarEmprestimo() {
   const [exemplarSelecionado, setExemplarSelecionado] = useState("");
   const [solicitarParaOutraPessoa, setSolicitarParaOutraPessoa] = useState(false);
 
+
   useEffect(() => {
     try {
       telegramInit();
@@ -177,39 +178,18 @@ export default function SolicitarEmprestimo() {
 
   // Verificar se usuário precisa completar cadastro
   const needsLibraryRegister = user && !hasLibraryRegister && (userRole === 'ANY_USER' || userRole === 'AMECICLISTAS');
-  const canSolicitForOthers = userRole === 'PROJECT_COORDINATORS' || userRole === 'AMECICLO_COORDINATORS';
+
   
-  // Coordenadores não precisam de cadastro completo
-  const isCoordinator = userRole === 'PROJECT_COORDINATORS' || userRole === 'AMECICLO_COORDINATORS';
-  const actuallyNeedsRegister = needsLibraryRegister && !isCoordinator;
+  // Todos precisam de cadastro completo
+  const actuallyNeedsRegister = needsLibraryRegister;
+  const canSolicitForOthers = userRole === 'PROJECT_COORDINATORS' || userRole === 'AMECICLO_COORDINATORS';
 
 
 
-  // Se usuário precisa completar cadastro
+  // Se usuário precisa completar cadastro, redirecionar para /user
   if (actuallyNeedsRegister) {
-    return (
-      <div className="container mx-auto py-8 px-4">
-        <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-6">
-          <h2 className="text-lg font-semibold mb-2">Cadastro Incompleto</h2>
-          <p className="mb-4">Para solicitar empréstimos na biblioteca, você precisa completar seu cadastro com os dados necessários.</p>
-        </div>
-        
-        <div className="flex gap-4">
-          <Link 
-            to="/user" 
-            className="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700"
-          >
-            Completar Cadastro
-          </Link>
-          <Link 
-            to="/biblioteca" 
-            className="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600"
-          >
-            Voltar à Biblioteca
-          </Link>
-        </div>
-      </div>
-    );
+    window.location.href = '/user';
+    return null;
   }
 
   return (
@@ -220,6 +200,8 @@ export default function SolicitarEmprestimo() {
         <h2 className="text-xl font-semibold mb-4">Livro Selecionado</h2>
         <p className="text-lg text-gray-800">{livroTitulo}</p>
       </div>
+
+
 
       {/* Opções para coordenadores */}
       {canSolicitForOthers && (
@@ -251,7 +233,7 @@ export default function SolicitarEmprestimo() {
           {solicitarParaOutraPessoa && (
             <div className="mt-4">
               <Link 
-                to={`/registrar-usuario-biblioteca?livro=${encodeURIComponent(livroTitulo)}&codigo=${searchParams.get("codigo") || ""}`}
+                to={`/registrar-usuario?livro=${encodeURIComponent(livroTitulo)}&codigo=${searchParams.get("codigo") || ""}`}
                 className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
               >
                 Registrar Novo Usuário
@@ -315,7 +297,7 @@ export default function SolicitarEmprestimo() {
             <p>User ID: {user?.id || 'não definido'}</p>
             <p>Exemplar selecionado: {exemplarSelecionado || 'nenhum'}</p>
             <p>Exemplares disponíveis: {exemplaresDisponiveis.length}</p>
-            <p>Solicitar para outra pessoa: {solicitarParaOutraPessoa ? 'sim' : 'não'}</p>
+
             <p>User loaded: {userLoaded ? 'sim' : 'não'}</p>
           </div>
         )}

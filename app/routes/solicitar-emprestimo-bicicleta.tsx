@@ -83,6 +83,7 @@ export default function SolicitarEmprestimoBicicleta() {
   const [userInfo, setUserInfo] = useState<any>(null);
   const [solicitarParaOutraPessoa, setSolicitarParaOutraPessoa] = useState(false);
 
+
   useEffect(() => {
     try {
       telegramInit();
@@ -150,30 +151,8 @@ export default function SolicitarEmprestimoBicicleta() {
   }
 
   if (!userData || userData.cpf === 'Não informado') {
-    return (
-      <div className="container mx-auto py-8 px-4">
-        <div className="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
-          <h1 className="text-2xl font-bold text-orange-600 mb-4">Cadastro Necessário</h1>
-          <p className="text-gray-600 mb-4">
-            Para solicitar empréstimo de bicicleta, você precisa completar seu cadastro.
-          </p>
-          <div className="space-y-3">
-            <Link 
-              to="/registrar-usuario-biblioteca" 
-              className="w-full bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700 transition-colors block text-center no-underline"
-            >
-              Completar Cadastro
-            </Link>
-            <Link 
-              to="/bota-pra-rodar" 
-              className="button-secondary-full text-center"
-            >
-              Voltar para Bota pra Rodar
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
+    window.location.href = '/user';
+    return null;
   }
 
   return (
@@ -191,22 +170,6 @@ export default function SolicitarEmprestimoBicicleta() {
             🚴 Solicitar Empréstimo de Bicicleta
           </h1>
           
-
-
-          {/* Informações da Bicicleta */}
-          <div className="bg-gray-50 p-4 rounded-lg mb-6">
-            <h2 className="text-lg font-semibold text-gray-800 mb-3">Bicicleta Selecionada</h2>
-            <div className="space-y-2">
-              <p><strong>Nome:</strong> {bicicleta.nome}</p>
-              <p><strong>Código:</strong> {bicicleta.codigo}</p>
-              <p><strong>Tipo:</strong> {bicicleta.tipo}</p>
-              <p><strong>Categoria:</strong> {bicicleta.categoria}</p>
-              {bicicleta.descricao && (
-                <p><strong>Descrição:</strong> {bicicleta.descricao}</p>
-              )}
-            </div>
-          </div>
-
           {/* Opções para coordenadores */}
           {isCoordinator && (
             <div className="bg-blue-50 p-6 rounded-lg shadow-md mb-6">
@@ -237,7 +200,7 @@ export default function SolicitarEmprestimoBicicleta() {
               {solicitarParaOutraPessoa && (
                 <div className="mt-4">
                   <Link 
-                    to={`/registrar-usuario-biblioteca?bicicleta=${encodeURIComponent(bicicleta.codigo)}&nome=${encodeURIComponent(bicicleta.nome)}`}
+                    to={`/registrar-usuario?bicicleta=${encodeURIComponent(bicicleta.codigo)}&nome=${encodeURIComponent(bicicleta.nome)}`}
                     className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
                   >
                     Registrar Novo Usuário
@@ -246,6 +209,22 @@ export default function SolicitarEmprestimoBicicleta() {
               )}
             </div>
           )}
+
+          {/* Informações da Bicicleta */}
+          <div className="bg-gray-50 p-4 rounded-lg mb-6">
+            <h2 className="text-lg font-semibold text-gray-800 mb-3">Bicicleta Selecionada</h2>
+            <div className="space-y-2">
+              <p><strong>Nome:</strong> {bicicleta.nome}</p>
+              <p><strong>Código:</strong> {bicicleta.codigo}</p>
+              <p><strong>Tipo:</strong> {bicicleta.tipo}</p>
+              <p><strong>Categoria:</strong> {bicicleta.categoria}</p>
+              {bicicleta.descricao && (
+                <p><strong>Descrição:</strong> {bicicleta.descricao}</p>
+              )}
+            </div>
+          </div>
+
+
 
           {/* Informações do Usuário */}
           {!solicitarParaOutraPessoa && (
