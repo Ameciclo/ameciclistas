@@ -257,12 +257,17 @@ export default function SolicitarEmprestimo() {
   const [cpfTerceiro, setCpfTerceiro] = useState("");
   const [dadosTerceiro, setDadosTerceiro] = useState({ nome: "", telefone: "", email: "" });
   const [usuarioTerceiroEncontrado, setUsuarioTerceiroEncontrado] = useState<any>(null);
+  const [buscouCpf, setBuscouCpf] = useState(false);
+  const [buscandoCpf, setBuscandoCpf] = useState(false);
   
-  const buscarUsuarioTerceiro = async (cpfCompleto: string) => {
+  const buscarUsuarioTerceiro = async () => {
+    if (!validateCPF(cpfTerceiro)) return;
+    
+    setBuscandoCpf(true);
     try {
       const formData = new FormData();
       formData.append("action", "buscar_cpf");
-      formData.append("cpf", cpfCompleto);
+      formData.append("cpf", cpfTerceiro);
       
       const response = await fetch(window.location.pathname, {
         method: "POST",
@@ -281,8 +286,11 @@ export default function SolicitarEmprestimo() {
         setUsuarioTerceiroEncontrado(null);
         setDadosTerceiro({ nome: "", telefone: "", email: "" });
       }
+      setBuscouCpf(true);
     } catch (error) {
       console.error("Erro ao buscar usuário:", error);
+    } finally {
+      setBuscandoCpf(false);
     }
   };
 
@@ -396,83 +404,92 @@ export default function SolicitarEmprestimo() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">CPF</label>
-                  <input
-                    type="text"
-                    value={cpfTerceiro}
-                    onChange={(e) => {
-                      const cpfFormatado = formatCPF(e.target.value);
-                      setCpfTerceiro(cpfFormatado);
-                      if (cpfFormatado.length === 14 && validateCPF(cpfFormatado)) {
-                        // Buscar usuário
-                        buscarUsuarioTerceiro(cpfFormatado);
-                      } else {
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={cpfTerceiro}
+                      onChange={(e) => {
+                        const cpfFormatado = formatCPF(e.target.value);
+                        setCpfTerceiro(cpfFormatado);
+                        setBuscouCpf(false);
                         setUsuarioTerceiroEncontrado(null);
-                        setDadosTerceiro({ nome: "", telefone: "", email: "" });
-                      }
-                    }}
-                    placeholder="000.000.000-00"
-                    maxLength={14}
-                    className={`w-full px-3 py-2 border rounded-md ${
-                      cpfTerceiro && !validateCPF(cpfTerceiro) ? 'border-red-300' : 'border-gray-300'
-                    }`}
-                  />
+                      }}
+                      placeholder="000.000.000-00"
+                      maxLength={14}
+                      className={`flex-1 px-3 py-2 border rounded-md ${
+                        cpfTerceiro && !validateCPF(cpfTerceiro) ? 'border-red-300' : 'border-gray-300'
+                      }`}
+                    />
+                    <button
+                      type="button"
+                      onClick={buscarUsuarioTerceiro}
+                      disabled={!validateCPF(cpfTerceiro) || buscandoCpf}
+                      className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    >
+                      {buscandoCpf ? 'Buscando...' : 'Buscar'}
+                    </button>
+                  </div>
                   {cpfTerceiro && !validateCPF(cpfTerceiro) && (
                     <p className="text-sm text-red-600 mt-1">CPF inválido</p>
                   )}
                 </div>
                 
-                {usuarioTerceiroEncontrado && (
-                  <div className="bg-green-50 p-3 rounded">
-                    <p className="text-sm text-green-700">✅ Usuário encontrado no cadastro</p>
-                  </div>
+                {buscouCpf && (
+                  <>
+                    {usuarioTerceiroEncontrado ? (
+                      <div className="bg-green-50 p-3 rounded">
+                        <p className="text-sm text-green-700 mb-2">✅ Usuário encontrado no cadastro</p>
+                        <div className="text-sm">
+                          <p><strong>Nome:</strong> {usuarioTerceiroEncontrado.nome}</p>
+                          <p><strong>Email:</strong> {usuarioTerceiroEncontrado.email}</p>
+                          <p><strong>Telefone:</strong> {usuarioTerceiroEncontrado.telefone}</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="bg-yellow-50 p-3 rounded mb-4">
+                          <p className="text-sm text-yellow-700">⚠️ Pessoa não encontrada no cadastro</p>
+                          <p className="text-xs text-yellow-600 mt-1">Preencha os dados abaixo para cadastrar</p>
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Nome Completo</label>
+                          <input
+                            type="text"
+                            value={dadosTerceiro.nome}
+                            onChange={(e) => setDadosTerceiro(prev => ({ ...prev, nome: e.target.value }))}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                            required
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Telefone</label>
+                          <input
+                            type="tel"
+                            value={dadosTerceiro.telefone}
+                            onChange={(e) => setDadosTerceiro(prev => ({ ...prev, telefone: formatPhone(e.target.value) }))}
+                            placeholder="(81) 99999-9999"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                            required
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                          <input
+                            type="email"
+                            value={dadosTerceiro.email}
+                            onChange={(e) => setDadosTerceiro(prev => ({ ...prev, email: e.target.value }))}
+                            placeholder="usuario@email.com"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                            required
+                          />
+                        </div>
+                      </>
+                    )}
+                  </>
                 )}
-                
-                {cpfTerceiro.length === 14 && validateCPF(cpfTerceiro) && !usuarioTerceiroEncontrado && (
-                  <div className="bg-yellow-50 p-3 rounded">
-                    <p className="text-sm text-yellow-700">⚠️ Pessoa não encontrada no cadastro</p>
-                  </div>
-                )}
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Nome Completo</label>
-                  <input
-                    type="text"
-                    value={dadosTerceiro.nome}
-                    onChange={(e) => setDadosTerceiro(prev => ({ ...prev, nome: e.target.value }))}
-                    disabled={!!usuarioTerceiroEncontrado}
-                    className={`w-full px-3 py-2 border rounded-md ${
-                      usuarioTerceiroEncontrado ? 'bg-gray-100' : 'border-gray-300'
-                    }`}
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Telefone</label>
-                  <input
-                    type="tel"
-                    value={dadosTerceiro.telefone}
-                    onChange={(e) => setDadosTerceiro(prev => ({ ...prev, telefone: formatPhone(e.target.value) }))}
-                    disabled={!!usuarioTerceiroEncontrado}
-                    placeholder="(81) 99999-9999"
-                    className={`w-full px-3 py-2 border rounded-md ${
-                      usuarioTerceiroEncontrado ? 'bg-gray-100' : 'border-gray-300'
-                    }`}
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                  <input
-                    type="email"
-                    value={dadosTerceiro.email}
-                    onChange={(e) => setDadosTerceiro(prev => ({ ...prev, email: e.target.value }))}
-                    disabled={!!usuarioTerceiroEncontrado}
-                    placeholder="usuario@email.com"
-                    className={`w-full px-3 py-2 border rounded-md ${
-                      usuarioTerceiroEncontrado ? 'bg-gray-100' : 'border-gray-300'
-                    }`}
-                  />
-                </div>
               </div>
             </div>
           )}
@@ -551,7 +568,7 @@ export default function SolicitarEmprestimo() {
         <div className="flex gap-4">
           <button
             type="submit"
-            disabled={!userLoaded || !user?.id || !exemplarSelecionado || exemplaresDisponiveis.length === 0 || (solicitarParaOutraPessoa && (!validateCPF(cpfTerceiro) || !dadosTerceiro.nome))}
+            disabled={!userLoaded || !user?.id || !exemplarSelecionado || exemplaresDisponiveis.length === 0 || (solicitarParaOutraPessoa && (!buscouCpf || (!usuarioTerceiroEncontrado && !dadosTerceiro.nome)))
             className="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             {!userLoaded ? 'Carregando...' : 'Confirmar Solicitação'}
