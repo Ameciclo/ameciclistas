@@ -279,11 +279,26 @@ export default function SolicitarEmprestimo() {
         body: formData
       });
       
+      console.log('📡 Response status:', response.status);
+      console.log('📡 Response headers:', response.headers.get('content-type'));
+      
       if (!response.ok) {
+        const errorText = await response.text();
+        console.log('❌ Response error text:', errorText);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      const result = await response.json();
+      const responseText = await response.text();
+      console.log('📄 Response text:', responseText);
+      
+      let result;
+      try {
+        result = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('❌ JSON parse error:', parseError);
+        console.log('📄 Raw response that failed to parse:', responseText);
+        throw new Error('Resposta inválida do servidor');
+      }
       console.log('📋 Resultado da busca:', result);
       console.log('📋 Tipo do resultado:', typeof result);
       console.log('📋 result.success:', result.success);
@@ -329,29 +344,44 @@ export default function SolicitarEmprestimo() {
 
   useEffect(() => {
     try {
-      telegramInit();
-      const telegramUser = getTelegramUsersInfo();
+      // Primeiro tentar pegar userId da URL
+      const urlUserId = searchParams.get('userId');
       
-      // Em desenvolvimento, simular dados do usuário
-      if (process.env.NODE_ENV === "development" && !telegramUser) {
-        const devUser = {
-          id: 123456789,
-          first_name: "João",
-          last_name: "Silva",
-          username: "joaosilva"
+      if (urlUserId) {
+        // Usuário logado via magic link - usar dados do Firebase
+        const userFromUrl = {
+          id: parseInt(urlUserId),
+          first_name: userData?.ameciclo_register?.nome?.split(' ')[0] || userData?.library_register?.nome?.split(' ')[0] || 'Usuário',
+          last_name: userData?.ameciclo_register?.nome?.split(' ').slice(1).join(' ') || userData?.library_register?.nome?.split(' ').slice(1).join(' ') || '',
+          username: `user_${urlUserId}`
         } as UserData;
-        setUser(devUser);
-        console.log('🔧 Dev user set:', devUser);
+        setUser(userFromUrl);
+        console.log('🔗 User from URL/Firebase:', userFromUrl);
       } else {
-        setUser(telegramUser);
-        console.log('📱 Telegram user set:', telegramUser);
+        // Tentar Telegram Web App
+        telegramInit();
+        const telegramUser = getTelegramUsersInfo();
+        
+        if (process.env.NODE_ENV === "development" && !telegramUser) {
+          const devUser = {
+            id: 999996,
+            first_name: "Ana",
+            last_name: "Lima",
+            username: "dev_999996"
+          } as UserData;
+          setUser(devUser);
+          console.log('🔧 Dev user set:', devUser);
+        } else {
+          setUser(telegramUser);
+          console.log('📱 Telegram user set:', telegramUser);
+        }
       }
     } catch (error) {
       console.error('❌ Erro ao inicializar usuário:', error);
     } finally {
       setUserLoaded(true);
     }
-  }, []);
+  }, [searchParams, userData]);
 
   useEffect(() => {
     // Filtrar exemplares disponíveis (excluir .1 e emprestados)
@@ -387,6 +417,18 @@ export default function SolicitarEmprestimo() {
   if (actuallyNeedsRegister) {
     window.location.href = '/user';
     return null;
+  }
+  
+  // Se não conseguiu carregar usuário e não está em desenvolvimento, mostrar erro
+  if (!userLoaded || (!user && process.env.NODE_ENV !== "development")) {
+    return (
+      <div className="container mx-auto py-8 px-4">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          <p className="font-medium">❌ Erro de autenticação</p>
+          <p className="text-sm mt-1">Não foi possível identificar o usuário. Acesse via Telegram.</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -536,7 +578,7 @@ export default function SolicitarEmprestimo() {
 
       <Form method="post" className="space-y-6">
         <input type="hidden" name="action" value={solicitarParaOutraPessoa ? "solicitar_terceiro" : "solicitar"} />
-        <input type="hidden" name="usuario_id" value={user?.id?.toString() || ""} />
+        <input type="hidden" name="usuario_id" value={user?.id?.toString() || searchParams.get('userId') || "999996"} />
         {solicitarParaOutraPessoa && (
           <>
             <input type="hidden" name="cpf_terceiro" value={cpfTerceiro} />
@@ -596,6 +638,8 @@ export default function SolicitarEmprestimo() {
           <div className="bg-gray-100 p-4 rounded text-sm mb-4">
             <p>🔍 Debug Info:</p>
             <p>User ID: {user?.id || 'não definido'}</p>
+            <p>User object: {JSON.stringify(user)}</p>
+            <p>UserLoaded: {userLoaded ? 'sim' : 'não'}</p>
             <p>Exemplar selecionado: {exemplarSelecionado || 'nenhum'}</p>
             <p>Exemplares disponíveis: {exemplaresDisponiveis.length}</p>
             <p>User loaded: {userLoaded ? 'sim' : 'não'}</p>
@@ -617,7 +661,7 @@ export default function SolicitarEmprestimo() {
         <div className="flex gap-4">
           <button
             type="submit"
-            disabled={!userLoaded || !user?.id || !exemplarSelecionado || exemplaresDisponiveis.length === 0 || (solicitarParaOutraPessoa && (!buscouCpf || (!dadosTerceiro.id && (!dadosTerceiro.nome || !dadosTerceiro.email || !dadosTerceiro.telefone))))}
+            disabled={!userLoaded || exemplaresDisponiveis.length === 0 || (solicitarParaOutraPessoa && (!buscouCpf || (!dadosTerceiro.id && (!dadosTerceiro.nome || !dadosTerceiro.email || !dadosTerceiro.telefone))))}
             className="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             {!userLoaded ? 'Carregando...' : buscandoCpf ? 'Buscando...' : 'Confirmar Solicitação'}
