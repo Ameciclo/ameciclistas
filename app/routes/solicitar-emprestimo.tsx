@@ -264,18 +264,31 @@ export default function SolicitarEmprestimo() {
     if (!validateCPF(cpfTerceiro)) return;
     
     setBuscandoCpf(true);
+    setBuscouCpf(false);
+    setUsuarioTerceiroEncontrado(null);
+    setDadosTerceiro({ nome: "", telefone: "", email: "" });
+    
     try {
       const formData = new FormData();
       formData.append("action", "buscar_cpf");
       formData.append("cpf", cpfTerceiro);
       
+      console.log('🔍 Iniciando busca CPF:', cpfTerceiro);
+      
       const response = await fetch(window.location.pathname, {
         method: "POST",
         body: formData
       });
-      const result = await response.json();
       
-      if (result.user) {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      console.log('📋 Resultado da busca:', result);
+      
+      if (result.success && result.user) {
+        console.log('✅ Usuário encontrado:', result.user);
         setUsuarioTerceiroEncontrado(result.user);
         setDadosTerceiro({
           nome: result.user.nome || "",
@@ -283,12 +296,16 @@ export default function SolicitarEmprestimo() {
           email: result.user.email || ""
         });
       } else {
+        console.log('❌ Usuário não encontrado');
         setUsuarioTerceiroEncontrado(null);
         setDadosTerceiro({ nome: "", telefone: "", email: "" });
       }
       setBuscouCpf(true);
     } catch (error) {
-      console.error("Erro ao buscar usuário:", error);
+      console.error("❌ Erro ao buscar usuário:", error);
+      setUsuarioTerceiroEncontrado(null);
+      setDadosTerceiro({ nome: "", telefone: "", email: "" });
+      setBuscouCpf(true);
     } finally {
       setBuscandoCpf(false);
     }
@@ -434,7 +451,13 @@ export default function SolicitarEmprestimo() {
                   )}
                 </div>
                 
-                {buscouCpf && (
+                {buscandoCpf && (
+                  <div className="bg-blue-50 p-3 rounded">
+                    <p className="text-sm text-blue-700">🔍 Buscando usuário...</p>
+                  </div>
+                )}
+                
+                {buscouCpf && !buscandoCpf && (
                   <>
                     {usuarioTerceiroEncontrado ? (
                       <div className="bg-green-50 p-3 rounded">
@@ -560,18 +583,27 @@ export default function SolicitarEmprestimo() {
             <p>User ID: {user?.id || 'não definido'}</p>
             <p>Exemplar selecionado: {exemplarSelecionado || 'nenhum'}</p>
             <p>Exemplares disponíveis: {exemplaresDisponiveis.length}</p>
-
             <p>User loaded: {userLoaded ? 'sim' : 'não'}</p>
+            <p>Solicitar para terceiro: {solicitarParaOutraPessoa ? 'sim' : 'não'}</p>
+            <p>CPF terceiro: {cpfTerceiro || 'vazio'}</p>
+            <p>Buscou CPF: {buscouCpf ? 'sim' : 'não'}</p>
+            <p>Buscando CPF: {buscandoCpf ? 'sim' : 'não'}</p>
+            <p>Usuário encontrado: {usuarioTerceiroEncontrado ? 'sim' : 'não'}</p>
+            {usuarioTerceiroEncontrado && (
+              <p>Nome encontrado: {usuarioTerceiroEncontrado.nome}</p>
+            )}
+            <p>Dados terceiro: {JSON.stringify(dadosTerceiro)}</p>
+            <p>Botão habilitado: {(!userLoaded || !user?.id || !exemplarSelecionado || exemplaresDisponiveis.length === 0 || (solicitarParaOutraPessoa && (!buscouCpf || (!usuarioTerceiroEncontrado && (!dadosTerceiro.nome || !dadosTerceiro.email || !dadosTerceiro.telefone))))) ? 'não' : 'sim'}</p>
           </div>
         )}
 
         <div className="flex gap-4">
           <button
             type="submit"
-            disabled={!userLoaded || !user?.id || !exemplarSelecionado || exemplaresDisponiveis.length === 0 || (solicitarParaOutraPessoa && (!buscouCpf || (!usuarioTerceiroEncontrado && !dadosTerceiro.nome)))}
+            disabled={!userLoaded || !user?.id || !exemplarSelecionado || exemplaresDisponiveis.length === 0 || (solicitarParaOutraPessoa && (!buscouCpf || (!usuarioTerceiroEncontrado && (!dadosTerceiro.nome || !dadosTerceiro.email || !dadosTerceiro.telefone))))}
             className="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
-            {!userLoaded ? 'Carregando...' : 'Confirmar Solicitação'}
+            {!userLoaded ? 'Carregando...' : buscandoCpf ? 'Buscando...' : 'Confirmar Solicitação'}
           </button>
           <Link
             to="/biblioteca"
