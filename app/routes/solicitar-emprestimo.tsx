@@ -263,6 +263,9 @@ export default function SolicitarEmprestimo() {
   const buscarUsuarioTerceiro = async () => {
     if (!validateCPF(cpfTerceiro)) return;
     
+    // Log para confirmar que o botão foi clicado
+    alert(`Buscando CPF: ${cpfTerceiro}`);
+    
     setBuscandoCpf(true);
     try {
       const formData = new FormData();
@@ -274,6 +277,9 @@ export default function SolicitarEmprestimo() {
         body: formData
       });
       const result = await response.json();
+      
+      // Log da resposta
+      alert(`Resposta: ${JSON.stringify(result)}`);
       
       if (result.user) {
         setUsuarioTerceiroEncontrado(result.user);
@@ -288,6 +294,7 @@ export default function SolicitarEmprestimo() {
       }
       setBuscouCpf(true);
     } catch (error) {
+      alert(`Erro: ${error.message}`);
       console.error("Erro ao buscar usuário:", error);
     } finally {
       setBuscandoCpf(false);
@@ -568,7 +575,7 @@ export default function SolicitarEmprestimo() {
         <div className="flex gap-4">
           <button
             type="submit"
-            disabled={!userLoaded || !user?.id || !exemplarSelecionado || exemplaresDisponiveis.length === 0 || (solicitarParaOutraPessoa && (!buscouCpf || (!usuarioTerceiroEncontrado && !dadosTerceiro.nome)))
+            disabled={!userLoaded || !user?.id || !exemplarSelecionado || exemplaresDisponiveis.length === 0 || (solicitarParaOutraPessoa && (!buscouCpf || (!usuarioTerceiroEncontrado && !dadosTerceiro.nome)))}
             className="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             {!userLoaded ? 'Carregando...' : 'Confirmar Solicitação'}
