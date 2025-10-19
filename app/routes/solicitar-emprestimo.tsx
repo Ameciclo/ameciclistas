@@ -15,13 +15,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const codigo = url.searchParams.get("codigo");
   const userId = url.searchParams.get("userId"); // ID do telegram
   
-  // Para POST requests (busca CPF), não validar parâmetros
-  if (request.method === "POST") {
-    return json({ livroTitulo: "", exemplares: [], userData: null, userRole: 'ANY_USER', hasLibraryRegister: false });
-  }
-  
   if (!livroTitulo || !codigo) {
-    throw new Response("Parâmetros inválidos", { status: 400 });
+    return json({ livroTitulo: "", exemplares: [], userData: null, userRole: 'ANY_USER', hasLibraryRegister: false });
   }
 
   try {
