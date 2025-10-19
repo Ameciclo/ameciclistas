@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLoaderData, useSearchParams, Form, useActionData, Link } from "@remix-run/react";
+import { useLoaderData, useSearchParams, Form, useActionData, Link, useFetcher } from "@remix-run/react";
 import { json, redirect, type LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-run/node";
 import { getBiblioteca, getUsersFirebase, createUserWithAmecicloRegister, criarSolicitacaoBiblioteca } from "~/api/firebaseConnection.server";
 import db from "~/api/firebaseAdmin.server.js";
@@ -260,42 +260,31 @@ export default function SolicitarEmprestimo() {
   const [buscouCpf, setBuscouCpf] = useState(false);
   const [buscandoCpf, setBuscandoCpf] = useState(false);
   
-  const buscarUsuarioTerceiro = async () => {
+  const fetcher = useFetcher();
+  
+  const buscarUsuarioTerceiro = () => {
     if (!validateCPF(cpfTerceiro)) return;
     
+    console.log('🔍 Iniciando busca CPF:', cpfTerceiro);
     setBuscandoCpf(true);
     setBuscouCpf(false);
     setDadosTerceiro({ id: "", nome: "", telefone: "", email: "", cpf: "" });
     
-    try {
-      console.log('🔍 Iniciando busca CPF:', cpfTerceiro);
+    const formData = new FormData();
+    formData.append("action", "buscar_cpf");
+    formData.append("cpf", cpfTerceiro);
+    
+    fetcher.submit(formData, { method: "post" });
+  };
+  
+  // Processar resultado do fetcher
+  useEffect(() => {
+    if (fetcher.data && fetcher.state === "idle") {
+      console.log('📋 Resultado da busca via fetcher:', fetcher.data);
       
-      // Usar Remix fetcher para evitar problemas de redirecionamento
-      const formData = new FormData();
-      formData.append("action", "buscar_cpf");
-      formData.append("cpf", cpfTerceiro);
-      
-      const response = await fetch(window.location.pathname + window.location.search, {
-        method: "POST",
-        body: formData,
-        headers: {
-          'Accept': 'application/json',
-        }
-      });
-      
-      console.log('📡 Response status:', response.status);
-      console.log('📡 Response content-type:', response.headers.get('content-type'));
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const result = await response.json();
-      console.log('📋 Resultado da busca:', result);
-      
-      if (result.success && result.user) {
-        console.log('✅ Usuário encontrado - processando:', result.user);
-        const userData = result.user;
+      if (fetcher.data.success && fetcher.data.user) {
+        console.log('✅ Usuário encontrado - processando:', fetcher.data.user);
+        const userData = fetcher.data.user;
         const novosDados = {
           id: userData.id || "",
           nome: userData.nome || "",
@@ -311,15 +300,14 @@ export default function SolicitarEmprestimo() {
         setDadosTerceiro({ id: "", nome: "", telefone: "", email: "", cpf: cpfTerceiro });
       }
       setBuscouCpf(true);
-      
-    } catch (error) {
-      console.error("❌ Erro ao buscar usuário:", error);
-      setDadosTerceiro({ id: "", nome: "", telefone: "", email: "", cpf: cpfTerceiro });
-      setBuscouCpf(true);
-    } finally {
       setBuscandoCpf(false);
     }
-  };
+  }, [fetcher.data, fetcher.state, cpfTerceiro]);
+  
+  // Atualizar estado de loading baseado no fetcher
+  useEffect(() => {
+    setBuscandoCpf(fetcher.state === "submitting");
+  }, [fetcher.state]);
 
 
   useEffect(() => {
@@ -639,6 +627,8 @@ export default function SolicitarEmprestimo() {
             <p>dadosTerceiro.id: '{dadosTerceiro.id}'</p>
             <p>dadosTerceiro.id existe: {!!dadosTerceiro.id ? 'sim' : 'não'}</p>
             <p>ActionData: {JSON.stringify(actionData)}</p>
+            <p>Fetcher data: {JSON.stringify(fetcher.data)}</p>
+            <p>Fetcher state: {fetcher.state}</p>
             <p>Botão habilitado: {(!userLoaded || !user?.id || !exemplarSelecionado || exemplaresDisponiveis.length === 0 || (solicitarParaOutraPessoa && (!buscouCpf || (!dadosTerceiro.id && (!dadosTerceiro.nome || !dadosTerceiro.email || !dadosTerceiro.telefone))))) ? 'não' : 'sim'}</p>
           </div>
         )}
