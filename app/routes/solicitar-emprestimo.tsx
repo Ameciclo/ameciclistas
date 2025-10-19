@@ -256,8 +256,7 @@ export default function SolicitarEmprestimo() {
   const [exemplarSelecionado, setExemplarSelecionado] = useState("");
   const [solicitarParaOutraPessoa, setSolicitarParaOutraPessoa] = useState(false);
   const [cpfTerceiro, setCpfTerceiro] = useState("");
-  const [dadosTerceiro, setDadosTerceiro] = useState({ nome: "", telefone: "", email: "" });
-  const [usuarioTerceiroEncontrado, setUsuarioTerceiroEncontrado] = useState<any>(null);
+  const [dadosTerceiro, setDadosTerceiro] = useState({ id: "", nome: "", telefone: "", email: "", cpf: "" });
   const [buscouCpf, setBuscouCpf] = useState(false);
   const [buscandoCpf, setBuscandoCpf] = useState(false);
   
@@ -266,8 +265,7 @@ export default function SolicitarEmprestimo() {
     
     setBuscandoCpf(true);
     setBuscouCpf(false);
-    setUsuarioTerceiroEncontrado(null);
-    setDadosTerceiro({ nome: "", telefone: "", email: "" });
+    setDadosTerceiro({ id: "", nome: "", telefone: "", email: "", cpf: "" });
     
     try {
       const formData = new FormData();
@@ -293,36 +291,29 @@ export default function SolicitarEmprestimo() {
       
       if (result.success) {
         if (result.user) {
-        console.log('✅ Usuário encontrado - processando:', result.user);
-        const userData = result.user;
-        setUsuarioTerceiroEncontrado(userData);
-        setDadosTerceiro({
-          nome: userData.nome || "",
-          telefone: userData.telefone || "",
-          email: userData.email || ""
-        });
-        console.log('✅ Estado atualizado - usuarioTerceiroEncontrado:', userData);
-        console.log('✅ Estado atualizado - dadosTerceiro:', {
-          nome: userData.nome || "",
-          telefone: userData.telefone || "",
-          email: userData.email || ""
-        });
+          console.log('✅ Usuário encontrado - processando:', result.user);
+          const userData = result.user;
+          setDadosTerceiro({
+            id: userData.id || "",
+            nome: userData.nome || "",
+            telefone: userData.telefone || "",
+            email: userData.email || "",
+            cpf: userData.cpf || cpfTerceiro
+          });
+          console.log('✅ Estado atualizado - dadosTerceiro:', userData);
         } else {
           console.log('❌ Usuário não encontrado - limpando estado');
-          setUsuarioTerceiroEncontrado(null);
-          setDadosTerceiro({ nome: "", telefone: "", email: "" });
+          setDadosTerceiro({ id: "", nome: "", telefone: "", email: "", cpf: cpfTerceiro });
         }
       } else {
         console.log('❌ Erro na busca');
-        setUsuarioTerceiroEncontrado(null);
-        setDadosTerceiro({ nome: "", telefone: "", email: "" });
+        setDadosTerceiro({ id: "", nome: "", telefone: "", email: "", cpf: cpfTerceiro });
       }
       setBuscouCpf(true);
       console.log('🏁 Busca finalizada - buscouCpf definido como true');
     } catch (error) {
       console.error("❌ Erro ao buscar usuário:", error);
-      setUsuarioTerceiroEncontrado(null);
-      setDadosTerceiro({ nome: "", telefone: "", email: "" });
+      setDadosTerceiro({ id: "", nome: "", telefone: "", email: "", cpf: cpfTerceiro });
       setBuscouCpf(true);
     } finally {
       setBuscandoCpf(false);
@@ -447,7 +438,7 @@ export default function SolicitarEmprestimo() {
                         const cpfFormatado = formatCPF(e.target.value);
                         setCpfTerceiro(cpfFormatado);
                         setBuscouCpf(false);
-                        setUsuarioTerceiroEncontrado(null);
+                        setDadosTerceiro({ id: "", nome: "", telefone: "", email: "", cpf: "" });
                       }}
                       placeholder="000.000.000-00"
                       maxLength={14}
@@ -477,13 +468,13 @@ export default function SolicitarEmprestimo() {
                 
                 {buscouCpf && !buscandoCpf && (
                   <>
-                    {usuarioTerceiroEncontrado ? (
+                    {dadosTerceiro.id ? (
                       <div className="bg-green-50 p-3 rounded">
                         <p className="text-sm text-green-700 mb-2">✅ Usuário encontrado no cadastro</p>
                         <div className="text-sm">
-                          <p><strong>Nome:</strong> {usuarioTerceiroEncontrado.nome}</p>
-                          <p><strong>Email:</strong> {usuarioTerceiroEncontrado.email}</p>
-                          <p><strong>Telefone:</strong> {usuarioTerceiroEncontrado.telefone}</p>
+                          <p><strong>Nome:</strong> {dadosTerceiro.nome}</p>
+                          <p><strong>Email:</strong> {dadosTerceiro.email}</p>
+                          <p><strong>Telefone:</strong> {dadosTerceiro.telefone}</p>
                         </div>
                       </div>
                     ) : (
@@ -546,7 +537,7 @@ export default function SolicitarEmprestimo() {
             <input type="hidden" name="nome_terceiro" value={dadosTerceiro.nome} />
             <input type="hidden" name="telefone_terceiro" value={dadosTerceiro.telefone} />
             <input type="hidden" name="email_terceiro" value={dadosTerceiro.email} />
-            <input type="hidden" name="usuario_terceiro_id" value={usuarioTerceiroEncontrado?.id || ""} />
+            <input type="hidden" name="usuario_terceiro_id" value={dadosTerceiro.id || ""} />
             <input type="hidden" name="coordinator_id" value={user?.id?.toString() || ""} />
           </>
         )}
@@ -606,19 +597,19 @@ export default function SolicitarEmprestimo() {
             <p>CPF terceiro: {cpfTerceiro || 'vazio'}</p>
             <p>Buscou CPF: {buscouCpf ? 'sim' : 'não'}</p>
             <p>Buscando CPF: {buscandoCpf ? 'sim' : 'não'}</p>
-            <p>Usuário encontrado: {usuarioTerceiroEncontrado ? 'sim' : 'não'}</p>
-            {usuarioTerceiroEncontrado && (
-              <p>Nome encontrado: {usuarioTerceiroEncontrado.nome}</p>
+            <p>Usuário encontrado: {dadosTerceiro.id ? 'sim' : 'não'}</p>
+            {dadosTerceiro.id && (
+              <p>Nome encontrado: {dadosTerceiro.nome}</p>
             )}
             <p>Dados terceiro: {JSON.stringify(dadosTerceiro)}</p>
-            <p>Botão habilitado: {(!userLoaded || !user?.id || !exemplarSelecionado || exemplaresDisponiveis.length === 0 || (solicitarParaOutraPessoa && (!buscouCpf || (!usuarioTerceiroEncontrado && (!dadosTerceiro.nome || !dadosTerceiro.email || !dadosTerceiro.telefone))))) ? 'não' : 'sim'}</p>
+            <p>Botão habilitado: {(!userLoaded || !user?.id || !exemplarSelecionado || exemplaresDisponiveis.length === 0 || (solicitarParaOutraPessoa && (!buscouCpf || (!dadosTerceiro.id && (!dadosTerceiro.nome || !dadosTerceiro.email || !dadosTerceiro.telefone))))) ? 'não' : 'sim'}</p>
           </div>
         )}
 
         <div className="flex gap-4">
           <button
             type="submit"
-            disabled={!userLoaded || !user?.id || !exemplarSelecionado || exemplaresDisponiveis.length === 0 || (solicitarParaOutraPessoa && (!buscouCpf || (!usuarioTerceiroEncontrado && (!dadosTerceiro.nome || !dadosTerceiro.email || !dadosTerceiro.telefone))))}
+            disabled={!userLoaded || !user?.id || !exemplarSelecionado || exemplaresDisponiveis.length === 0 || (solicitarParaOutraPessoa && (!buscouCpf || (!dadosTerceiro.id && (!dadosTerceiro.nome || !dadosTerceiro.email || !dadosTerceiro.telefone))))}
             className="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             {!userLoaded ? 'Carregando...' : buscandoCpf ? 'Buscando...' : 'Confirmar Solicitação'}
