@@ -129,7 +129,8 @@ export async function action({ request }: ActionFunctionArgs) {
       
       return json({ 
         success: true, 
-        user: foundUser
+        user: foundUser,
+        found: !!foundUser
       });
     } catch (error) {
       console.log('❌ DIAGNÓSTICO - Erro:', error);
@@ -286,21 +287,38 @@ export default function SolicitarEmprestimo() {
       
       const result = await response.json();
       console.log('📋 Resultado da busca:', result);
+      console.log('📋 Tipo do resultado:', typeof result);
+      console.log('📋 result.success:', result.success);
+      console.log('📋 result.user:', result.user);
       
-      if (result.success && result.user) {
-        console.log('✅ Usuário encontrado:', result.user);
-        setUsuarioTerceiroEncontrado(result.user);
+      if (result.success) {
+        if (result.user) {
+        console.log('✅ Usuário encontrado - processando:', result.user);
+        const userData = result.user;
+        setUsuarioTerceiroEncontrado(userData);
         setDadosTerceiro({
-          nome: result.user.nome || "",
-          telefone: result.user.telefone || "",
-          email: result.user.email || ""
+          nome: userData.nome || "",
+          telefone: userData.telefone || "",
+          email: userData.email || ""
         });
+        console.log('✅ Estado atualizado - usuarioTerceiroEncontrado:', userData);
+        console.log('✅ Estado atualizado - dadosTerceiro:', {
+          nome: userData.nome || "",
+          telefone: userData.telefone || "",
+          email: userData.email || ""
+        });
+        } else {
+          console.log('❌ Usuário não encontrado - limpando estado');
+          setUsuarioTerceiroEncontrado(null);
+          setDadosTerceiro({ nome: "", telefone: "", email: "" });
+        }
       } else {
-        console.log('❌ Usuário não encontrado');
+        console.log('❌ Erro na busca');
         setUsuarioTerceiroEncontrado(null);
         setDadosTerceiro({ nome: "", telefone: "", email: "" });
       }
       setBuscouCpf(true);
+      console.log('🏁 Busca finalizada - buscouCpf definido como true');
     } catch (error) {
       console.error("❌ Erro ao buscar usuário:", error);
       setUsuarioTerceiroEncontrado(null);
