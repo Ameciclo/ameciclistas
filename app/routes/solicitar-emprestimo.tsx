@@ -288,29 +288,35 @@ export default function SolicitarEmprestimo() {
       console.log('📋 Tipo do resultado:', typeof result);
       console.log('📋 result.success:', result.success);
       console.log('📋 result.user:', result.user);
+      console.log('📋 result.user existe?:', !!result.user);
+      console.log('📋 result.user é null?:', result.user === null);
+      console.log('📋 result.user é undefined?:', result.user === undefined);
       
-      if (result.success) {
-        if (result.user) {
-          console.log('✅ Usuário encontrado - processando:', result.user);
-          const userData = result.user;
-          setDadosTerceiro({
-            id: userData.id || "",
-            nome: userData.nome || "",
-            telefone: userData.telefone || "",
-            email: userData.email || "",
-            cpf: userData.cpf || cpfTerceiro
-          });
-          console.log('✅ Estado atualizado - dadosTerceiro:', userData);
-        } else {
-          console.log('❌ Usuário não encontrado - limpando estado');
-          setDadosTerceiro({ id: "", nome: "", telefone: "", email: "", cpf: cpfTerceiro });
-        }
+      if (result.success && result.user) {
+        console.log('✅ Usuário encontrado - processando:', result.user);
+        const userData = result.user;
+        const novosDados = {
+          id: userData.id || "",
+          nome: userData.nome || "",
+          telefone: userData.telefone || "",
+          email: userData.email || "",
+          cpf: userData.cpf || cpfTerceiro
+        };
+        console.log('✅ Novos dados a serem definidos:', novosDados);
+        setDadosTerceiro(novosDados);
+        console.log('✅ Estado atualizado');
       } else {
-        console.log('❌ Erro na busca');
+        console.log('❌ Usuário não encontrado ou erro - limpando estado');
+        console.log('❌ Motivo: success =', result.success, ', user =', result.user);
         setDadosTerceiro({ id: "", nome: "", telefone: "", email: "", cpf: cpfTerceiro });
       }
       setBuscouCpf(true);
       console.log('🏁 Busca finalizada - buscouCpf definido como true');
+      
+      // Log do estado final após todas as atualizações
+      setTimeout(() => {
+        console.log('🔍 Estado final dadosTerceiro:', dadosTerceiro);
+      }, 100);
     } catch (error) {
       console.error("❌ Erro ao buscar usuário:", error);
       setDadosTerceiro({ id: "", nome: "", telefone: "", email: "", cpf: cpfTerceiro });
@@ -602,6 +608,8 @@ export default function SolicitarEmprestimo() {
               <p>Nome encontrado: {dadosTerceiro.nome}</p>
             )}
             <p>Dados terceiro: {JSON.stringify(dadosTerceiro)}</p>
+            <p>dadosTerceiro.id: '{dadosTerceiro.id}'</p>
+            <p>dadosTerceiro.id existe: {!!dadosTerceiro.id ? 'sim' : 'não'}</p>
             <p>Botão habilitado: {(!userLoaded || !user?.id || !exemplarSelecionado || exemplaresDisponiveis.length === 0 || (solicitarParaOutraPessoa && (!buscouCpf || (!dadosTerceiro.id && (!dadosTerceiro.nome || !dadosTerceiro.email || !dadosTerceiro.telefone))))) ? 'não' : 'sim'}</p>
           </div>
         )}
