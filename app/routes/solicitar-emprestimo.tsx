@@ -268,44 +268,30 @@ export default function SolicitarEmprestimo() {
     setDadosTerceiro({ id: "", nome: "", telefone: "", email: "", cpf: "" });
     
     try {
+      console.log('🔍 Iniciando busca CPF:', cpfTerceiro);
+      
+      // Usar Remix fetcher para evitar problemas de redirecionamento
       const formData = new FormData();
       formData.append("action", "buscar_cpf");
       formData.append("cpf", cpfTerceiro);
       
-      console.log('🔍 Iniciando busca CPF:', cpfTerceiro);
-      
-      const response = await fetch(window.location.pathname, {
+      const response = await fetch(window.location.pathname + window.location.search, {
         method: "POST",
-        body: formData
+        body: formData,
+        headers: {
+          'Accept': 'application/json',
+        }
       });
       
       console.log('📡 Response status:', response.status);
-      console.log('📡 Response headers:', response.headers.get('content-type'));
+      console.log('📡 Response content-type:', response.headers.get('content-type'));
       
       if (!response.ok) {
-        const errorText = await response.text();
-        console.log('❌ Response error text:', errorText);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      const responseText = await response.text();
-      console.log('📄 Response text:', responseText);
-      
-      let result;
-      try {
-        result = JSON.parse(responseText);
-      } catch (parseError) {
-        console.error('❌ JSON parse error:', parseError);
-        console.log('📄 Raw response that failed to parse:', responseText);
-        throw new Error('Resposta inválida do servidor');
-      }
+      const result = await response.json();
       console.log('📋 Resultado da busca:', result);
-      console.log('📋 Tipo do resultado:', typeof result);
-      console.log('📋 result.success:', result.success);
-      console.log('📋 result.user:', result.user);
-      console.log('📋 result.user existe?:', !!result.user);
-      console.log('📋 result.user é null?:', result.user === null);
-      console.log('📋 result.user é undefined?:', result.user === undefined);
       
       if (result.success && result.user) {
         console.log('✅ Usuário encontrado - processando:', result.user);
@@ -321,17 +307,11 @@ export default function SolicitarEmprestimo() {
         setDadosTerceiro(novosDados);
         console.log('✅ Estado atualizado');
       } else {
-        console.log('❌ Usuário não encontrado ou erro - limpando estado');
-        console.log('❌ Motivo: success =', result.success, ', user =', result.user);
+        console.log('❌ Usuário não encontrado');
         setDadosTerceiro({ id: "", nome: "", telefone: "", email: "", cpf: cpfTerceiro });
       }
       setBuscouCpf(true);
-      console.log('🏁 Busca finalizada - buscouCpf definido como true');
       
-      // Log do estado final após todas as atualizações
-      setTimeout(() => {
-        console.log('🔍 Estado final dadosTerceiro:', dadosTerceiro);
-      }, 100);
     } catch (error) {
       console.error("❌ Erro ao buscar usuário:", error);
       setDadosTerceiro({ id: "", nome: "", telefone: "", email: "", cpf: cpfTerceiro });
@@ -419,17 +399,21 @@ export default function SolicitarEmprestimo() {
     return null;
   }
   
-  // Se não conseguiu carregar usuário e não está em desenvolvimento, mostrar erro
-  if (!userLoaded || (!user && process.env.NODE_ENV !== "development")) {
-    return (
-      <div className="container mx-auto py-8 px-4">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          <p className="font-medium">❌ Erro de autenticação</p>
-          <p className="text-sm mt-1">Não foi possível identificar o usuário. Acesse via Telegram.</p>
-        </div>
-      </div>
-    );
-  }
+  // Verificar se há actionData com resultado de busca anterior
+  useEffect(() => {
+    if (actionData?.success && actionData?.user && !dadosTerceiro.id) {
+      console.log('📋 Usando actionData para preencher dados:', actionData.user);
+      const userData = actionData.user;
+      setDadosTerceiro({
+        id: userData.id || "",
+        nome: userData.nome || "",
+        telefone: userData.telefone || "",
+        email: userData.email || "",
+        cpf: userData.cpf || ""
+      });
+      setBuscouCpf(true);
+    }
+  }, [actionData]);
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -654,6 +638,7 @@ export default function SolicitarEmprestimo() {
             <p>Dados terceiro: {JSON.stringify(dadosTerceiro)}</p>
             <p>dadosTerceiro.id: '{dadosTerceiro.id}'</p>
             <p>dadosTerceiro.id existe: {!!dadosTerceiro.id ? 'sim' : 'não'}</p>
+            <p>ActionData: {JSON.stringify(actionData)}</p>
             <p>Botão habilitado: {(!userLoaded || !user?.id || !exemplarSelecionado || exemplaresDisponiveis.length === 0 || (solicitarParaOutraPessoa && (!buscouCpf || (!dadosTerceiro.id && (!dadosTerceiro.nome || !dadosTerceiro.email || !dadosTerceiro.telefone))))) ? 'não' : 'sim'}</p>
           </div>
         )}
