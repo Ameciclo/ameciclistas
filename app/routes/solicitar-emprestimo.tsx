@@ -15,6 +15,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const codigo = url.searchParams.get("codigo");
   const userId = url.searchParams.get("userId"); // ID do telegram
   
+  // Para POST requests (busca CPF), não validar parâmetros
+  if (request.method === "POST") {
+    return json({ livroTitulo: "", exemplares: [], userData: null, userRole: 'ANY_USER', hasLibraryRegister: false });
+  }
+  
   if (!livroTitulo || !codigo) {
     throw new Response("Parâmetros inválidos", { status: 400 });
   }
@@ -263,9 +268,6 @@ export default function SolicitarEmprestimo() {
   const buscarUsuarioTerceiro = async () => {
     if (!validateCPF(cpfTerceiro)) return;
     
-    // Log para confirmar que o botão foi clicado
-    alert(`Buscando CPF: ${cpfTerceiro}`);
-    
     setBuscandoCpf(true);
     try {
       const formData = new FormData();
@@ -277,9 +279,6 @@ export default function SolicitarEmprestimo() {
         body: formData
       });
       const result = await response.json();
-      
-      // Log da resposta
-      alert(`Resposta: ${JSON.stringify(result)}`);
       
       if (result.user) {
         setUsuarioTerceiroEncontrado(result.user);
@@ -294,7 +293,6 @@ export default function SolicitarEmprestimo() {
       }
       setBuscouCpf(true);
     } catch (error) {
-      alert(`Erro: ${error.message}`);
       console.error("Erro ao buscar usuário:", error);
     } finally {
       setBuscandoCpf(false);
