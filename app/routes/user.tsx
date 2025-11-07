@@ -161,6 +161,12 @@ export default function User() {
       <h1 className="text-3xl font-bold text-teal-600 text-center">
         Suas Informações
       </h1>
+      
+      <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-6">
+        <p className="text-sm">
+          📋 <strong>Importante:</strong> Para empréstimos e aluguéis é necessário ter o cadastro finalizado com CPF, telefone e email.
+        </p>
+      </div>
 
       {actionData?.success && (
         <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">

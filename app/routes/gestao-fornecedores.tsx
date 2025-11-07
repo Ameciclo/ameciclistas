@@ -61,6 +61,7 @@ export default function GestaoFornecedores() {
   const [isEditing, setIsEditing] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [isInternational, setIsInternational] = useState(false);
+  const [mode, setMode] = useState<"cadastro" | "edicao">("cadastro");
 
   const getEmailValue = () => {
     const emailContact = contacts.find((contact) => contact.type === "E-mail");
@@ -242,7 +243,37 @@ export default function GestaoFornecedores() {
       
       <FormTitle> 📦 Gestão de Fornecedores de Pagamentos </FormTitle>
 
+      {/* Radio buttons para alternar modo */}
+      <div className="form-group mb-6 p-4 bg-blue-50 rounded-md">
+        <div className="flex gap-4">
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              name="mode"
+              value="cadastro"
+              checked={mode === "cadastro"}
+              onChange={(e) => {
+                setMode("cadastro");
+                resetForm();
+              }}
+            />
+            Modo cadastro
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              name="mode"
+              value="edicao"
+              checked={mode === "edicao"}
+              onChange={(e) => setMode("edicao")}
+            />
+            Modo edição
+          </label>
+        </div>
+      </div>
+
       {/* Seção de busca para edição */}
+      {mode === "edicao" && (
       <div className="form-group mb-6 p-4 bg-gray-50 rounded-md">
         <label className="font-bold mb-2 block">
           Buscar fornecedor para editar:
@@ -320,6 +351,7 @@ export default function GestaoFornecedores() {
           </div>
         )}
       </div>
+      )}
 
       <SelectInput
         label="Tipo de pessoa: "

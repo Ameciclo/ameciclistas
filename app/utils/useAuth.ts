@@ -12,7 +12,7 @@ interface AuthContextType {
 }
 
 export function useAuth() {
-  const context = useOutletContext<AuthContextType>();
+  const context = useOutletContext<AuthContextType & { webUser?: any }>();
   
   if (!context) {
     return {
@@ -20,6 +20,37 @@ export function useAuth() {
       isDevMode: false,
       devUser: null,
       realUser: null
+    };
+  }
+
+  // Se tem webUser, usar suas permissões com hierarquia
+  if (context.webUser) {
+    const hierarchyMap = {
+      [UserCategory.AMECICLO_COORDINATORS]: [
+        UserCategory.ANY_USER,
+        UserCategory.AMECICLISTAS, 
+        UserCategory.PROJECT_COORDINATORS,
+        UserCategory.AMECICLO_COORDINATORS
+      ],
+      [UserCategory.PROJECT_COORDINATORS]: [
+        UserCategory.ANY_USER,
+        UserCategory.AMECICLISTAS,
+        UserCategory.PROJECT_COORDINATORS
+      ],
+      [UserCategory.AMECICLISTAS]: [
+        UserCategory.ANY_USER,
+        UserCategory.AMECICLISTAS
+      ],
+      [UserCategory.ANY_USER]: [
+        UserCategory.ANY_USER
+      ]
+    };
+    
+    const webUserPermissions = hierarchyMap[context.webUser.category] || [UserCategory.ANY_USER];
+    
+    return {
+      ...context,
+      userPermissions: webUserPermissions
     };
   }
 

@@ -17,11 +17,11 @@ export async function bibliotecaLoader({ request }: LoaderFunctionArgs) {
     const solicitacoes = solicitacoesData ? Object.keys(solicitacoesData).map(key => ({ id: key, ...solicitacoesData[key] })) : [];
     
     // Debug: verificar empréstimos carregados
-    if (process.env.NODE_ENV === "development") {
-      console.log(`Carregados ${emprestimos.length} empréstimos:`, 
-        emprestimos.filter(emp => emp.status === 'emprestado')
-      );
-    }
+    // if (process.env.NODE_ENV === "development") {
+    //   console.log(`Carregados ${emprestimos.length} empréstimos:`, 
+    //     emprestimos.filter(emp => emp.status === 'emprestado')
+    //   );
+    // }
     
     const livrosFiltrados = biblioteca.filter((livro: any) =>
       (livro.title?.toLowerCase() || "").includes(busca.toLowerCase()) ||

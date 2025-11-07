@@ -11,7 +11,7 @@ function getCalendars() {
 }
 
 function getEmailsList() {
-  return ["contato@ameciclo.org"]
+  return ["naoresponda@ameciclo.org"]
 }
 
 function getNewsletterFolder() {

@@ -109,8 +109,6 @@ export default function Biblioteca() {
       </div>
       
       <h1 className="text-3xl font-bold text-teal-600 mb-6">Biblioteca Ameciclo</h1>
-      
-
 
       {!mostrarGestao ? (
         <>

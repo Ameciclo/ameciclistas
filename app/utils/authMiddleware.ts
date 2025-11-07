@@ -2,8 +2,15 @@ import { redirect, type LoaderFunction, type LoaderFunctionArgs } from "@remix-r
 import { UserCategory } from "~/utils/types";
 import { isAuth } from "~/utils/isAuthorized";
 import { getUsersFirebase } from "~/api/firebaseConnection.server";
+import { getWebUser } from "~/api/webAuth.server";
 
 export async function getUserPermissions(request: Request): Promise<{ userPermissions: UserCategory[] }> {
+  // Primeiro, verificar se é usuário web
+  const webUser = await getWebUser(request);
+  if (webUser) {
+    return { userPermissions: [webUser.category] };
+  }
+
   // Em desenvolvimento, extrair do contexto ou cookies
   if (process.env.NODE_ENV === "development") {
     // Tentar obter do cookie do DevMode
@@ -23,9 +30,20 @@ export async function getUserPermissions(request: Request): Promise<{ userPermis
   }
 
   try {
-    // Extrair dados do usuário do Telegram via headers ou cookies
+    // Extrair dados do usuário do Telegram via headers, cookies ou initData
     const url = new URL(request.url);
-    const userId = url.searchParams.get("userId") || url.searchParams.get("user_id");
+    let userId = url.searchParams.get("userId") || url.searchParams.get("user_id");
+    
+    // Se não encontrou nos parâmetros, tentar extrair do Telegram initData
+    if (!userId) {
+      const cookieHeader = request.headers.get("Cookie");
+      if (cookieHeader) {
+        const telegramMatch = cookieHeader.match(/telegram_user_id=([^;]+)/);
+        if (telegramMatch) {
+          userId = telegramMatch[1];
+        }
+      }
+    }
     
     if (!userId) {
       return { userPermissions: [UserCategory.ANY_USER] };
@@ -50,7 +68,20 @@ export function requireAuth(permission: UserCategory) {
     return async (args: LoaderFunctionArgs) => {
       const { userPermissions } = await getUserPermissions(args.request);
       
+      // Debug log
+      console.log('🔐 Auth Debug:', {
+        url: args.request.url,
+        requiredPermission: permission,
+        userPermissions,
+        isAuthorized: isAuth(userPermissions, permission)
+      });
+      
       if (!isAuth(userPermissions, permission)) {
+        // Se não tem sessão web, redirecionar para login
+        const webUser = await getWebUser(args.request);
+        if (!webUser) {
+          throw redirect('/login');
+        }
         throw redirect('/unauthorized');
       }
       

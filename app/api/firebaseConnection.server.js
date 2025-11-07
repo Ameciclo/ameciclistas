@@ -545,13 +545,21 @@ export async function cadastrarBicicleta(dadosBicicleta) {
       return reject(new Error("Código da bicicleta é obrigatório."));
     }
 
+    if (process.env.NODE_ENV === "development") {
+      console.log("Cadastrando bicicleta:", dadosBicicleta);
+    }
+
     ref
       .child(key)
       .set(dadosBicicleta)
       .then((snapshot) => {
+        if (process.env.NODE_ENV === "development") {
+          console.log("Bicicleta cadastrada com sucesso:", key);
+        }
         resolve(snapshot);
       })
       .catch((err) => {
+        console.error("Erro ao cadastrar bicicleta:", err);
         reject(err);
       });
   });
