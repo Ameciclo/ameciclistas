@@ -3,6 +3,13 @@
   "private": true,
   "sideEffects": false,
   "type": "module",
+  "license": "AGPL-3.0",
+  "author": "Ameciclo - Associação Metropolitana de Ciclistas do Recife",
+  "description": "Sistema web integrado ao Telegram para gestão de recursos, empréstimos e atividades da Ameciclo",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ameciclo/ameciclistas"
+  },
   "scripts": {
     "build": "remix vite:build",
     "dev": "remix vite:dev",
