@@ -1,4 +1,4 @@
-# Ameciclobot - Sistema de Gestão da Ameciclo
+# Ameciclistas - Sistema de Gestão da Ameciclo
 
 Sistema web integrado ao Telegram para gestão de recursos, empréstimos e atividades da Ameciclo (Associação Metropolitana de Ciclistas do Recife). O sistema oferece uma interface híbrida que funciona tanto como Telegram Web App quanto como aplicação web tradicional com autenticação por email.
 
