@@ -248,7 +248,7 @@ export default function MeusConsumos() {
                       </h3>
                       <p className="text-sm text-gray-600">
                         {sale.registeredBy && sale.registeredBy !== user?.id ? (
-                          <>Consumidor: {sale.userName} | </>
+                          <>Cliente: {sale.userName} | </>
                         ) : null}
                         Quantidade: {sale.quantity} | Valor: R$ {sale.totalValue.toFixed(2)}
                       </p>
