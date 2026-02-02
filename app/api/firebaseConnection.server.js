@@ -334,19 +334,29 @@ export async function saveDonation(donationData) {
 }
 
 export async function updateSaleStatus(saleId, status, additionalData = {}) {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     const ref = db.ref(`resources/sales/${saleId}`);
     
-    // Se for cancelamento, remove o registro
+    // Se for cancelamento, devolve o estoque e remove o registro
     if (status === "CANCELLED") {
-      ref
-        .remove()
-        .then((snapshot) => {
-          resolve(snapshot);
-        })
-        .catch((err) => {
-          reject(err);
-        });
+      try {
+        const snapshot = await ref.once("value");
+        const sale = snapshot.val();
+        
+        if (sale) {
+          // Devolve o estoque
+          if (sale.variantId) {
+            await updateProductStock(sale.productId, sale.quantity, sale.variantId);
+          } else {
+            await updateProductStock(sale.productId, sale.quantity);
+          }
+        }
+        
+        await ref.remove();
+        resolve(true);
+      } catch (err) {
+        reject(err);
+      }
       return;
     }
     
