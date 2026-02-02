@@ -1,5 +1,5 @@
 import { ActionFunction, LoaderFunction, json, redirect } from "@remix-run/node";
-import { Form, useLoaderData, useActionData, Link } from "@remix-run/react";
+import { Form, useLoaderData, useActionData, Link, useNavigation } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import { getProducts, saveSale, saveDonation, getUsersFirebase } from "~/api/firebaseConnection.server";
 import { Product, ProductCategory, SaleStatus, UserData, UserCategory } from "~/utils/types";
@@ -79,6 +79,7 @@ export const action: ActionFunction = async ({ request }) => {
 export default function RegistrarConsumo() {
   const { products } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
+  const navigation = useNavigation();
   const { userPermissions, isDevMode, devUser, realUser } = useAuth();
   const [activeTab, setActiveTab] = useState<"consumo" | "doacao">("consumo");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -87,6 +88,8 @@ export default function RegistrarConsumo() {
   const [customerName, setCustomerName] = useState("");
   const [showCustomerForm, setShowCustomerForm] = useState(false);
   const [donationValue, setDonationValue] = useState("");
+  
+  const isSubmitting = navigation.state === "submitting";
 
   const user = isDevMode && devUser ? {
     id: devUser.id,
@@ -128,8 +131,8 @@ export default function RegistrarConsumo() {
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="mb-4">
-        <Link to="/recursos-independentes" className="text-teal-600 hover:text-teal-700">
-          ← Voltar ao Menu
+        <Link to="/" className="text-teal-600 hover:text-teal-700">
+          ← Voltar ao Menu Principal
         </Link>
       </div>
       
@@ -300,22 +303,33 @@ export default function RegistrarConsumo() {
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Quantidade {selectedProduct && `(Disponível: ${availableStock})`}
           </label>
-          <input
-            type="number"
-            name="quantity"
-            min="1"
-            max={availableStock || 1}
-            value={quantity}
-            onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
-            required
-            className={`w-full p-3 border rounded-lg focus:ring-2 ${
-              isQuantityExceeded 
-                ? "border-red-300 focus:ring-red-500" 
-                : "border-gray-300 focus:ring-teal-500"
-            }`}
-          />
+          <div className="flex items-center justify-center gap-4">
+            <button
+              type="button"
+              onClick={() => setQuantity(Math.max(1, quantity - 1))}
+              disabled={quantity <= 1}
+              className="w-12 h-12 bg-teal-600 text-white text-2xl rounded-lg hover:bg-teal-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+            >
+              −
+            </button>
+            <input
+              type="number"
+              name="quantity"
+              value={quantity}
+              readOnly
+              className="w-20 text-center text-2xl font-bold border-2 border-gray-300 rounded-lg p-2"
+            />
+            <button
+              type="button"
+              onClick={() => setQuantity(Math.min(availableStock || 1, quantity + 1))}
+              disabled={quantity >= availableStock}
+              className="w-12 h-12 bg-teal-600 text-white text-2xl rounded-lg hover:bg-teal-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+            >
+              +
+            </button>
+          </div>
           {isQuantityExceeded && (
-            <p className="text-red-500 text-sm mt-1">
+            <p className="text-red-500 text-sm mt-1 text-center">
               Quantidade solicitada excede o estoque disponível ({availableStock})
             </p>
           )}
@@ -342,10 +356,10 @@ export default function RegistrarConsumo() {
 
           <button
             type="submit"
-            disabled={!selectedProduct || !user || (showCustomerForm && !customerName) || isOutOfStock || isQuantityExceeded}
+            disabled={!selectedProduct || !user || (showCustomerForm && !customerName) || isOutOfStock || isQuantityExceeded || isSubmitting}
             className="w-full bg-teal-600 text-white py-3 px-4 rounded-lg hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
-            {isOutOfStock ? "Produto sem estoque" : isQuantityExceeded ? "Quantidade excede estoque" : "Registrar Consumo"}
+            {isSubmitting ? "Registrando..." : isOutOfStock ? "Produto sem estoque" : isQuantityExceeded ? "Quantidade excede estoque" : "Registrar Consumo"}
           </button>
         </Form>
       ) : (
@@ -427,10 +441,10 @@ export default function RegistrarConsumo() {
           
           <button
             type="submit"
-            disabled={!donationValue || !user || (showCustomerForm && !customerName)}
+            disabled={!donationValue || !user || (showCustomerForm && !customerName) || isSubmitting}
             className="w-full bg-teal-600 text-white py-3 px-4 rounded-lg hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
-            Registrar Doação
+            {isSubmitting ? "Registrando..." : "Registrar Doação"}
           </button>
         </Form>
       )}
