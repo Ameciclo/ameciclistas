@@ -11,6 +11,7 @@ interface RegistroEmprestimosGestaoProps {
 
 export function RegistroEmprestimosGestao({ emprestimos, solicitacoes, itens, users }: RegistroEmprestimosGestaoProps) {
   const [abaCadastro, setAbaCadastro] = useState(false);
+  const actionData = useActionData();
   const [novoItem, setNovoItem] = useState({
     codigo: "",
     nome: "",
@@ -19,28 +20,25 @@ export function RegistroEmprestimosGestao({ emprestimos, solicitacoes, itens, us
     detalhamento: "",
     descricao: ""
   });
-  const [mostrarSucesso, setMostrarSucesso] = useState(false);
+  const [cadastrarAluguel, setCadastrarAluguel] = useState(false);
+  const [precoAluguel, setPrecoAluguel] = useState("");
   const navigation = useNavigation();
-  const isSubmitting = navigation.state === "submitting";
+  const isSubmitting = navigation.state === "submitting" && navigation.formData?.get("action") === "cadastrar_item";
 
   useEffect(() => {
-    if (!isSubmitting && navigation.state === "idle" && abaCadastro) {
-      // Verifica se acabou de submeter um formulário de cadastro
-      const formData = navigation.formData;
-      if (formData?.get("action") === "cadastrar_item") {
-        setMostrarSucesso(true);
-        setNovoItem({
-          codigo: "",
-          nome: "",
-          categoria: "",
-          subcategoria: "",
-          detalhamento: "",
-          descricao: ""
-        });
-        setTimeout(() => setMostrarSucesso(false), 3000);
-      }
+    if (actionData?.success && abaCadastro) {
+      setNovoItem({
+        codigo: "",
+        nome: "",
+        categoria: "",
+        subcategoria: "",
+        detalhamento: "",
+        descricao: ""
+      });
+      setCadastrarAluguel(false);
+      setPrecoAluguel("");
     }
-  }, [isSubmitting, navigation.state, navigation.formData, abaCadastro]);
+  }, [actionData, abaCadastro]);
 
   const getUserName = (userId: number) => {
     const user = users[userId];
@@ -86,12 +84,15 @@ export function RegistroEmprestimosGestao({ emprestimos, solicitacoes, itens, us
         <div className="bg-white rounded-lg shadow-md p-6">
           <h3 className="text-xl font-bold mb-4">Cadastrar Novo Item</h3>
           
-          {mostrarSucesso && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-              <div className="flex items-center">
-                <span className="text-green-500 text-xl mr-2">✅</span>
-                <span className="text-green-800 font-semibold">Item cadastrado com sucesso!</span>
-              </div>
+          {actionData?.success && (
+            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+              {actionData.success}
+            </div>
+          )}
+
+          {actionData?.error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+              {actionData.error}
             </div>
           )}
           
@@ -174,6 +175,39 @@ export function RegistroEmprestimosGestao({ emprestimos, solicitacoes, itens, us
               />
             </div>
             
+            <div className="border-t pt-4">
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={cadastrarAluguel}
+                  onChange={(e) => setCadastrarAluguel(e.target.checked)}
+                  className="w-4 h-4 text-teal-600 rounded"
+                />
+                <span className="text-sm font-medium text-gray-700">Também disponibilizar para aluguel</span>
+              </label>
+            </div>
+            
+            {cadastrarAluguel && (
+              <div className="bg-blue-50 p-4 rounded-lg space-y-3">
+                <h4 className="text-sm font-semibold text-blue-900">Dados para Aluguel</h4>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Preço do Aluguel (R$) *</label>
+                  <input
+                    type="number"
+                    name="preco_aluguel"
+                    step="0.01"
+                    min="0"
+                    value={precoAluguel}
+                    onChange={(e) => setPrecoAluguel(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    required={cadastrarAluguel}
+                  />
+                </div>
+              </div>
+            )}
+            
+            <input type="hidden" name="cadastrar_aluguel" value={cadastrarAluguel ? "true" : "false"} />
+            
             <button
               type="submit"
               disabled={isSubmitting}
@@ -181,9 +215,9 @@ export function RegistroEmprestimosGestao({ emprestimos, solicitacoes, itens, us
                 isSubmitting 
                   ? 'bg-gray-400 cursor-not-allowed' 
                   : 'bg-teal-600 hover:bg-teal-700'
-              } text-white`}
+              } text-white font-semibold`}
             >
-              {isSubmitting ? 'Cadastrando...' : 'Cadastrar Item'}
+              {isSubmitting ? '⏳ Cadastrando...' : '✅ Cadastrar Item'}
             </button>
           </Form>
         </div>

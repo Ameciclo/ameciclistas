@@ -311,7 +311,8 @@ export enum ProductCategory {
   BROCHES = "BROCHES",
   PECAS_BICICLETA = "PECAS_BICICLETA",
   LIVROS = "LIVROS",
-  SERVICOS = "SERVICOS"
+  SERVICOS = "SERVICOS",
+  ALUGUEL = "ALUGUEL"
 }
 
 export interface Sale {
