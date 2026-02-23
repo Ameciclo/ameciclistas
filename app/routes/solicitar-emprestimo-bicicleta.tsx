@@ -144,16 +144,16 @@ export async function action({ request }: ActionFunctionArgs) {
       }
       
       // Coordenador: criar empréstimo direto
-      await aprovarSolicitacaoBicicleta("", parseInt(finalUserId), codigo, true);
+      await aprovarSolicitacaoBicicleta("", finalUserId, codigo, true);
       return redirect("/sucesso/emprestimo-bicicleta-solicitado?approved=true");
     }
     
     // Se é coordenador de projeto, vai direto para emprestado
     if (isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) {
-      await aprovarSolicitacaoBicicleta("", parseInt(userId), codigo, true);
+      await aprovarSolicitacaoBicicleta("", userId, codigo, true);
       return redirect("/sucesso/emprestimo-bicicleta-solicitado?approved=true");
     } else {
-      await solicitarEmprestimoBicicleta(parseInt(userId), codigo);
+      await solicitarEmprestimoBicicleta(userId, codigo);
       return redirect("/sucesso/emprestimo-bicicleta-solicitado");
     }
   } catch (error) {

@@ -586,7 +586,7 @@ export async function solicitarEmprestimoBicicleta(userId, codigoBicicleta) {
 
     const solicitacao = {
       id: key,
-      usuario_id: userId,
+      usuario_id: String(userId), // Garantir que seja string
       codigo_bicicleta: codigoBicicleta,
       data_solicitacao: new Date().toISOString().split('T')[0],
       status: 'pendente'
@@ -630,7 +630,7 @@ export async function aprovarSolicitacaoBicicleta(solicitacaoId, userId, codigoB
       
       const emprestimo = {
         id: emprestimoKey,
-        usuario_id: userId,
+        usuario_id: String(userId), // Garantir que seja string
         codigo_bicicleta: codigoBicicleta,
         data_saida: new Date().toISOString().split('T')[0],
         status: 'emprestado'
