@@ -13,7 +13,10 @@ export async function bibliotecaLoader({ request }: LoaderFunctionArgs) {
     const usersData = await getUsersFirebase();
     
     const biblioteca: Livro[] = bibliotecaData ? Object.keys(bibliotecaData).map(key => ({ id: key, ...bibliotecaData[key] })) : [];
-    const emprestimos: Emprestimo[] = emprestimosData ? Object.keys(emprestimosData).map(key => ({ id: key, ...emprestimosData[key] })) : [];
+    const emprestimos: Emprestimo[] = emprestimosData ? Object.keys(emprestimosData).map(key => ({ 
+      ...emprestimosData[key],
+      id: key
+    })) : [];
     const solicitacoes = solicitacoesData ? Object.keys(solicitacoesData).map(key => ({ id: key, ...solicitacoesData[key] })) : [];
     
     // Debug: verificar empréstimos carregados

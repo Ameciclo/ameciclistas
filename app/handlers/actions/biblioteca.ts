@@ -88,13 +88,20 @@ export async function bibliotecaAction({ request }: ActionFunctionArgs) {
       
       try {
         const emprestimoRef = db.ref(`loan_record/${emprestimo_id}`);
+        const snapshot = await emprestimoRef.once("value");
+        const emprestimo = snapshot.val();
+        
+        if (!emprestimo) {
+          return json({ success: false, error: "Empréstimo não encontrado" });
+        }
+        
         await emprestimoRef.update({
           status: 'devolvido',
           data_devolucao: new Date().toISOString().split('T')[0],
           updated_at: new Date().toISOString()
         });
         
-        return redirect("/sucesso/biblioteca-devolucao");
+        return redirect("/biblioteca?gestao=true");
       } catch (error) {
         console.error("Erro ao registrar devolução:", error);
         return json({ success: false, error: "Erro ao registrar devolução" });
