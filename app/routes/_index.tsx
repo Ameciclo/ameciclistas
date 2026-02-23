@@ -180,7 +180,7 @@ export default function Index() {
           // Boletim Informativo só funciona fora do Telegram
           if (link.to === '/boletim-informativo' && isInTelegram) return null;
           
-          const hasGestao = ['biblioteca', 'bota-pra-rodar', 'registro-emprestimos'].some(path => link.to.includes(path));
+          const hasGestao = ['biblioteca', 'bota-pra-rodar', 'registro-emprestimos', 'links-uteis'].some(path => link.to.includes(path));
           const isRecursosIndependentes = link.to.includes('recursos-independentes');
           const hasEstatisticas = ['biblioteca', 'bota-pra-rodar'].some(path => link.to.includes(path));
           const showGestaoButton = hasGestao && isAuth(effectivePermissions, UserCategory.PROJECT_COORDINATORS);

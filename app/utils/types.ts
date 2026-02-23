@@ -415,3 +415,28 @@ export interface SolicitacaoEmprestimoInventario {
   data_solicitacao: string;
   status: 'pendente' | 'aprovada' | 'rejeitada';
 }
+
+// Links Úteis types
+export interface LinkUtil {
+  id: string;
+  label: string;
+  url: string;
+  icon: string;
+  requiredPermission: UserCategory;
+  description?: string;
+  order: number;
+  startDate?: string; // ISO date
+  endDate?: string; // ISO date
+  color?: string; // Hex color, default #14b8a6 (teal)
+  categories: LinkCategory[];
+  clicks: number;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export enum LinkCategory {
+  PUBLICO = "PUBLICO",
+  AMECICLISTAS = "AMECICLISTAS",
+  AMECICLOBOT = "AMECICLOBOT"
+}
