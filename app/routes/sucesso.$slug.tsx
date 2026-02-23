@@ -52,6 +52,11 @@ const messages = {
     message: "O novo livro foi adicionado ao acervo da biblioteca.",
     actions: [{ label: "📚 Voltar à Biblioteca", to: "/biblioteca?gestao=true" }],
   },
+  "biblioteca-atualizada": {
+    title: "✅ Livro atualizado com sucesso!",
+    message: "As informações do livro foram atualizadas.",
+    actions: [{ label: "📚 Voltar à Biblioteca", to: "/biblioteca?gestao=true" }],
+  },
   // Bota pra Rodar
   "bicicleta-aprovada": {
     title: "✅ Empréstimo aprovado com sucesso!",

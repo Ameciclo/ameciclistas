@@ -62,6 +62,7 @@ export interface Exemplar {
 }
 
 export interface Livro {
+  firebaseKey?: string; // ID interno do Firebase
   codigo: string;
   titulo: string;
   autor: string;

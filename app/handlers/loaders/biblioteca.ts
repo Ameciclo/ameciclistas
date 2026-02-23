@@ -12,7 +12,7 @@ export async function bibliotecaLoader({ request }: LoaderFunctionArgs) {
     const solicitacoesData = await getSolicitacoes();
     const usersData = await getUsersFirebase();
     
-    const biblioteca: Livro[] = bibliotecaData ? Object.keys(bibliotecaData).map(key => ({ id: key, ...bibliotecaData[key] })) : [];
+    const biblioteca: Livro[] = bibliotecaData ? Object.keys(bibliotecaData).map(key => ({ firebaseKey: key, ...bibliotecaData[key] })) : [];
     const emprestimos: Emprestimo[] = emprestimosData ? Object.keys(emprestimosData).map(key => ({ 
       ...emprestimosData[key],
       id: key
@@ -40,6 +40,7 @@ export async function bibliotecaLoader({ request }: LoaderFunctionArgs) {
       if (!livrosAgrupados[titulo]) {
         livrosAgrupados[titulo] = {
           ...livro,
+          firebaseKey: livro.firebaseKey,
           titulo: livro.title,
           autor: livro.author,
           codigo: livro.register,

@@ -52,7 +52,8 @@ export function BibliotecaGestao({ emprestimos, solicitacoes, livros, users }: B
       email: user.ameciclo_register?.email || user.library_register?.email || 'Não informado'
     };
   };
-  const [activeTab, setActiveTab] = useState<'emprestados' | 'solicitacoes' | 'cadastrar'>('emprestados');
+  const [activeTab, setActiveTab] = useState<'emprestados' | 'solicitacoes' | 'cadastrar' | 'editar'>('emprestados');
+  const [livroSelecionado, setLivroSelecionado] = useState<Livro | null>(null);
 
   const submit = useSubmit();
   const navigation = useNavigation();
@@ -95,7 +96,7 @@ export function BibliotecaGestao({ emprestimos, solicitacoes, livros, users }: B
       <div className="mb-6">
         <div className="bg-gray-50 p-4 rounded-lg">
           <h3 className="font-medium text-gray-900 mb-3">Seção:</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             <button
               onClick={() => setActiveTab('emprestados')}
               className={`py-2 px-3 rounded text-sm font-medium ${
@@ -125,6 +126,19 @@ export function BibliotecaGestao({ emprestimos, solicitacoes, livros, users }: B
               }`}
             >
               Cadastrar Livro
+            </button>
+            <button
+              onClick={() => {
+                setActiveTab('editar');
+                setLivroSelecionado(null);
+              }}
+              className={`py-2 px-3 rounded text-sm font-medium ${
+                activeTab === 'editar'
+                  ? "bg-teal-600 text-white"
+                  : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+              }`}
+            >
+              Editar Livro
             </button>
           </div>
         </div>
@@ -328,6 +342,145 @@ export function BibliotecaGestao({ emprestimos, solicitacoes, livros, users }: B
               {isSubmitting ? "Cadastrando..." : "Cadastrar Livro"}
             </button>
           </Form>
+        </div>
+      )}
+
+      {activeTab === 'editar' && (
+        <div className="max-w-md mx-auto">
+          {!livroSelecionado ? (
+            <div className="space-y-3">
+              <h3 className="font-semibold text-lg mb-4">Selecione um livro para editar:</h3>
+              {livros.map((livro) => (
+                <button
+                  key={livro.firebaseKey}
+                  onClick={() => setLivroSelecionado(livro)}
+                  className="w-full p-4 border rounded-lg text-left hover:bg-gray-50"
+                >
+                  <p className="font-semibold">{livro.titulo}</p>
+                  <p className="text-sm text-gray-600">Autor: {livro.autor}</p>
+                  <p className="text-sm text-gray-600">Código: {livro.codigo}</p>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div>
+              <button
+                onClick={() => setLivroSelecionado(null)}
+                className="mb-4 text-teal-600 hover:text-teal-700"
+              >
+                ← Voltar para lista
+              </button>
+              
+              <Form method="post" className="space-y-4">
+                <input type="hidden" name="action" value="atualizar_livro" />
+                <input type="hidden" name="firebaseKey" value={livroSelecionado.firebaseKey} />
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Título *
+                  </label>
+                  <input
+                    type="text"
+                    name="titulo"
+                    required
+                    defaultValue={livroSelecionado.titulo}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Autor *
+                  </label>
+                  <input
+                    type="text"
+                    name="autor"
+                    required
+                    defaultValue={livroSelecionado.autor}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Código/Registro *
+                  </label>
+                  <input
+                    type="text"
+                    name="codigo"
+                    required
+                    defaultValue={livroSelecionado.codigo}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Ano
+                  </label>
+                  <input
+                    type="number"
+                    name="ano"
+                    min="1000"
+                    max="2030"
+                    defaultValue={livroSelecionado.ano}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Tipo *
+                  </label>
+                  <select
+                    name="tipo"
+                    required
+                    defaultValue={livroSelecionado.tipo}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  >
+                    <option value="">Selecione o tipo</option>
+                    <option value="Livro">Livro</option>
+                    <option value="Revista">Revista</option>
+                    <option value="Artigo">Artigo</option>
+                    <option value="Manual">Manual</option>
+                    <option value="Relatório">Relatório</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    ISBN
+                  </label>
+                  <input
+                    type="text"
+                    name="isbn"
+                    defaultValue={livroSelecionado.isbn || ''}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Resumo
+                  </label>
+                  <textarea
+                    name="resumo"
+                    rows={3}
+                    defaultValue={livroSelecionado.resumo || ''}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? "Salvando..." : "Salvar Alterações"}
+                </button>
+              </Form>
+            </div>
+          )}
         </div>
       )}
     </div>
