@@ -359,7 +359,8 @@ export interface Donation {
 
 // Bota pra Rodar types
 export interface Bicicleta {
-  codigo: string;
+  firebaseKey?: string; // ID interno do Firebase
+  codigo: string; // Código de série editável
   nome: string;
   tipo: string;
   disponivel: boolean;

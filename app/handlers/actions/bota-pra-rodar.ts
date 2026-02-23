@@ -133,14 +133,15 @@ export async function botaPraRodarAction({ request }: ActionFunctionArgs) {
           throw new Error("Sem permissão para editar bicicletas");
         }
         
-        const codigoAtualizar = formData.get("codigo") as string;
+        const firebaseKey = formData.get("firebaseKey") as string;
         const dadosAtualizacao = {
+          codigo: formData.get("codigo") as string,
           nome: formData.get("nome") as string,
           tipo: formData.get("tipo") as string,
           descricao: formData.get("descricao") as string || ""
         };
         
-        await atualizarBicicleta(codigoAtualizar, dadosAtualizacao);
+        await atualizarBicicleta(firebaseKey, dadosAtualizacao);
         return redirect("/sucesso/bicicleta-atualizada");
 
       default:

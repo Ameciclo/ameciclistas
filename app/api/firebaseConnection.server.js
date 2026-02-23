@@ -549,10 +549,10 @@ export async function getSolicitacoesBicicletas() {
 export async function cadastrarBicicleta(dadosBicicleta) {
   return new Promise((resolve, reject) => {
     const ref = db.ref("bicicletas");
-    const key = dadosBicicleta.codigo;
+    const key = ref.push().key;
 
     if (!key) {
-      return reject(new Error("Código da bicicleta é obrigatório."));
+      return reject(new Error("Falha ao gerar chave para a bicicleta."));
     }
 
     if (process.env.NODE_ENV === "development") {
@@ -575,9 +575,9 @@ export async function cadastrarBicicleta(dadosBicicleta) {
   });
 }
 
-export async function atualizarBicicleta(codigo, dadosBicicleta) {
+export async function atualizarBicicleta(firebaseKey, dadosBicicleta) {
   return new Promise((resolve, reject) => {
-    const ref = db.ref(`bicicletas/${codigo}`);
+    const ref = db.ref(`bicicletas/${firebaseKey}`);
 
     ref
       .update(dadosBicicleta)

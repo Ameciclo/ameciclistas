@@ -119,19 +119,19 @@ export function BotaPraRodarGestao({ emprestimos, solicitacoes, bicicletas, user
             >
               Cadastrar Bicicleta
             </button>
-            <button
-              onClick={() => {
-                setActiveTab('editar');
-                setBicicletaSelecionada(null);
-              }}
-              className={`py-2 px-3 rounded text-sm font-medium ${
-                activeTab === 'editar'
-                  ? "bg-teal-600 text-white"
-                  : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
-              }`}
-            >
-              Editar Bicicleta
-            </button>
+              <button
+                onClick={() => {
+                  setActiveTab('editar');
+                  setBicicletaSelecionada(null);
+                }}
+                className={`py-2 px-3 rounded text-sm font-medium ${
+                  activeTab === 'editar'
+                    ? "bg-teal-600 text-white"
+                    : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+                }`}
+              >
+                Editar Bicicleta
+              </button>
           </div>
         </div>
       </div>
@@ -309,7 +309,7 @@ export function BotaPraRodarGestao({ emprestimos, solicitacoes, bicicletas, user
               <h3 className="font-semibold text-lg mb-4">Selecione uma bicicleta para editar:</h3>
               {bicicletas.map((bicicleta) => (
                 <button
-                  key={bicicleta.codigo}
+                  key={bicicleta.firebaseKey}
                   onClick={() => setBicicletaSelecionada(bicicleta)}
                   className="w-full p-4 border rounded-lg text-left hover:bg-gray-50"
                 >
@@ -331,17 +331,19 @@ export function BotaPraRodarGestao({ emprestimos, solicitacoes, bicicletas, user
               <Form method="post" className="space-y-4">
                 <input type="hidden" name="action" value="atualizar_bicicleta" />
                 <input type="hidden" name="user_id" value={currentUserId} />
-                <input type="hidden" name="codigo" value={bicicletaSelecionada.codigo} />
+                <input type="hidden" name="firebaseKey" value={bicicletaSelecionada.firebaseKey} />
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Código de Série (não editável)
+                    Código de Série *
                   </label>
                   <input
                     type="text"
-                    value={bicicletaSelecionada.codigo}
-                    disabled
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100"
+                    name="codigo"
+                    required
+                    defaultValue={bicicletaSelecionada.codigo}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    placeholder="Ex: CARGO01"
                   />
                 </div>
 
