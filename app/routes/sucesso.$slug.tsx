@@ -73,6 +73,11 @@ const messages = {
     message: "A nova bicicleta foi adicionada ao sistema.",
     actions: [{ label: "🚴 Voltar ao Bota pra Rodar", to: "/bota-pra-rodar?gestao=true" }],
   },
+  "bicicleta-atualizada": {
+    title: "✅ Bicicleta atualizada com sucesso!",
+    message: "As informações da bicicleta foram atualizadas.",
+    actions: [{ label: "🚴 Voltar ao Bota pra Rodar", to: "/bota-pra-rodar?gestao=true" }],
+  },
   // Registro de Empréstimos
   "inventario-aprovado": {
     title: "✅ Empréstimo aprovado com sucesso!",

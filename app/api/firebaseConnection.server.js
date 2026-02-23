@@ -575,6 +575,21 @@ export async function cadastrarBicicleta(dadosBicicleta) {
   });
 }
 
+export async function atualizarBicicleta(codigo, dadosBicicleta) {
+  return new Promise((resolve, reject) => {
+    const ref = db.ref(`bicicletas/${codigo}`);
+
+    ref
+      .update(dadosBicicleta)
+      .then((snapshot) => {
+        resolve(snapshot);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
 export async function solicitarEmprestimoBicicleta(userId, codigoBicicleta) {
   return new Promise((resolve, reject) => {
     const ref = db.ref("solicitacoes_bicicletas");
