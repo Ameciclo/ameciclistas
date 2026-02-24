@@ -29,9 +29,23 @@ export const action: ActionFunction = async ({ request }) => {
       return json({ success: true });
     }
     
+    if (action === "markAllAsPaid") {
+      const saleIds = formData.get("saleIds") as string;
+      const ids = JSON.parse(saleIds);
+      await Promise.all(ids.map((id: string) => updateSaleStatus(id, SaleStatus.PAID)));
+      return json({ success: true });
+    }
+    
     if (action === "markDonationAsPaid") {
       const donationId = formData.get("donationId") as string;
       await updateDonationStatus(donationId, SaleStatus.PAID);
+      return json({ success: true });
+    }
+    
+    if (action === "markAllDonationsAsPaid") {
+      const donationIds = formData.get("donationIds") as string;
+      const ids = JSON.parse(donationIds);
+      await Promise.all(ids.map((id: string) => updateDonationStatus(id, SaleStatus.PAID)));
       return json({ success: true });
     }
     
@@ -80,6 +94,12 @@ export default function MeusConsumos() {
     Object.values(donations)
       .filter((donation: any) => donation.userId === user.id || donation.registeredBy === user.id)
       .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()) as Donation[] : [];
+
+  const pendingSales = userSales.filter(sale => sale.status === SaleStatus.PENDING);
+  const totalDue = pendingSales.reduce((sum, sale) => sum + sale.totalValue, 0);
+  
+  const pendingDonations = userDonations.filter(donation => donation.status === SaleStatus.PENDING);
+  const totalDonationsDue = pendingDonations.reduce((sum, donation) => sum + donation.value, 0);
 
   const getStatusLabel = (status: SaleStatus) => {
     const labels = {
@@ -153,6 +173,50 @@ export default function MeusConsumos() {
         </div>
       </div>
 
+      {activeTab === "sales" && totalDue > 0 && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="font-bold text-gray-900 text-lg">Total Devido</h3>
+              <p className="text-2xl font-bold text-yellow-700">R$ {totalDue.toFixed(2)}</p>
+              <p className="text-sm text-gray-600 mt-1">{pendingSales.length} consumo(s) pendente(s)</p>
+            </div>
+            <Form method="post">
+              <input type="hidden" name="action" value="markAllAsPaid" />
+              <input type="hidden" name="saleIds" value={JSON.stringify(pendingSales.map(s => s.id))} />
+              <button
+                type="submit"
+                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 font-medium"
+              >
+                Marcar Tudo como Pago
+              </button>
+            </Form>
+          </div>
+        </div>
+      )}
+
+      {activeTab === "donations" && totalDonationsDue > 0 && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="font-bold text-gray-900 text-lg">Total Devido</h3>
+              <p className="text-2xl font-bold text-yellow-700">R$ {totalDonationsDue.toFixed(2)}</p>
+              <p className="text-sm text-gray-600 mt-1">{pendingDonations.length} doação(ões) pendente(s)</p>
+            </div>
+            <Form method="post">
+              <input type="hidden" name="action" value="markAllDonationsAsPaid" />
+              <input type="hidden" name="donationIds" value={JSON.stringify(pendingDonations.map(d => d.id))} />
+              <button
+                type="submit"
+                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 font-medium"
+              >
+                Marcar Tudo como Pago
+              </button>
+            </Form>
+          </div>
+        </div>
+      )}
+
       {activeTab === "sales" && (
         userSales.length === 0 ? (
           <div className="text-center py-8">
@@ -184,7 +248,7 @@ export default function MeusConsumos() {
                       </h3>
                       <p className="text-sm text-gray-600">
                         {sale.registeredBy && sale.registeredBy !== user?.id ? (
-                          <>Consumidor: {sale.userName} | </>
+                          <>Cliente: {sale.userName} | </>
                         ) : null}
                         Quantidade: {sale.quantity} | Valor: R$ {sale.totalValue.toFixed(2)}
                       </p>

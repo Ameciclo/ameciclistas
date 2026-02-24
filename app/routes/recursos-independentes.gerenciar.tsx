@@ -150,14 +150,15 @@ export default function GerenciarRecursos() {
     return labels[status] || { text: status, color: "bg-gray-100 text-gray-800" };
   };
   
-  const getCategoryLabel = (category: ProductCategory) => {
-    const labels = {
-      [ProductCategory.LIQUIDOS]: "🍺 Líquidos",
-      [ProductCategory.CAMISAS]: "👕 Camisas", 
-      [ProductCategory.BROCHES]: "📌 Broches",
-      [ProductCategory.PECAS_BICICLETA]: "🔧 Peças de Bicicleta",
-      [ProductCategory.LIVROS]: "📚 Livros",
-      [ProductCategory.SERVICOS]: "⚙️ Serviços"
+  const getCategoryLabel = (category: string) => {
+    const labels: Record<string, string> = {
+      "LIQUIDOS": "🍺 Líquidos",
+      "CAMISAS": "👕 Camisas", 
+      "BROCHES": "📌 Broches",
+      "PECAS_BICICLETA": "🔧 Peças de Bicicleta",
+      "LIVROS": "📚 Livros",
+      "SERVICOS": "⚙️ Serviços",
+      "ALUGUEL": "🏷️ Aluguel"
     };
     return labels[category] || category;
   };

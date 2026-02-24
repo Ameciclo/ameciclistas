@@ -62,6 +62,7 @@ export interface Exemplar {
 }
 
 export interface Livro {
+  firebaseKey?: string; // ID interno do Firebase
   codigo: string;
   titulo: string;
   autor: string;
@@ -311,7 +312,8 @@ export enum ProductCategory {
   BROCHES = "BROCHES",
   PECAS_BICICLETA = "PECAS_BICICLETA",
   LIVROS = "LIVROS",
-  SERVICOS = "SERVICOS"
+  SERVICOS = "SERVICOS",
+  ALUGUEL = "ALUGUEL"
 }
 
 export interface Sale {
@@ -358,7 +360,8 @@ export interface Donation {
 
 // Bota pra Rodar types
 export interface Bicicleta {
-  codigo: string;
+  firebaseKey?: string; // ID interno do Firebase
+  codigo: string; // Código de série editável
   nome: string;
   tipo: string;
   disponivel: boolean;
@@ -411,4 +414,29 @@ export interface SolicitacaoEmprestimoInventario {
   codigo_item: string;
   data_solicitacao: string;
   status: 'pendente' | 'aprovada' | 'rejeitada';
+}
+
+// Links Úteis types
+export interface LinkUtil {
+  id: string;
+  label: string;
+  url: string;
+  icon: string;
+  requiredPermission: UserCategory;
+  description?: string;
+  order: number;
+  startDate?: string; // ISO date
+  endDate?: string; // ISO date
+  color?: string; // Hex color, default #14b8a6 (teal)
+  categories: LinkCategory[];
+  clicks: number;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export enum LinkCategory {
+  PUBLICO = "PUBLICO",
+  AMECICLISTAS = "AMECICLISTAS",
+  AMECICLOBOT = "AMECICLOBOT"
 }

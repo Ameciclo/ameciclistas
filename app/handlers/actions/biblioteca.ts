@@ -88,13 +88,20 @@ export async function bibliotecaAction({ request }: ActionFunctionArgs) {
       
       try {
         const emprestimoRef = db.ref(`loan_record/${emprestimo_id}`);
+        const snapshot = await emprestimoRef.once("value");
+        const emprestimo = snapshot.val();
+        
+        if (!emprestimo) {
+          return json({ success: false, error: "Empréstimo não encontrado" });
+        }
+        
         await emprestimoRef.update({
           status: 'devolvido',
           data_devolucao: new Date().toISOString().split('T')[0],
           updated_at: new Date().toISOString()
         });
         
-        return redirect("/sucesso/biblioteca-devolucao");
+        return redirect("/biblioteca?gestao=true");
       } catch (error) {
         console.error("Erro ao registrar devolução:", error);
         return json({ success: false, error: "Erro ao registrar devolução" });
@@ -122,6 +129,30 @@ export async function bibliotecaAction({ request }: ActionFunctionArgs) {
       } catch (error) {
         console.error("Erro ao cadastrar livro:", error);
         return json({ success: false, error: "Erro ao cadastrar livro" });
+      }
+    }
+    
+    if (action === "atualizar_livro") {
+      try {
+        const firebaseKey = formData.get("firebaseKey") as string;
+        const dadosAtualizacao = {
+          title: formData.get("titulo") as string,
+          author: formData.get("autor") as string,
+          register: formData.get("codigo") as string,
+          year: formData.get("ano") ? parseInt(formData.get("ano") as string) : null,
+          type: formData.get("tipo") as string,
+          isbn: formData.get("isbn") as string || null,
+          resumo: formData.get("resumo") as string || null,
+          updated_at: new Date().toISOString()
+        };
+        
+        const livroRef = db.ref(`library/${firebaseKey}`);
+        await livroRef.update(dadosAtualizacao);
+        
+        return redirect("/sucesso/biblioteca-atualizada");
+      } catch (error) {
+        console.error("Erro ao atualizar livro:", error);
+        return json({ success: false, error: "Erro ao atualizar livro" });
       }
     }
     

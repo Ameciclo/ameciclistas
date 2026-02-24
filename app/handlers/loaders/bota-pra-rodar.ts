@@ -12,7 +12,7 @@ export async function botaPraRodarLoader({ request }: LoaderFunctionArgs) {
     const solicitacoesData = await getSolicitacoesBicicletas();
     const usersData = await getUsersFirebase();
     
-    const bicicletas: Bicicleta[] = bicicletasData ? Object.keys(bicicletasData).map(key => ({ id: key, ...bicicletasData[key] })) : [];
+    const bicicletas: Bicicleta[] = bicicletasData ? Object.keys(bicicletasData).map(key => ({ firebaseKey: key, ...bicicletasData[key] })) : [];
     const emprestimos: EmprestimoBicicleta[] = emprestimosData ? Object.keys(emprestimosData).map(key => ({ id: key, ...emprestimosData[key] })) : [];
     const solicitacoes = solicitacoesData ? Object.keys(solicitacoesData).map(key => ({ id: key, ...solicitacoesData[key] })) : [];
     

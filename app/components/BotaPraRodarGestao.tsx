@@ -43,7 +43,8 @@ export function BotaPraRodarGestao({ emprestimos, solicitacoes, bicicletas, user
     return user.name || `Usuário ${userId}`;
   };
 
-  const [activeTab, setActiveTab] = useState<'emprestados' | 'solicitacoes' | 'cadastrar'>('emprestados');
+  const [activeTab, setActiveTab] = useState<'emprestados' | 'solicitacoes' | 'cadastrar' | 'editar'>('emprestados');
+  const [bicicletaSelecionada, setBicicletaSelecionada] = useState<Bicicleta | null>(null);
   const submit = useSubmit();
 
   const handleRegistrarDevolucao = (emprestimoId: string) => {
@@ -87,7 +88,7 @@ export function BotaPraRodarGestao({ emprestimos, solicitacoes, bicicletas, user
       <div className="mb-6">
         <div className="bg-gray-50 p-4 rounded-lg">
           <h3 className="font-medium text-gray-900 mb-3">Seção:</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             <button
               onClick={() => setActiveTab('emprestados')}
               className={`py-2 px-3 rounded text-sm font-medium ${
@@ -118,6 +119,19 @@ export function BotaPraRodarGestao({ emprestimos, solicitacoes, bicicletas, user
             >
               Cadastrar Bicicleta
             </button>
+              <button
+                onClick={() => {
+                  setActiveTab('editar');
+                  setBicicletaSelecionada(null);
+                }}
+                className={`py-2 px-3 rounded text-sm font-medium ${
+                  activeTab === 'editar'
+                    ? "bg-teal-600 text-white"
+                    : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+                }`}
+              >
+                Editar Bicicleta
+              </button>
           </div>
         </div>
       </div>
@@ -285,6 +299,108 @@ export function BotaPraRodarGestao({ emprestimos, solicitacoes, bicicletas, user
               Cadastrar Bicicleta
             </button>
           </Form>
+        </div>
+      )}
+
+      {activeTab === 'editar' && (
+        <div className="max-w-md mx-auto">
+          {!bicicletaSelecionada ? (
+            <div className="space-y-3">
+              <h3 className="font-semibold text-lg mb-4">Selecione uma bicicleta para editar:</h3>
+              {bicicletas.map((bicicleta) => (
+                <button
+                  key={bicicleta.firebaseKey}
+                  onClick={() => setBicicletaSelecionada(bicicleta)}
+                  className="w-full p-4 border rounded-lg text-left hover:bg-gray-50"
+                >
+                  <p className="font-semibold">{bicicleta.nome}</p>
+                  <p className="text-sm text-gray-600">Código: {bicicleta.codigo}</p>
+                  <p className="text-sm text-gray-600">Tipo: {bicicleta.tipo}</p>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div>
+              <button
+                onClick={() => setBicicletaSelecionada(null)}
+                className="mb-4 text-teal-600 hover:text-teal-700"
+              >
+                ← Voltar para lista
+              </button>
+              
+              <Form method="post" className="space-y-4">
+                <input type="hidden" name="action" value="atualizar_bicicleta" />
+                <input type="hidden" name="user_id" value={currentUserId} />
+                <input type="hidden" name="firebaseKey" value={bicicletaSelecionada.firebaseKey} />
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Código de Série *
+                  </label>
+                  <input
+                    type="text"
+                    name="codigo"
+                    required
+                    defaultValue={bicicletaSelecionada.codigo}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    placeholder="Ex: CARGO01"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Nome/Apelido *
+                  </label>
+                  <input
+                    type="text"
+                    name="nome"
+                    required
+                    defaultValue={bicicletaSelecionada.nome}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Tipo *
+                  </label>
+                  <select
+                    name="tipo"
+                    required
+                    defaultValue={bicicletaSelecionada.tipo}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  >
+                    <option value="">Selecione o tipo</option>
+                    <option value="Urbana">Urbana</option>
+                    <option value="Cargueira">Cargueira</option>
+                    <option value="Mountain Bike">Mountain Bike</option>
+                    <option value="Speed">Speed</option>
+                    <option value="Híbrida">Híbrida</option>
+                    <option value="Dobrável">Dobrável</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Descrição
+                  </label>
+                  <textarea
+                    name="descricao"
+                    rows={3}
+                    defaultValue={bicicletaSelecionada.descricao || ''}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700"
+                >
+                  Salvar Alterações
+                </button>
+              </Form>
+            </div>
+          )}
         </div>
       )}
     </div>

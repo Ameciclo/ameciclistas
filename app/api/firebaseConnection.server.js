@@ -334,19 +334,29 @@ export async function saveDonation(donationData) {
 }
 
 export async function updateSaleStatus(saleId, status, additionalData = {}) {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     const ref = db.ref(`resources/sales/${saleId}`);
     
-    // Se for cancelamento, remove o registro
+    // Se for cancelamento, devolve o estoque e remove o registro
     if (status === "CANCELLED") {
-      ref
-        .remove()
-        .then((snapshot) => {
-          resolve(snapshot);
-        })
-        .catch((err) => {
-          reject(err);
-        });
+      try {
+        const snapshot = await ref.once("value");
+        const sale = snapshot.val();
+        
+        if (sale) {
+          // Devolve o estoque
+          if (sale.variantId) {
+            await updateProductStock(sale.productId, sale.quantity, sale.variantId);
+          } else {
+            await updateProductStock(sale.productId, sale.quantity);
+          }
+        }
+        
+        await ref.remove();
+        resolve(true);
+      } catch (err) {
+        reject(err);
+      }
       return;
     }
     
@@ -539,10 +549,10 @@ export async function getSolicitacoesBicicletas() {
 export async function cadastrarBicicleta(dadosBicicleta) {
   return new Promise((resolve, reject) => {
     const ref = db.ref("bicicletas");
-    const key = dadosBicicleta.codigo;
+    const key = ref.push().key;
 
     if (!key) {
-      return reject(new Error("Código da bicicleta é obrigatório."));
+      return reject(new Error("Falha ao gerar chave para a bicicleta."));
     }
 
     if (process.env.NODE_ENV === "development") {
@@ -565,6 +575,21 @@ export async function cadastrarBicicleta(dadosBicicleta) {
   });
 }
 
+export async function atualizarBicicleta(firebaseKey, dadosBicicleta) {
+  return new Promise((resolve, reject) => {
+    const ref = db.ref(`bicicletas/${firebaseKey}`);
+
+    ref
+      .update(dadosBicicleta)
+      .then((snapshot) => {
+        resolve(snapshot);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
 export async function solicitarEmprestimoBicicleta(userId, codigoBicicleta) {
   return new Promise((resolve, reject) => {
     const ref = db.ref("solicitacoes_bicicletas");
@@ -576,7 +601,7 @@ export async function solicitarEmprestimoBicicleta(userId, codigoBicicleta) {
 
     const solicitacao = {
       id: key,
-      usuario_id: userId,
+      usuario_id: String(userId), // Garantir que seja string
       codigo_bicicleta: codigoBicicleta,
       data_solicitacao: new Date().toISOString().split('T')[0],
       status: 'pendente'
@@ -620,7 +645,7 @@ export async function aprovarSolicitacaoBicicleta(solicitacaoId, userId, codigoB
       
       const emprestimo = {
         id: emprestimoKey,
-        usuario_id: userId,
+        usuario_id: String(userId), // Garantir que seja string
         codigo_bicicleta: codigoBicicleta,
         data_saida: new Date().toISOString().split('T')[0],
         status: 'emprestado'

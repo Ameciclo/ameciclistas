@@ -5,7 +5,8 @@ import {
   rejeitarSolicitacaoInventario, 
   registrarDevolucaoInventario,
   cadastrarItemInventario,
-  getUsersFirebase 
+  getUsersFirebase,
+  saveProduct
 } from "~/api/firebaseConnection.server";
 import { getTelegramUsersInfo } from "~/utils/users";
 import { UserCategory } from "~/utils/types";
@@ -94,7 +95,22 @@ export async function registroEmprestimosAction({ request }: ActionFunctionArgs)
         };
         
         await cadastrarItemInventario(dadosItem);
-        return redirect("/sucesso/inventario-cadastro");
+        
+        // Se marcou para cadastrar como aluguel também
+        const cadastrarAluguel = formData.get("cadastrar_aluguel") === "true";
+        if (cadastrarAluguel) {
+          const precoAluguel = parseFloat(formData.get("preco_aluguel") as string);
+          const produtoAluguel = {
+            name: dadosItem.nome,
+            category: "ALUGUEL" as any,
+            price: precoAluguel,
+            stock: 999999, // Estoque infinito
+            description: dadosItem.descricao
+          };
+          await saveProduct(produtoAluguel);
+        }
+        
+        return json({ success: cadastrarAluguel ? "Item cadastrado no inventário e como aluguel!" : "Item cadastrado com sucesso!" });
 
       default:
         throw new Error("Ação não reconhecida");

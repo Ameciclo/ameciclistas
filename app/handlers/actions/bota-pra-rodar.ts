@@ -5,6 +5,7 @@ import {
   rejeitarSolicitacaoBicicleta, 
   registrarDevolucaoBicicleta,
   cadastrarBicicleta,
+  atualizarBicicleta,
   getUsersFirebase 
 } from "~/api/firebaseConnection.server";
 import { getTelegramUsersInfo } from "~/utils/users";
@@ -126,6 +127,22 @@ export async function botaPraRodarAction({ request }: ActionFunctionArgs) {
         
         await cadastrarBicicleta(dadosBicicleta);
         return redirect("/sucesso/bicicleta-cadastro");
+
+      case "atualizar_bicicleta":
+        if (!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) {
+          throw new Error("Sem permissão para editar bicicletas");
+        }
+        
+        const firebaseKey = formData.get("firebaseKey") as string;
+        const dadosAtualizacao = {
+          codigo: formData.get("codigo") as string,
+          nome: formData.get("nome") as string,
+          tipo: formData.get("tipo") as string,
+          descricao: formData.get("descricao") as string || ""
+        };
+        
+        await atualizarBicicleta(firebaseKey, dadosAtualizacao);
+        return redirect("/sucesso/bicicleta-atualizada");
 
       default:
         throw new Error("Ação não reconhecida");
