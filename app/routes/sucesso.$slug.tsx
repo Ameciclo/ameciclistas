@@ -71,7 +71,10 @@ const messages = {
   "bicicleta-devolucao": {
     title: "✅ Devolução registrada com sucesso!",
     message: "A bicicleta foi marcada como devolvida no sistema.",
-    actions: [{ label: "🚴 Voltar ao Bota pra Rodar", to: "/bota-pra-rodar?gestao=true" }],
+    actions: [
+      { label: "💰 Ir para Registro Consumo", to: "/recursos-independentes/registrar-consumo" },
+      { label: "🚴 Voltar ao Bota pra Rodar", to: "/bota-pra-rodar?gestao=true" }
+    ],
   },
   "bicicleta-cadastro": {
     title: "✅ Bicicleta cadastrada com sucesso!",
