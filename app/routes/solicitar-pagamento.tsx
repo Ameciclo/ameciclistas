@@ -265,26 +265,24 @@ export default function SolicitarPagamento() {
             
 
             
-            {item.transactionType !== "Movimentação bancária" && (
-              <>
-                <SelectInput
-                  label="Projeto:"
-                  name={`projectId_${item.id}`}
-                  value={item.projectId}
-                  onChange={(e) => updatePaymentItem(item.id, 'projectId', e.target.value)}
-                  options={projectOptions}
-                />
-                
-                {item.projectId && (
-                  <SelectInput
-                    label="Rubrica:"
-                    name={`budgetItem_${item.id}`}
-                    value={item.budgetItem}
-                    onChange={(e) => updatePaymentItem(item.id, 'budgetItem', e.target.value)}
-                    options={budgetOptions}
-                  />
-                )}
-              </>
+            <SelectInput
+              label="Projeto:"
+              name={`projectId_${item.id}`}
+              value={item.projectId}
+              onChange={(e) => updatePaymentItem(item.id, 'projectId', e.target.value)}
+              options={projectOptions}
+              disabled={item.transactionType === "Movimentação bancária"}
+            />
+            
+            {item.projectId && (
+              <SelectInput
+                label="Rubrica:"
+                name={`budgetItem_${item.id}`}
+                value={item.budgetItem}
+                onChange={(e) => updatePaymentItem(item.id, 'budgetItem', e.target.value)}
+                options={budgetOptions}
+                disabled={item.transactionType === "Movimentação bancária"}
+              />
             )}
 
             <GenericAutosuggest<Supplier>

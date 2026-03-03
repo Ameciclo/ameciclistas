@@ -29,7 +29,10 @@ const createPaymentRequests = (formData: FormData) => {
   const suppliers = JSON.parse(formData.get("suppliers") as string);
 
   return paymentItems.map(item => {
-    const project = projects.find((p: any) => p.spreadsheet_id === item.projectId);
+    const isInternalTransfer = item.transactionType === 'Movimentação bancária';
+    const project = isInternalTransfer 
+      ? { name: 'Movimentação bancária', spreadsheet_id: 'Movimentação bancária' }
+      : projects.find((p: any) => p.spreadsheet_id === item.projectId);
     const supplier = suppliers.find((s: any) => (s.id_number || s.id) === item.supplierId);
     const refundSupplier = item.isRefund 
       ? suppliers.find((s: any) => (s.id_number || s.id) === item.refundSupplierId)
