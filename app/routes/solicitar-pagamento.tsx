@@ -169,11 +169,13 @@ export default function SolicitarPagamento() {
 
   const getItemErrors = (item: PaymentItem) => {
     const errors = [];
+    const isInternalTransfer = item.transactionType === "Movimentação bancária";
+    
     if (!item.transactionType) errors.push("Tipo de Transação");
     if (!item.paymentDate) errors.push("Data do pagamento");
     if (!validateDate(item)) errors.push("Data inválida para o tipo");
-    if (!item.projectId) errors.push("Projeto");
-    if (!item.budgetItem) errors.push("Rubrica");
+    if (!isInternalTransfer && !item.projectId) errors.push("Projeto");
+    if (!isInternalTransfer && !item.budgetItem) errors.push("Rubrica");
     if (!item.supplierId.trim()) errors.push("Fornecedor");
     if (item.supplierId && !item.paymentMethod) errors.push("Método de Pagamento");
     if (!item.description.trim()) errors.push("Descrição");
@@ -236,6 +238,7 @@ export default function SolicitarPagamento() {
                 { value: "Registrar Caixa Físico", label: "Registrar Caixa Físico" },
                 { value: "Registro Caixa Digital", label: "Registro Caixa Digital" },
                 { value: "Agendar pagamento", label: "Agendar pagamento" },
+                { value: "Movimentação bancária", label: "Movimentação bancária" },
               ]}
             />
             
@@ -259,22 +262,26 @@ export default function SolicitarPagamento() {
             
 
             
-            <SelectInput
-              label="Projeto:"
-              name={`projectId_${item.id}`}
-              value={item.projectId}
-              onChange={(e) => updatePaymentItem(item.id, 'projectId', e.target.value)}
-              options={projectOptions}
-            />
-            
-            {item.projectId && (
-              <SelectInput
-                label="Rubrica:"
-                name={`budgetItem_${item.id}`}
-                value={item.budgetItem}
-                onChange={(e) => updatePaymentItem(item.id, 'budgetItem', e.target.value)}
-                options={budgetOptions}
-              />
+            {item.transactionType !== "Movimentação bancária" && (
+              <>
+                <SelectInput
+                  label="Projeto:"
+                  name={`projectId_${item.id}`}
+                  value={item.projectId}
+                  onChange={(e) => updatePaymentItem(item.id, 'projectId', e.target.value)}
+                  options={projectOptions}
+                />
+                
+                {item.projectId && (
+                  <SelectInput
+                    label="Rubrica:"
+                    name={`budgetItem_${item.id}`}
+                    value={item.budgetItem}
+                    onChange={(e) => updatePaymentItem(item.id, 'budgetItem', e.target.value)}
+                    options={budgetOptions}
+                  />
+                )}
+              </>
             )}
 
             <GenericAutosuggest<Supplier>
