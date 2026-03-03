@@ -131,6 +131,10 @@ export default function SolicitarPagamento() {
             updated.paymentMethod = supplier.payment_methods[0].value || '';
           }
         }
+        if (field === 'transactionType' && value === 'Movimentação bancária') {
+          updated.projectId = 'Movimentação bancária';
+          updated.budgetItem = 'Movimentação bancária';
+        }
 
         return updated;
       }
@@ -169,13 +173,12 @@ export default function SolicitarPagamento() {
 
   const getItemErrors = (item: PaymentItem) => {
     const errors = [];
-    const isInternalTransfer = item.transactionType === "Movimentação bancária";
     
     if (!item.transactionType) errors.push("Tipo de Transação");
     if (!item.paymentDate) errors.push("Data do pagamento");
     if (!validateDate(item)) errors.push("Data inválida para o tipo");
-    if (!isInternalTransfer && !item.projectId) errors.push("Projeto");
-    if (!isInternalTransfer && !item.budgetItem) errors.push("Rubrica");
+    if (!item.projectId) errors.push("Projeto");
+    if (!item.budgetItem) errors.push("Rubrica");
     if (!item.supplierId.trim()) errors.push("Fornecedor");
     if (item.supplierId && !item.paymentMethod) errors.push("Método de Pagamento");
     if (!item.description.trim()) errors.push("Descrição");
