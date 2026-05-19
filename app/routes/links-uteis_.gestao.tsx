@@ -170,17 +170,17 @@ export default function GestaoLinksUteis() {
                 onClose={() => { setShowForm(false); setEditingLink(null); }}
               />
             )}
-            <div className="flex justify-between items-start">
-              <div className="flex-1">
+            <div className="flex justify-between items-start gap-2">
+              <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="text-2xl">{link.icon}</span>
                   <h3 className="font-bold text-lg">{link.label}</h3>
                   {!link.active && <span className="text-xs bg-gray-300 px-2 py-1 rounded">Inativo</span>}
                 </div>
-                <p className="text-sm text-gray-600 mt-1">{link.url}</p>
-                {link.description && <p className="text-sm text-gray-500 mt-1">{link.description}</p>}
+                <p className="text-sm text-gray-600 mt-1 break-all">{link.url}</p>
+                {link.description && <p className="text-sm text-gray-500 mt-1 break-words">{link.description}</p>}
                 {link.subdomain && (
-                  <p className="text-sm text-orange-600 mt-1 font-mono">
+                  <p className="text-sm text-orange-600 mt-1 font-mono break-all">
                     ↪ {link.subdomain}.{domain} → {link.url}
                   </p>
                 )}
@@ -199,7 +199,7 @@ export default function GestaoLinksUteis() {
                   </div>
                 )}
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 shrink-0">
                 <button onClick={() => { setEditingLink(link); setShowForm(true); }} className="text-blue-600 hover:text-blue-800">✏️</button>
                 <crudFetcher.Form method="post" onSubmit={(e) => {
                   if (!confirm('Tem certeza que deseja deletar este link?')) { e.preventDefault(); }
