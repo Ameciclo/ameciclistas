@@ -433,6 +433,7 @@ export interface LinkUtil {
   active: boolean;
   createdAt: string;
   updatedAt: string;
+  subdomain?: string; // ex: "ocupe" → ocupe.ameciclo.org → url
 }
 
 export enum LinkCategory {

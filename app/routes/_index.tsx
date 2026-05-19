@@ -167,7 +167,7 @@ export default function Index() {
           </p>
         </div>
       ) : !webUser ? (
-        <p className="text-sm text-center mb-4">Olá, {user?.first_name}!</p>
+        user?.first_name ? <p className="text-sm text-center mb-4">Olá, {user.first_name}!</p> : null
       ) : null}
       
 

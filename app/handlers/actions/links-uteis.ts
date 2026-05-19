@@ -1,15 +1,20 @@
 import db from "~/api/firebaseAdmin.server";
 import { LinkUtil, LinkCategory, UserCategory } from "~/utils/types";
 
+function stripUndefined(obj: Record<string, any>): Record<string, any> {
+  Object.keys(obj).forEach(k => { if (obj[k] === undefined) delete obj[k]; });
+  return obj;
+}
+
 export async function createLink(linkData: Omit<LinkUtil, 'id' | 'clicks' | 'createdAt' | 'updatedAt'>) {
   try {
     const now = new Date().toISOString();
-    const newLink = {
+    const newLink = stripUndefined({
       ...linkData,
       clicks: 0,
       createdAt: now,
       updatedAt: now
-    };
+    });
     
     const linksRef = db.ref('links_uteis');
     const newLinkRef = linksRef.push();
@@ -26,10 +31,10 @@ export async function updateLink(linkId: string, linkData: Partial<LinkUtil>) {
   try {
     const now = new Date().toISOString();
     const linkRef = db.ref(`links_uteis/${linkId}`);
-    await linkRef.update({
+    await linkRef.update(stripUndefined({
       ...linkData,
       updatedAt: now
-    });
+    }));
     return { success: true };
   } catch (error) {
     console.error('Erro ao atualizar link:', error);
