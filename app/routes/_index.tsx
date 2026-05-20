@@ -182,6 +182,14 @@ export default function Index() {
         {links.filter(link => !link.hide).map((link) => {
           const hasPermission = isAuth(effectivePermissions, link.requiredPermission);
           if (!hasPermission) return null;
+
+          // "Associe-se" só aparece para quem NÃO tem nível acima de ANY_USER
+          if (link.to === "/cadastro") {
+            const temNivelSuperior = effectivePermissions.some(
+              (p) => p !== UserCategory.ANY_USER && p !== UserCategory.DEVELOPMENT
+            );
+            if (temNivelSuperior) return null;
+          }
           
           // Boletim Informativo só funciona fora do Telegram
           if (link.to === '/boletim-informativo' && isInTelegram) return null;
