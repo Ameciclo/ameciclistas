@@ -70,6 +70,12 @@ const links = [
     requiredPermission: UserCategory.AMECICLISTAS,
   },
   {
+    to: "/cadastro",
+    label: "Associe-se à Ameciclo",
+    icon: "✍️",
+    requiredPermission: UserCategory.ANY_USER,
+  },
+  {
     to: "/user",
     label: "Suas informações",
     icon: "⚙️",

@@ -1020,3 +1020,76 @@ export async function registrarDevolucaoInventario(emprestimoId) {
     }
   });
 }
+
+// Funções para Cadastro de Ameciclistas
+export async function criarAmeciclista(pessoaId, dados) {
+  return new Promise((resolve, reject) => {
+    const ref = db.ref("ameciclistas");
+    const data = {
+      ...dados,
+      data_cadastro: new Date().toISOString(),
+      data_atualizacao: new Date().toISOString(),
+    };
+    ref.child(pessoaId).set(data)
+      .then(() => resolve(true))
+      .catch((err) => reject(err));
+  });
+}
+
+export async function getAmeciclistaByPessoaId(pessoaId) {
+  const ref = db.ref(`ameciclistas/${pessoaId}`);
+  const snapshot = await ref.once("value");
+  return snapshot.val();
+}
+
+export async function getAmeciclistaByCpfHash(cpfHash) {
+  const ref = db.ref("ameciclistas");
+  const snapshot = await ref.once("value");
+  const data = snapshot.val() || {};
+  for (const [id, pessoa] of Object.entries(data)) {
+    if (pessoa.identidade?.cpf_hash === cpfHash) {
+      return { pessoa_id: id, ...pessoa };
+    }
+  }
+  return null;
+}
+
+export async function getAmeciclistaByEmailHash(emailHash) {
+  const ref = db.ref("ameciclistas");
+  const snapshot = await ref.once("value");
+  const data = snapshot.val() || {};
+  for (const [id, pessoa] of Object.entries(data)) {
+    if (pessoa.contatos?.email?.hash === emailHash) {
+      return { pessoa_id: id, ...pessoa };
+    }
+  }
+  return null;
+}
+
+export async function criarPesquisa(tokenPseudonimo, dadosPesquisa) {
+  return new Promise((resolve, reject) => {
+    const ref = db.ref("pesquisa");
+    ref.child(tokenPseudonimo).set({
+      token_pseudonimo: tokenPseudonimo,
+      ...dadosPesquisa,
+      criado_em: new Date().toISOString(),
+    })
+      .then(() => resolve(true))
+      .catch((err) => reject(err));
+  });
+}
+
+export async function criarVinculoPesquisa(pessoaId, tokenPseudonimo) {
+  return new Promise((resolve, reject) => {
+    const ref = db.ref("vinculos_pesquisa");
+    const key = ref.push().key;
+    if (!key) return reject(new Error("Falha ao gerar chave para vínculo"));
+    ref.child(key).set({
+      pessoa_id: pessoaId,
+      token_pseudonimo: tokenPseudonimo,
+      criado_em: new Date().toISOString(),
+    })
+      .then(() => resolve(true))
+      .catch((err) => reject(err));
+  });
+}
