@@ -62,6 +62,7 @@ const OPCOES_COR_RACA = [
   { value: "parda", label: "Parda" },
   { value: "amarela", label: "Amarela" },
   { value: "indigena", label: "Indígena" },
+  { value: "outro", label: "Outro" },
   { value: "prefiro_nao_informar", label: "Prefiro não informar" },
 ];
 
@@ -72,6 +73,7 @@ const OPCOES_ESTADO_CIVIL = [
   { value: "uniao_estavel", label: "União estável" },
   { value: "divorciado", label: "Divorciado(a)" },
   { value: "viuvo", label: "Viúvo(a)" },
+  { value: "outro", label: "Outro" },
   { value: "prefiro_nao_informar", label: "Prefiro não informar" },
 ];
 
@@ -278,11 +280,15 @@ export async function action({ request }: ActionFunctionArgs) {
 
         const dadosPesquisa = {
           ano: new Date().getFullYear(),
+          genero: (formData.get("genero") as string || "").trim() || undefined,
+          genero_outro: (formData.get("genero_outro") as string || "").trim() || undefined,
+          cor_raca: (formData.get("cor_raca") as string || "").trim() || undefined,
+          cor_raca_outro: (formData.get("cor_raca_outro") as string || "").trim() || undefined,
+          profissao: (formData.get("profissao") as string || "").trim() || undefined,
           escolaridade,
           renda_faixa: (formData.get("renda_faixa") as string || "").trim() || undefined,
-          genero: (formData.get("genero") as string || "").trim() || undefined,
-          cor_raca: (formData.get("cor_raca") as string || "").trim() || undefined,
           estado_civil: (formData.get("estado_civil") as string || "").trim() || undefined,
+          estado_civil_outro: (formData.get("estado_civil_outro") as string || "").trim() || undefined,
           filhos_faixa: (formData.get("filhos_faixa") as string || "").trim() || undefined,
           tempo_bicicleta: (formData.get("tempo_bicicleta") as string || "").trim() || undefined,
           usos_bicicleta: usosRaw.filter(Boolean),
@@ -348,6 +354,10 @@ export default function Cadastro() {
   const [usosBicicleta, setUsosBicicleta] = useState<string[]>([]);
   const [motivacoes, setMotivacoes] = useState<string[]>([]);
   const [dificuldades, setDificuldades] = useState<string[]>([]);
+  const [generoOutro, setGeneroOutro] = useState("");
+  const [corRacaOutro, setCorRacaOutro] = useState("");
+  const [estadoCivilOutro, setEstadoCivilOutro] = useState("");
+  const [profissao, setProfissao] = useState("");
   const [frentesInteresse, setFrentesInteresse] = useState<string[]>([]);
 
   const toggleArray = (
@@ -746,6 +756,86 @@ export default function Cadastro() {
                 <div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Gênero
+                </label>
+                <input type="hidden" name="genero" value={genero === "outro" ? `outro:${generoOutro}` : genero} />
+                <div className="flex flex-wrap gap-2">
+                  {OPCOES_GENERO.filter(o => o.value !== "").map((o) => (
+                    <button
+                      type="button"
+                      key={o.value}
+                      onClick={() => { setGenero(genero === o.value ? "" : o.value); if (o.value !== "outro") setGeneroOutro(""); }}
+                      className={`px-3 py-1 rounded-full text-sm border transition-colors ${
+                        genero === o.value
+                          ? "bg-teal-100 border-teal-500 text-teal-700"
+                          : "bg-white border-gray-300 text-gray-600 hover:border-teal-300"
+                      }`}
+                    >
+                      {o.label}
+                    </button>
+                  ))}
+                </div>
+                {genero === "outro" && (
+                  <input
+                    type="text"
+                    name="genero_outro"
+                    value={generoOutro}
+                    onChange={(e) => setGeneroOutro(e.target.value)}
+                    placeholder="Escreva aqui"
+                    className="w-full mt-2 px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  />
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Raça/cor
+                </label>
+                <input type="hidden" name="cor_raca" value={corRaca === "outro" ? `outro:${corRacaOutro}` : corRaca} />
+                <div className="flex flex-wrap gap-2">
+                  {OPCOES_COR_RACA.filter(o => o.value !== "").map((o) => (
+                    <button
+                      type="button"
+                      key={o.value}
+                      onClick={() => { setCorRaca(corRaca === o.value ? "" : o.value); if (o.value !== "outro") setCorRacaOutro(""); }}
+                      className={`px-3 py-1 rounded-full text-sm border transition-colors ${
+                        corRaca === o.value
+                          ? "bg-teal-100 border-teal-500 text-teal-700"
+                          : "bg-white border-gray-300 text-gray-600 hover:border-teal-300"
+                      }`}
+                    >
+                      {o.label}
+                    </button>
+                  ))}
+                </div>
+                {corRaca === "outro" && (
+                  <input
+                    type="text"
+                    name="cor_raca_outro"
+                    value={corRacaOutro}
+                    onChange={(e) => setCorRacaOutro(e.target.value)}
+                    placeholder="Escreva aqui"
+                    className="w-full mt-2 px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  />
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Profissão
+                </label>
+                <input
+                  type="text"
+                  name="profissao"
+                  value={profissao}
+                  onChange={(e) => setProfissao(e.target.value)}
+                  placeholder="Ex: professora, engenheiro, estudante, ciclista entregadora..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Escolaridade
                 </label>
                 <input type="hidden" name="escolaridade" value={escolaridade} />
@@ -792,61 +882,15 @@ export default function Cadastro() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Gênero
-                </label>
-                <input type="hidden" name="genero" value={genero} />
-                <div className="flex flex-wrap gap-2">
-                  {OPCOES_GENERO.filter(o => o.value !== "").map((o) => (
-                    <button
-                      type="button"
-                      key={o.value}
-                      onClick={() => setGenero(genero === o.value ? "" : o.value)}
-                      className={`px-3 py-1 rounded-full text-sm border transition-colors ${
-                        genero === o.value
-                          ? "bg-teal-100 border-teal-500 text-teal-700"
-                          : "bg-white border-gray-300 text-gray-600 hover:border-teal-300"
-                      }`}
-                    >
-                      {o.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Cor/raça
-                </label>
-                <input type="hidden" name="cor_raca" value={corRaca} />
-                <div className="flex flex-wrap gap-2">
-                  {OPCOES_COR_RACA.filter(o => o.value !== "").map((o) => (
-                    <button
-                      type="button"
-                      key={o.value}
-                      onClick={() => setCorRaca(corRaca === o.value ? "" : o.value)}
-                      className={`px-3 py-1 rounded-full text-sm border transition-colors ${
-                        corRaca === o.value
-                          ? "bg-teal-100 border-teal-500 text-teal-700"
-                          : "bg-white border-gray-300 text-gray-600 hover:border-teal-300"
-                      }`}
-                    >
-                      {o.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Estado civil
                 </label>
-                <input type="hidden" name="estado_civil" value={estadoCivil} />
+                <input type="hidden" name="estado_civil" value={estadoCivil === "outro" ? `outro:${estadoCivilOutro}` : estadoCivil} />
                 <div className="flex flex-wrap gap-2">
                   {OPCOES_ESTADO_CIVIL.filter(o => o.value !== "").map((o) => (
                     <button
                       type="button"
                       key={o.value}
-                      onClick={() => setEstadoCivil(estadoCivil === o.value ? "" : o.value)}
+                      onClick={() => { setEstadoCivil(estadoCivil === o.value ? "" : o.value); if (o.value !== "outro") setEstadoCivilOutro(""); }}
                       className={`px-3 py-1 rounded-full text-sm border transition-colors ${
                         estadoCivil === o.value
                           ? "bg-teal-100 border-teal-500 text-teal-700"
@@ -857,6 +901,16 @@ export default function Cadastro() {
                     </button>
                   ))}
                 </div>
+                {estadoCivil === "outro" && (
+                  <input
+                    type="text"
+                    name="estado_civil_outro"
+                    value={estadoCivilOutro}
+                    onChange={(e) => setEstadoCivilOutro(e.target.value)}
+                    placeholder="Escreva aqui"
+                    className="w-full mt-2 px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  />
+                )}
               </div>
 
               <div>
@@ -884,7 +938,7 @@ export default function Cadastro() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Há quanto tempo pedala?
+                  Há quanto tempo pedala como meio de transporte?
                 </label>
                 <input type="hidden" name="tempo_bicicleta" value={tempoBicicleta} />
                 <div className="flex flex-wrap gap-2">
