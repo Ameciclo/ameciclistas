@@ -21,7 +21,7 @@ const TEXTOS_CONSENTIMENTO = {
   comunicacao:
     "Autorizo o uso dos meus dados de contato (e-mail, telefone, WhatsApp, Telegram) para comunicação institucional da Ameciclo, incluindo convocações de assembleias, comunicados oficiais, informações sobre a associação e clube de vantagens.",
   estatuto:
-    "Declaro que concordo com o Estatuto da Ameciclo.",
+    "Declaro que concordo com o Estatuto da Ameciclo (obrigatório).",
 };
 
 const OPCOES_ESCOLARIDADE = [
@@ -203,6 +203,8 @@ export async function action({ request }: ActionFunctionArgs) {
     return json({ error: "E-mail inválido." });
   if (!telefone || telefone.replace(/\D/g, "").length < 10)
     return json({ error: "Telefone inválido." });
+  if (formData.get("consent_estatuto") !== "on")
+    return json({ error: "É necessário concordar com o Estatuto da Ameciclo." });
 
   const pessoaId = gerarPessoaId();
   const cpfNumerico = cpfRaw.replace(/\D/g, "");
@@ -361,7 +363,8 @@ export default function Cadastro() {
   const telefoneValido = telefone.replace(/\D/g, "").length >= 10;
   const emailValido = email.includes("@") && email.includes(".");
   const dataValida = !!dataNascimento;
-  const formValido = cpfValido && nomeValido && telefoneValido && emailValido && dataValida;
+  const estatutoValido = consentimentos.estatuto;
+  const formValido = cpfValido && nomeValido && telefoneValido && emailValido && dataValida && estatutoValido;
 
   if (actionData && "success" in actionData && actionData.success) {
     return (
@@ -693,40 +696,7 @@ export default function Cadastro() {
           )}
         </section>
 
-        {/* ═══════════ SEÇÃO 2 — CONSENTIMENTOS ═══════════ */}
-        <section className="bg-white p-6 rounded-lg shadow-md space-y-4">
-          <h2 className="text-xl font-semibold text-teal-600 border-b pb-2">
-            Autorizações
-          </h2>
-          <p className="text-sm text-gray-500">
-            Você pode alterar estas opções a qualquer momento. Seu cadastro
-            básico não depende delas.
-          </p>
-
-          {Object.entries(TEXTOS_CONSENTIMENTO).map(([chave, texto]) => (
-            <label
-              key={chave}
-              className="flex items-start gap-3 p-3 rounded-md hover:bg-gray-50 cursor-pointer"
-            >
-              <input
-                type="checkbox"
-                name={`consent_${chave}`}
-                checked={consentimentos[chave]}
-                onChange={(e) =>
-                  setConsentimentos((prev) => ({
-                    ...prev,
-                    [chave]: e.target.checked,
-                  }))
-                }
-                className="mt-1 h-4 w-4 text-teal-600 border-gray-300 rounded"
-              />
-              <span className="text-sm text-gray-700">{texto}</span>
-            </label>
-          ))}
-
-        </section>
-
-        {/* ═══════════ SEÇÃO 3 — PESQUISA DE PERFIL ═══════════ */}
+        {/* ═══════════ SEÇÃO 2 — PESQUISA DE PERFIL ═══════════ */}
         <section className="bg-white p-6 rounded-lg shadow-md space-y-4">
           <button
             type="button"
@@ -1017,6 +987,38 @@ export default function Cadastro() {
               )}
             </div>
           )}
+        </section>
+
+        {/* ═══════════ SEÇÃO 3 — AUTORIZAÇÕES ═══════════ */}
+        <section className="bg-white p-6 rounded-lg shadow-md space-y-4">
+          <h2 className="text-xl font-semibold text-teal-600 border-b pb-2">
+            Autorizações
+          </h2>
+          <p className="text-sm text-gray-500">
+            A concordância com o Estatuto é obrigatória. As demais
+            autorizações podem ser alteradas a qualquer momento.
+          </p>
+
+          {Object.entries(TEXTOS_CONSENTIMENTO).map(([chave, texto]) => (
+            <label
+              key={chave}
+              className="flex items-start gap-3 p-3 rounded-md hover:bg-gray-50 cursor-pointer"
+            >
+              <input
+                type="checkbox"
+                name={`consent_${chave}`}
+                checked={consentimentos[chave]}
+                onChange={(e) =>
+                  setConsentimentos((prev) => ({
+                    ...prev,
+                    [chave]: e.target.checked,
+                  }))
+                }
+                className="mt-1 h-4 w-4 text-teal-600 border-gray-300 rounded"
+              />
+              <span className="text-sm text-gray-700">{texto}</span>
+            </label>
+          ))}
         </section>
 
         {/* ═══════════ ERRO / SUBMIT ═══════════ */}
