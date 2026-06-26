@@ -6,7 +6,7 @@ import { BackButton } from "~/components/Forms/Buttons";
 import { useAuth } from "~/utils/useAuth";
 import { UserCategory, LinkUtil, LinkCategory } from "~/utils/types";
 import { loadAllLinksUteis } from "~/handlers/loaders/links-uteis";
-import { createLink, updateLink, deleteLink } from "~/handlers/actions/links-uteis";
+import { createLink, updateLink, deleteLink, reorderLink } from "~/handlers/actions/links-uteis";
 import { syncRedirectsToCloudflare, findOrCreateRedirectRuleset } from "~/api/cloudflare.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -50,6 +50,14 @@ export async function action({ request }: ActionFunctionArgs) {
   if (intent === "delete") {
     const linkId = formData.get("linkId") as string;
     await deleteLink(linkId);
+    const links = await loadAllLinksUteis();
+    return json({ ok: true, links });
+  }
+
+  if (intent === "reorder") {
+    const linkId = formData.get("linkId") as string;
+    const direction = formData.get("direction") as 'up' | 'down';
+    await reorderLink(linkId, direction);
     const links = await loadAllLinksUteis();
     return json({ ok: true, links });
   }
@@ -199,7 +207,19 @@ export default function GestaoLinksUteis() {
                   </div>
                 )}
               </div>
-              <div className="flex gap-2 shrink-0">
+              <div className="flex gap-1 shrink-0">
+                <crudFetcher.Form method="post">
+                  <input type="hidden" name="intent" value="reorder" />
+                  <input type="hidden" name="linkId" value={link.id} />
+                  <input type="hidden" name="direction" value="up" />
+                  <button type="submit" className="text-gray-500 hover:text-gray-700 text-lg" title="Mover para cima">▲</button>
+                </crudFetcher.Form>
+                <crudFetcher.Form method="post">
+                  <input type="hidden" name="intent" value="reorder" />
+                  <input type="hidden" name="linkId" value={link.id} />
+                  <input type="hidden" name="direction" value="down" />
+                  <button type="submit" className="text-gray-500 hover:text-gray-700 text-lg" title="Mover para baixo">▼</button>
+                </crudFetcher.Form>
                 <button onClick={() => { setEditingLink(link); setShowForm(true); }} className="text-blue-600 hover:text-blue-800">✏️</button>
                 <crudFetcher.Form method="post" onSubmit={(e) => {
                   if (!confirm('Tem certeza que deseja deletar este link?')) { e.preventDefault(); }
@@ -285,16 +305,6 @@ function LinkForm({ link, domain, fetcher, onClose }: { link: LinkUtil | null; d
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Quem pode ver? *</label>
-          <select name="requiredPermission" defaultValue={link?.requiredPermission || UserCategory.ANY_USER} required className="w-full border rounded px-3 py-2">
-            <option value={UserCategory.ANY_USER}>Qualquer Usuário</option>
-            <option value={UserCategory.AMECICLISTAS}>Ameciclistas</option>
-            <option value={UserCategory.PROJECT_COORDINATORS}>Coordenadores de Projeto</option>
-            <option value={UserCategory.AMECICLO_COORDINATORS}>Coordenadores Ameciclo</option>
-          </select>
-        </div>
-
-        <div>
           <label className="block text-sm font-medium mb-2">Onde aparece? *</label>
           <div className="space-y-2">
             {Object.values(LinkCategory).map(cat => (
@@ -305,6 +315,18 @@ function LinkForm({ link, domain, fetcher, onClose }: { link: LinkUtil | null; d
             ))}
           </div>
         </div>
+
+        {categories.includes(LinkCategory.AMECICLISTAS) && (
+          <div>
+            <label className="block text-sm font-medium mb-1">No AMECICLISTAS, quem pode ver?</label>
+            <select name="requiredPermission" defaultValue={link?.requiredPermission || UserCategory.ANY_USER} required className="w-full border rounded px-3 py-2">
+              <option value={UserCategory.ANY_USER}>Qualquer Usuário</option>
+              <option value={UserCategory.AMECICLISTAS}>Ameciclistas</option>
+              <option value={UserCategory.PROJECT_COORDINATORS}>Coordenadores de Projeto</option>
+              <option value={UserCategory.AMECICLO_COORDINATORS}>Coordenadores Ameciclo</option>
+            </select>
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-4">
           <div>

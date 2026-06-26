@@ -53,6 +53,41 @@ export async function deleteLink(linkId: string) {
   }
 }
 
+export async function reorderLink(linkId: string, direction: 'up' | 'down') {
+  try {
+    const linksRef = db.ref('links_uteis');
+    const snapshot = await linksRef.orderByChild('order').once('value');
+    const data = snapshot.val();
+    if (!data) return { success: false, error: 'Nenhum link encontrado' };
+
+    const links = Object.keys(data).map(k => ({ id: k, ...data[k] }));
+    links.sort((a, b) => a.order - b.order);
+
+    const idx = links.findIndex(l => l.id === linkId);
+    if (idx === -1) return { success: false, error: 'Link não encontrado' };
+
+    const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (swapIdx < 0 || swapIdx >= links.length) return { success: false, error: 'Já está no limite' };
+
+    const currentLink = links[idx];
+    const swapLink = links[swapIdx];
+    const currentOrder = currentLink.order;
+    const swapOrder = swapLink.order;
+
+    const updates: Record<string, any> = {};
+    updates[`links_uteis/${currentLink.id}/order`] = swapOrder;
+    updates[`links_uteis/${swapLink.id}/order`] = currentOrder;
+    updates[`links_uteis/${currentLink.id}/updatedAt`] = new Date().toISOString();
+    updates[`links_uteis/${swapLink.id}/updatedAt`] = new Date().toISOString();
+
+    await db.ref().update(updates);
+    return { success: true };
+  } catch (error) {
+    console.error('Erro ao reordenar link:', error);
+    return { success: false, error: 'Erro ao reordenar link' };
+  }
+}
+
 export async function incrementClick(linkId: string) {
   try {
     const linkRef = db.ref(`links_uteis/${linkId}`);
