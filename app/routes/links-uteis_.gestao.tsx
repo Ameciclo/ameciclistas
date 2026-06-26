@@ -305,16 +305,6 @@ function LinkForm({ link, domain, fetcher, onClose }: { link: LinkUtil | null; d
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Quem pode ver? *</label>
-          <select name="requiredPermission" defaultValue={link?.requiredPermission || UserCategory.ANY_USER} required className="w-full border rounded px-3 py-2">
-            <option value={UserCategory.ANY_USER}>Qualquer Usuário</option>
-            <option value={UserCategory.AMECICLISTAS}>Ameciclistas</option>
-            <option value={UserCategory.PROJECT_COORDINATORS}>Coordenadores de Projeto</option>
-            <option value={UserCategory.AMECICLO_COORDINATORS}>Coordenadores Ameciclo</option>
-          </select>
-        </div>
-
-        <div>
           <label className="block text-sm font-medium mb-2">Onde aparece? *</label>
           <div className="space-y-2">
             {Object.values(LinkCategory).map(cat => (
@@ -325,6 +315,18 @@ function LinkForm({ link, domain, fetcher, onClose }: { link: LinkUtil | null; d
             ))}
           </div>
         </div>
+
+        {categories.includes(LinkCategory.AMECICLISTAS) && (
+          <div>
+            <label className="block text-sm font-medium mb-1">No AMECICLISTAS, quem pode ver?</label>
+            <select name="requiredPermission" defaultValue={link?.requiredPermission || UserCategory.ANY_USER} required className="w-full border rounded px-3 py-2">
+              <option value={UserCategory.ANY_USER}>Qualquer Usuário</option>
+              <option value={UserCategory.AMECICLISTAS}>Ameciclistas</option>
+              <option value={UserCategory.PROJECT_COORDINATORS}>Coordenadores de Projeto</option>
+              <option value={UserCategory.AMECICLO_COORDINATORS}>Coordenadores Ameciclo</option>
+            </select>
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-4">
           <div>
