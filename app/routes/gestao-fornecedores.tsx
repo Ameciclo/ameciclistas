@@ -2,20 +2,17 @@ import { useState, useEffect } from "react";
 import { Form, Link, useLoaderData } from "@remix-run/react";
 import { useAuth } from "~/utils/useAuth";
 import { getTelegramUsersInfo } from "~/utils/users";
-import { UserCategory, UserData } from "~/utils/types";
+import { UserData } from "~/utils/types";
 import { formatEmail, formatIdNumber, formatPhone } from "~/utils/format";
 import { validateIdNumber } from "~/utils/idNumber";
 import { BackButton } from "~/components/Forms/Buttons";
-import { requireAuth } from "~/utils/authMiddleware";
-
 import { action } from "../handlers/actions/gestao-fornecedores";
-import { loader as originalLoader, LoaderData } from "~/handlers/loaders/gestao-fornecedores";
+import { loader, LoaderData } from "~/handlers/loaders/gestao-fornecedores";
 import SendToAction from "~/components/Forms/SendToAction";
 import SelectInput from "~/components/Forms/Inputs/SelectInput";
 import FormTitle from "~/components/Forms/FormTitle";
 
-export const loader = requireAuth(UserCategory.PROJECT_COORDINATORS)(originalLoader);
-export { action };
+export { loader, action };
 
 export default function GestaoFornecedores() {
   const loaderData = useLoaderData<LoaderData>();

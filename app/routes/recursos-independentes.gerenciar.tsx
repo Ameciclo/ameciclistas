@@ -3,12 +3,12 @@ import { Form, useLoaderData, useActionData, Link } from "@remix-run/react";
 import { useState, useEffect } from "react";
 import { getSales, getDonations, updateSaleStatus, updateDonationStatus, getUsersFirebase, getProducts, saveProduct, updateProduct, deleteProduct } from "~/api/firebaseConnection.server";
 import { Sale, Donation, SaleStatus, UserCategory, UserData, Product, ProductCategory } from "~/utils/types";
-import { requireAuth, getUserPermissions } from "~/utils/authMiddleware";
+import { getUserPermissions } from "~/utils/authMiddleware";
 import { isAuth } from "~/utils/isAuthorized";
 import { getTelegramUsersInfo } from "~/utils/users";
 import telegramInit from "~/utils/telegramInit";
 
-const originalLoader: LoaderFunction = async () => {
+export const loader: LoaderFunction = async () => {
   const [sales, donations, users, products] = await Promise.all([
     getSales(),
     getDonations(),
@@ -17,8 +17,6 @@ const originalLoader: LoaderFunction = async () => {
   ]);
   return json({ sales, donations, users, products });
 };
-
-export const loader = requireAuth(UserCategory.PROJECT_COORDINATORS)(originalLoader);
 
 export const action: ActionFunction = async ({ request }) => {
   const { userPermissions } = await getUserPermissions(request);
