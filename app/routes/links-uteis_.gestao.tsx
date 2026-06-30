@@ -6,18 +6,16 @@ import { BackButton } from "~/components/Forms/Buttons";
 import { useAuth } from "~/utils/useAuth";
 import { UserCategory, LinkUtil, LinkCategory } from "~/utils/types";
 import { isAuth } from "~/utils/isAuthorized";
-import { getUserPermissions, requireAuth } from "~/utils/authMiddleware";
+import { getUserPermissions } from "~/utils/authMiddleware";
 import { loadAllLinksUteis } from "~/handlers/loaders/links-uteis";
 import { createLink, updateLink, deleteLink } from "~/handlers/actions/links-uteis";
 import { syncRedirectsToCloudflare, findOrCreateRedirectRuleset } from "~/api/cloudflare.server";
 
-async function gestaoLinksLoader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const links = await loadAllLinksUteis();
   const domain = process.env.AMECICLO_DOMAIN || 'ameciclo.org';
   return json({ links, domain });
 }
-
-export const loader = requireAuth(UserCategory.PROJECT_COORDINATORS)(gestaoLinksLoader);
 
 export async function action({ request }: ActionFunctionArgs) {
   const { userPermissions } = await getUserPermissions(request);

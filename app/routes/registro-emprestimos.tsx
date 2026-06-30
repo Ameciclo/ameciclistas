@@ -5,13 +5,12 @@ import { getTelegramUsersInfo } from "~/utils/users";
 import telegramInit from "~/utils/telegramInit";
 import { isAuth } from "~/utils/isAuthorized";
 import { useAuth } from "~/utils/useAuth";
-import { requireAuth } from "~/utils/authMiddleware";
 import { registroEmprestimosLoader } from "~/handlers/loaders/registro-emprestimos";
 import { registroEmprestimosAction } from "~/handlers/actions/registro-emprestimos";
 import { RegistroEmprestimosGestao } from "~/components/RegistroEmprestimosGestao";
 import { PaginacaoInventario } from "~/components/PaginacaoInventario";
 
-export const loader = requireAuth(UserCategory.AMECICLISTAS)(registroEmprestimosLoader);
+export const loader = registroEmprestimosLoader;
 export const action = registroEmprestimosAction;
 
 export default function RegistroEmprestimos() {

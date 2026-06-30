@@ -3,16 +3,13 @@ import { Form, useLoaderData, useActionData, Link, useNavigation } from "@remix-
 import { useEffect, useState } from "react";
 import { getProducts, saveSale, saveDonation, getUsersFirebase } from "~/api/firebaseConnection.server";
 import { Product, ProductCategory, SaleStatus, UserData, UserCategory } from "~/utils/types";
-import { requireAuth } from "~/utils/authMiddleware";
 import { useAuth } from "~/utils/useAuth";
 import { isAuth } from "~/utils/isAuthorized";
 
-const originalLoader: LoaderFunction = async () => {
+export const loader: LoaderFunction = async () => {
   const products = await getProducts();
   return json({ products });
 };
-
-export const loader = requireAuth(UserCategory.AMECICLISTAS)(originalLoader);
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
