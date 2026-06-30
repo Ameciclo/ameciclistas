@@ -2,12 +2,11 @@ import { LoaderFunction, json } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { useState, useEffect } from "react";
 import { getSales, getDonations, getUsersFirebase } from "~/api/firebaseConnection.server";
-import { Sale, Donation, SaleStatus, UserCategory, UserData } from "~/utils/types";
-import { requireAuth } from "~/utils/authMiddleware";
+import { Sale, Donation, SaleStatus, UserData } from "~/utils/types";
 import { getTelegramUsersInfo } from "~/utils/users";
 import telegramInit from "~/utils/telegramInit";
 
-const originalLoader: LoaderFunction = async () => {
+export const loader: LoaderFunction = async () => {
   const [sales, donations, users] = await Promise.all([
     getSales(),
     getDonations(),
@@ -15,8 +14,6 @@ const originalLoader: LoaderFunction = async () => {
   ]);
   return json({ sales, donations, users });
 };
-
-export const loader = requireAuth(UserCategory.AMECICLISTAS)(originalLoader);
 
 export default function HistoricoVendas() {
   const { sales, donations, users } = useLoaderData<typeof loader>();

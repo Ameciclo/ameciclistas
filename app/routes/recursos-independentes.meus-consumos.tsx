@@ -5,9 +5,10 @@ import { getTelegramUsersInfo } from "~/utils/users";
 import telegramInit from "~/utils/telegramInit";
 import { getSales, getDonations, updateSaleStatus, updateDonationStatus, getUsersFirebase } from "~/api/firebaseConnection.server";
 import { Sale, Donation, SaleStatus, UserData, UserCategory } from "~/utils/types";
-import { requireAuth } from "~/utils/authMiddleware";
+import { getUserPermissions } from "~/utils/authMiddleware";
+import { isAuth } from "~/utils/isAuthorized";
 
-const originalLoader: LoaderFunction = async () => {
+export const loader: LoaderFunction = async () => {
   const [sales, donations, users] = await Promise.all([
     getSales(),
     getDonations(),
@@ -16,9 +17,13 @@ const originalLoader: LoaderFunction = async () => {
   return json({ sales, donations, users });
 };
 
-export const loader = requireAuth(UserCategory.AMECICLISTAS)(originalLoader);
-
 export const action: ActionFunction = async ({ request }) => {
+  const { userPermissions } = await getUserPermissions(request);
+  
+  if (!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) {
+    return json({ error: "Sem permissão" }, { status: 403 });
+  }
+  
   const formData = await request.formData();
   const action = formData.get("action");
   
