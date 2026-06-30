@@ -1,10 +1,15 @@
 import { json, redirect, type ActionFunctionArgs } from "@remix-run/node";
 import db from "~/api/firebaseAdmin.server.js";
 import type { Emprestimo, SolicitacaoEmprestimo } from "~/utils/types";
+import { UserCategory } from "~/utils/types";
+import { isAuth } from "~/utils/isAuthorized";
+import { getUserPermissions } from "~/utils/authMiddleware";
 
 export async function bibliotecaAction({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const action = formData.get("action") as string;
+  
+  const { userPermissions } = await getUserPermissions(request);
   
   try {
     if (action === "solicitar") {
@@ -31,6 +36,9 @@ export async function bibliotecaAction({ request }: ActionFunctionArgs) {
 
     
     if (action === "aprovar_solicitacao") {
+      if (!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) {
+        return json({ success: false, error: "Sem permissão para aprovar solicitações" }, { status: 403 });
+      }
       const solicitacao_id = formData.get("solicitacao_id") as string;
       
       try {
@@ -67,6 +75,9 @@ export async function bibliotecaAction({ request }: ActionFunctionArgs) {
     }
     
     if (action === "rejeitar_solicitacao") {
+      if (!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) {
+        return json({ success: false, error: "Sem permissão para rejeitar solicitações" }, { status: 403 });
+      }
       const solicitacao_id = formData.get("solicitacao_id") as string;
       
       try {
@@ -84,6 +95,9 @@ export async function bibliotecaAction({ request }: ActionFunctionArgs) {
     }
     
     if (action === "registrar_devolucao") {
+      if (!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) {
+        return json({ success: false, error: "Sem permissão para registrar devoluções" }, { status: 403 });
+      }
       const emprestimo_id = formData.get("emprestimo_id") as string;
       
       try {
@@ -109,6 +123,9 @@ export async function bibliotecaAction({ request }: ActionFunctionArgs) {
     }
     
     if (action === "cadastrar_livro") {
+      if (!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) {
+        return json({ success: false, error: "Sem permissão para cadastrar livros" }, { status: 403 });
+      }
       try {
         const dadosLivro = {
           title: formData.get("titulo") as string,
@@ -133,6 +150,9 @@ export async function bibliotecaAction({ request }: ActionFunctionArgs) {
     }
     
     if (action === "atualizar_livro") {
+      if (!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) {
+        return json({ success: false, error: "Sem permissão para editar livros" }, { status: 403 });
+      }
       try {
         const firebaseKey = formData.get("firebaseKey") as string;
         const dadosAtualizacao = {

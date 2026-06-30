@@ -4,11 +4,11 @@ import { isAuth } from "~/utils/isAuthorized";
 import { getUsersFirebase } from "~/api/firebaseConnection.server";
 import { getWebUser } from "~/api/webAuth.server";
 
-export async function getUserPermissions(request: Request): Promise<{ userPermissions: UserCategory[] }> {
+export async function getUserPermissions(request: Request): Promise<{ userPermissions: UserCategory[]; userId?: string }> {
   // Primeiro, verificar se é usuário web
   const webUser = await getWebUser(request);
   if (webUser) {
-    return { userPermissions: [webUser.category] };
+    return { userPermissions: [webUser.category], userId: webUser.firebaseId };
   }
 
   // Em desenvolvimento, extrair do contexto ou cookies
@@ -20,7 +20,7 @@ export async function getUserPermissions(request: Request): Promise<{ userPermis
       if (devUserMatch) {
         try {
           const devUser = JSON.parse(decodeURIComponent(devUserMatch[1]));
-          return { userPermissions: devUser.categories || [UserCategory.ANY_USER] };
+          return { userPermissions: devUser.categories || [UserCategory.ANY_USER], userId: String(devUser.id) };
         } catch (e) {
           // Fallback para ANY_USER se não conseguir parsear
         }
@@ -56,7 +56,7 @@ export async function getUserPermissions(request: Request): Promise<{ userPermis
       return { userPermissions: [UserCategory.ANY_USER] };
     }
 
-    return { userPermissions: [user.role as UserCategory] };
+    return { userPermissions: [user.role as UserCategory], userId };
   } catch (error) {
     console.error("Erro ao obter permissões:", error);
     return { userPermissions: [UserCategory.ANY_USER] };

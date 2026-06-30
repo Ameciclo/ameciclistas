@@ -3,7 +3,8 @@ import { Form, useLoaderData, useActionData, Link } from "@remix-run/react";
 import { useState, useEffect } from "react";
 import { getSales, getDonations, updateSaleStatus, updateDonationStatus, getUsersFirebase, getProducts, saveProduct, updateProduct, deleteProduct } from "~/api/firebaseConnection.server";
 import { Sale, Donation, SaleStatus, UserCategory, UserData, Product, ProductCategory } from "~/utils/types";
-import { requireAuth } from "~/utils/authMiddleware";
+import { requireAuth, getUserPermissions } from "~/utils/authMiddleware";
+import { isAuth } from "~/utils/isAuthorized";
 import { getTelegramUsersInfo } from "~/utils/users";
 import telegramInit from "~/utils/telegramInit";
 
@@ -20,6 +21,12 @@ const originalLoader: LoaderFunction = async () => {
 export const loader = requireAuth(UserCategory.PROJECT_COORDINATORS)(originalLoader);
 
 export const action: ActionFunction = async ({ request }) => {
+  const { userPermissions } = await getUserPermissions(request);
+  
+  if (!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) {
+    return json({ error: "Sem permissão para gerenciar recursos" }, { status: 403 });
+  }
+  
   const formData = await request.formData();
   const action = formData.get("action");
   

@@ -180,6 +180,7 @@ export default function RegistroEmprestimos() {
           solicitacoes={solicitacoes}
           itens={itensComDisponibilidade}
           users={users}
+          userPermissions={userPermissions}
         />
       )}
       

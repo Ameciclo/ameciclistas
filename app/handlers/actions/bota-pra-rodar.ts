@@ -5,12 +5,11 @@ import {
   rejeitarSolicitacaoBicicleta, 
   registrarDevolucaoBicicleta,
   cadastrarBicicleta,
-  atualizarBicicleta,
-  getUsersFirebase 
+  atualizarBicicleta
 } from "~/api/firebaseConnection.server";
-import { getTelegramUsersInfo } from "~/utils/users";
 import { UserCategory } from "~/utils/types";
 import { isAuth } from "~/utils/isAuthorized";
+import { getUserPermissions } from "~/utils/authMiddleware";
 
 export async function botaPraRodarAction({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
@@ -24,25 +23,8 @@ export async function botaPraRodarAction({ request }: ActionFunctionArgs) {
   }
 
   try {
-    const users = await getUsersFirebase();
-    
-    // Tentar obter userId do formData primeiro (mais confiável)
-    let userId = formData.get("user_id") as string;
-    
-    // Se não tiver no formData, tentar do Telegram
-    if (!userId) {
-      const telegramUser = getTelegramUsersInfo();
-      userId = telegramUser?.id?.toString();
-    }
-    
-    let userPermissions = [UserCategory.ANY_USER];
-    
-    if (process.env.NODE_ENV === "development" && !userId) {
-      userId = "123456789";
-      userPermissions = [UserCategory.PROJECT_COORDINATORS];
-    } else if (userId && users[userId]) {
-      userPermissions = [users[userId].role];
-    }
+    const { userPermissions, userId: authUserId } = await getUserPermissions(request);
+    const userId = authUserId || undefined;
     
     if (!userId) {
       throw new Error("Usuário não identificado. Verifique se está logado no Telegram.");
@@ -51,8 +33,6 @@ export async function botaPraRodarAction({ request }: ActionFunctionArgs) {
     if (process.env.NODE_ENV === "development") {
       console.log("Dados do usuário:", {
         userId,
-        userExists: !!users[userId],
-        userRole: users[userId]?.role,
         userPermissions
       });
     }

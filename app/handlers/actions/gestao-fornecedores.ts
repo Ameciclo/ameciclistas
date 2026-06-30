@@ -1,7 +1,16 @@
 import { redirect } from "@remix-run/node";
 import { saveSupplierToDatabase, updateSupplierInDatabase, removeSupplierFromDatabase } from "~/api/firebaseConnection.server";
+import { UserCategory } from "~/utils/types";
+import { isAuth } from "~/utils/isAuthorized";
+import { getUserPermissions } from "~/utils/authMiddleware";
 
 export async function action({ request }: { request: Request }) {
+  const { userPermissions } = await getUserPermissions(request);
+  
+  if (!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) {
+    return redirect("/unauthorized");
+  }
+  
   const formData = await request.formData();
 
   // Coleta campos do formulário

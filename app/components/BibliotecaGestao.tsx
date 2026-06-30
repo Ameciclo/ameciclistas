@@ -1,15 +1,19 @@
 import { useState } from "react";
 import { Form, useSubmit, useNavigation } from "@remix-run/react";
 import type { Emprestimo, SolicitacaoEmprestimo, Livro } from "~/utils/types";
+import { UserCategory } from "~/utils/types";
+import { isAuth } from "~/utils/isAuthorized";
 
 interface BibliotecaGestaoProps {
   emprestimos: Emprestimo[];
   solicitacoes: SolicitacaoEmprestimo[];
   livros: Livro[];
   users: any;
+  userPermissions: string[];
 }
 
-export function BibliotecaGestao({ emprestimos, solicitacoes, livros, users }: BibliotecaGestaoProps) {
+export function BibliotecaGestao({ emprestimos, solicitacoes, livros, users, userPermissions }: BibliotecaGestaoProps) {
+  const canManage = isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS);
   const getUserName = (userId: string) => {
     const user = users[userId];
     
@@ -96,7 +100,7 @@ export function BibliotecaGestao({ emprestimos, solicitacoes, livros, users }: B
       <div className="mb-6">
         <div className="bg-gray-50 p-4 rounded-lg">
           <h3 className="font-medium text-gray-900 mb-3">Seção:</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          <div className={`grid grid-cols-2 ${canManage ? 'md:grid-cols-4' : ''} gap-2`}>
             <button
               onClick={() => setActiveTab('emprestados')}
               className={`py-2 px-3 rounded text-sm font-medium ${
@@ -117,29 +121,33 @@ export function BibliotecaGestao({ emprestimos, solicitacoes, livros, users }: B
             >
               Solicitações Pendentes ({solicitacoes.length})
             </button>
-            <button
-              onClick={() => setActiveTab('cadastrar')}
-              className={`py-2 px-3 rounded text-sm font-medium ${
-                activeTab === 'cadastrar'
-                  ? "bg-teal-600 text-white"
-                  : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
-              }`}
-            >
-              Cadastrar Livro
-            </button>
-            <button
-              onClick={() => {
-                setActiveTab('editar');
-                setLivroSelecionado(null);
-              }}
-              className={`py-2 px-3 rounded text-sm font-medium ${
-                activeTab === 'editar'
-                  ? "bg-teal-600 text-white"
-                  : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
-              }`}
-            >
-              Editar Livro
-            </button>
+            {canManage && (
+              <>
+                <button
+                  onClick={() => setActiveTab('cadastrar')}
+                  className={`py-2 px-3 rounded text-sm font-medium ${
+                    activeTab === 'cadastrar'
+                      ? "bg-teal-600 text-white"
+                      : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+                  }`}
+                >
+                  Cadastrar Livro
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveTab('editar');
+                    setLivroSelecionado(null);
+                  }}
+                  className={`py-2 px-3 rounded text-sm font-medium ${
+                    activeTab === 'editar'
+                      ? "bg-teal-600 text-white"
+                      : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+                  }`}
+                >
+                  Editar Livro
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -167,13 +175,15 @@ export function BibliotecaGestao({ emprestimos, solicitacoes, livros, users }: B
                     </p>
                   </div>
                   <div className="flex justify-center">
-                    <button
-                      onClick={() => handleRegistrarDevolucao(emp.id)}
-                      disabled={isSubmitting}
-                      className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                    >
-                      {isSubmitting ? "Processando..." : "Registrar Devolução"}
-                    </button>
+                    {canManage && (
+                      <button
+                        onClick={() => handleRegistrarDevolucao(emp.id)}
+                        disabled={isSubmitting}
+                        className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                      >
+                        {isSubmitting ? "Processando..." : "Registrar Devolução"}
+                      </button>
+                    )}
                   </div>
                 </div>
               );
@@ -200,20 +210,24 @@ export function BibliotecaGestao({ emprestimos, solicitacoes, livros, users }: B
                   </div>
 
                   <div className="flex gap-2 justify-center">
-                    <button
-                      onClick={() => handleAprovarSolicitacao(sol.id)}
-                      disabled={isSubmitting}
-                      className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                    >
-                      {isSubmitting ? "Processando..." : "Aprovar"}
-                    </button>
-                    <button 
-                      onClick={() => handleRejeitarSolicitacao(sol.id)}
-                      disabled={isSubmitting}
-                      className="bg-red-500 text-white px-6 py-2 rounded hover:bg-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                    >
-                      {isSubmitting ? "Processando..." : "Rejeitar"}
-                    </button>
+                    {canManage && (
+                      <>
+                        <button
+                          onClick={() => handleAprovarSolicitacao(sol.id)}
+                          disabled={isSubmitting}
+                          className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        >
+                          {isSubmitting ? "Processando..." : "Aprovar"}
+                        </button>
+                        <button 
+                          onClick={() => handleRejeitarSolicitacao(sol.id)}
+                          disabled={isSubmitting}
+                          className="bg-red-500 text-white px-6 py-2 rounded hover:bg-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        >
+                          {isSubmitting ? "Processando..." : "Rejeitar"}
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               );

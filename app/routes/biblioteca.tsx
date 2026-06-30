@@ -215,6 +215,7 @@ export default function Biblioteca() {
           solicitacoes={solicitacoes}
           livros={livrosComDisponibilidade}
           users={users}
+          userPermissions={userPermissions}
         />
       )}
       

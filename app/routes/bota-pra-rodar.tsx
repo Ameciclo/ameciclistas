@@ -188,6 +188,7 @@ export default function BotaPraRodar() {
           solicitacoes={solicitacoes}
           bicicletas={bicicletasComDisponibilidade}
           users={users}
+          userPermissions={userPermissions}
         />
       )}
       

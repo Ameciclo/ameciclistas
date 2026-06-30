@@ -1,15 +1,19 @@
 import { useState, useEffect } from "react";
 import { Form, useActionData, useNavigation } from "@remix-run/react";
 import type { EmprestimoInventario, SolicitacaoEmprestimoInventario, ItemInventario, UsuarioComDados } from "~/utils/types";
+import { UserCategory } from "~/utils/types";
+import { isAuth } from "~/utils/isAuthorized";
 
 interface RegistroEmprestimosGestaoProps {
   emprestimos: EmprestimoInventario[];
   solicitacoes: SolicitacaoEmprestimoInventario[];
   itens: ItemInventario[];
   users: Record<string, UsuarioComDados>;
+  userPermissions: string[];
 }
 
-export function RegistroEmprestimosGestao({ emprestimos, solicitacoes, itens, users }: RegistroEmprestimosGestaoProps) {
+export function RegistroEmprestimosGestao({ emprestimos, solicitacoes, itens, users, userPermissions }: RegistroEmprestimosGestaoProps) {
+  const canManage = isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS);
   const [abaCadastro, setAbaCadastro] = useState(false);
   const actionData = useActionData();
   const [novoItem, setNovoItem] = useState({
@@ -55,7 +59,7 @@ export function RegistroEmprestimosGestao({ emprestimos, solicitacoes, itens, us
       <div className="mb-6">
         <div className="bg-gray-50 p-4 rounded-lg">
           <h3 className="font-medium text-gray-900 mb-3">Seção:</h3>
-          <div className="grid grid-cols-2 gap-2">
+          <div className={`grid ${canManage ? 'grid-cols-2' : 'grid-cols-1'} gap-2`}>
             <button
               onClick={() => setAbaCadastro(false)}
               className={`py-2 px-3 rounded text-sm font-medium ${
@@ -66,16 +70,18 @@ export function RegistroEmprestimosGestao({ emprestimos, solicitacoes, itens, us
             >
               Gestão de Empréstimos
             </button>
-            <button
-              onClick={() => setAbaCadastro(true)}
-              className={`py-2 px-3 rounded text-sm font-medium ${
-                abaCadastro
-                  ? "bg-teal-600 text-white"
-                  : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
-              }`}
-            >
-              Cadastrar Item
-            </button>
+            {canManage && (
+              <button
+                onClick={() => setAbaCadastro(true)}
+                className={`py-2 px-3 rounded text-sm font-medium ${
+                  abaCadastro
+                    ? "bg-teal-600 text-white"
+                    : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+                }`}
+              >
+                Cadastrar Item
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -237,28 +243,30 @@ export function RegistroEmprestimosGestao({ emprestimos, solicitacoes, itens, us
                         <p className="text-sm text-gray-600">Solicitante: {getUserName(solicitacao.usuario_id)}</p>
                         <p className="text-sm text-gray-600">Data: {solicitacao.data_solicitacao}</p>
                       </div>
-                      <div className="flex gap-2">
-                        <Form method="post" className="inline">
-                          <input type="hidden" name="action" value="aprovar_solicitacao" />
-                          <input type="hidden" name="solicitacao_id" value={solicitacao.id} />
-                          <button
-                            type="submit"
-                            className="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600"
-                          >
-                            Aprovar
-                          </button>
-                        </Form>
-                        <Form method="post" className="inline">
-                          <input type="hidden" name="action" value="rejeitar_solicitacao" />
-                          <input type="hidden" name="solicitacao_id" value={solicitacao.id} />
-                          <button
-                            type="submit"
-                            className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
-                          >
-                            Rejeitar
-                          </button>
-                        </Form>
-                      </div>
+                      {canManage && (
+                        <div className="flex gap-2">
+                          <Form method="post" className="inline">
+                            <input type="hidden" name="action" value="aprovar_solicitacao" />
+                            <input type="hidden" name="solicitacao_id" value={solicitacao.id} />
+                            <button
+                              type="submit"
+                              className="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600"
+                            >
+                              Aprovar
+                            </button>
+                          </Form>
+                          <Form method="post" className="inline">
+                            <input type="hidden" name="action" value="rejeitar_solicitacao" />
+                            <input type="hidden" name="solicitacao_id" value={solicitacao.id} />
+                            <button
+                              type="submit"
+                              className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
+                            >
+                              Rejeitar
+                            </button>
+                          </Form>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -282,16 +290,18 @@ export function RegistroEmprestimosGestao({ emprestimos, solicitacoes, itens, us
                         <p className="text-sm text-gray-600">Usuário: {getUserName(emprestimo.usuario_id)}</p>
                         <p className="text-sm text-gray-600">Data de saída: {emprestimo.data_saida}</p>
                       </div>
-                      <Form method="post" className="inline">
-                        <input type="hidden" name="action" value="registrar_devolucao" />
-                        <input type="hidden" name="emprestimo_id" value={emprestimo.id} />
-                        <button
-                          type="submit"
-                          className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
-                        >
-                          Registrar Devolução
-                        </button>
-                      </Form>
+                      {canManage && (
+                        <Form method="post" className="inline">
+                          <input type="hidden" name="action" value="registrar_devolucao" />
+                          <input type="hidden" name="emprestimo_id" value={emprestimo.id} />
+                          <button
+                            type="submit"
+                            className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
+                          >
+                            Registrar Devolução
+                          </button>
+                        </Form>
+                      )}
                     </div>
                   </div>
                 ))}

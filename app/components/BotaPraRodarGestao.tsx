@@ -1,15 +1,19 @@
 import { useState, useEffect } from "react";
 import { Form, useSubmit } from "@remix-run/react";
 import type { EmprestimoBicicleta, SolicitacaoEmprestimoBicicleta, Bicicleta } from "~/utils/types";
+import { UserCategory } from "~/utils/types";
+import { isAuth } from "~/utils/isAuthorized";
 
 interface BotaPraRodarGestaoProps {
   emprestimos: EmprestimoBicicleta[];
   solicitacoes: SolicitacaoEmprestimoBicicleta[];
   bicicletas: Bicicleta[];
   users: any;
+  userPermissions: string[];
 }
 
-export function BotaPraRodarGestao({ emprestimos, solicitacoes, bicicletas, users }: BotaPraRodarGestaoProps) {
+export function BotaPraRodarGestao({ emprestimos, solicitacoes, bicicletas, users, userPermissions }: BotaPraRodarGestaoProps) {
+  const canManage = isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS);
   const [currentUserId, setCurrentUserId] = useState<string>('');
   
   useEffect(() => {
@@ -88,7 +92,7 @@ export function BotaPraRodarGestao({ emprestimos, solicitacoes, bicicletas, user
       <div className="mb-6">
         <div className="bg-gray-50 p-4 rounded-lg">
           <h3 className="font-medium text-gray-900 mb-3">Seção:</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          <div className={`grid grid-cols-2 ${canManage ? 'md:grid-cols-4' : ''} gap-2`}>
             <button
               onClick={() => setActiveTab('emprestados')}
               className={`py-2 px-3 rounded text-sm font-medium ${
@@ -109,29 +113,33 @@ export function BotaPraRodarGestao({ emprestimos, solicitacoes, bicicletas, user
             >
               Solicitações Pendentes ({solicitacoes.length})
             </button>
-            <button
-              onClick={() => setActiveTab('cadastrar')}
-              className={`py-2 px-3 rounded text-sm font-medium ${
-                activeTab === 'cadastrar'
-                  ? "bg-teal-600 text-white"
-                  : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
-              }`}
-            >
-              Cadastrar Bicicleta
-            </button>
-              <button
-                onClick={() => {
-                  setActiveTab('editar');
-                  setBicicletaSelecionada(null);
-                }}
-                className={`py-2 px-3 rounded text-sm font-medium ${
-                  activeTab === 'editar'
-                    ? "bg-teal-600 text-white"
-                    : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
-                }`}
-              >
-                Editar Bicicleta
-              </button>
+            {canManage && (
+              <>
+                <button
+                  onClick={() => setActiveTab('cadastrar')}
+                  className={`py-2 px-3 rounded text-sm font-medium ${
+                    activeTab === 'cadastrar'
+                      ? "bg-teal-600 text-white"
+                      : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+                  }`}
+                >
+                  Cadastrar Bicicleta
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveTab('editar');
+                    setBicicletaSelecionada(null);
+                  }}
+                  className={`py-2 px-3 rounded text-sm font-medium ${
+                    activeTab === 'editar'
+                      ? "bg-teal-600 text-white"
+                      : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+                  }`}
+                >
+                  Editar Bicicleta
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -159,12 +167,14 @@ export function BotaPraRodarGestao({ emprestimos, solicitacoes, bicicletas, user
                     </p>
                   </div>
                   <div className="flex justify-center">
-                    <button
-                      onClick={() => handleRegistrarDevolucao(emp.id)}
-                      className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600"
-                    >
-                      Registrar Devolução
-                    </button>
+                    {canManage && (
+                      <button
+                        onClick={() => handleRegistrarDevolucao(emp.id)}
+                        className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600"
+                      >
+                        Registrar Devolução
+                      </button>
+                    )}
                   </div>
                 </div>
               );
@@ -191,18 +201,22 @@ export function BotaPraRodarGestao({ emprestimos, solicitacoes, bicicletas, user
                   </div>
 
                   <div className="flex gap-2 justify-center">
-                    <button
-                      onClick={() => handleAprovarSolicitacao(sol.id)}
-                      className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600"
-                    >
-                      Aprovar
-                    </button>
-                    <button 
-                      onClick={() => handleRejeitarSolicitacao(sol.id)}
-                      className="bg-red-500 text-white px-6 py-2 rounded hover:bg-red-600"
-                    >
-                      Rejeitar
-                    </button>
+                    {canManage && (
+                      <>
+                        <button
+                          onClick={() => handleAprovarSolicitacao(sol.id)}
+                          className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600"
+                        >
+                          Aprovar
+                        </button>
+                        <button 
+                          onClick={() => handleRejeitarSolicitacao(sol.id)}
+                          className="bg-red-500 text-white px-6 py-2 rounded hover:bg-red-600"
+                        >
+                          Rejeitar
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               );

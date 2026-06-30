@@ -5,12 +5,11 @@ import {
   rejeitarSolicitacaoInventario, 
   registrarDevolucaoInventario,
   cadastrarItemInventario,
-  getUsersFirebase,
   saveProduct
 } from "~/api/firebaseConnection.server";
-import { getTelegramUsersInfo } from "~/utils/users";
 import { UserCategory } from "~/utils/types";
 import { isAuth } from "~/utils/isAuthorized";
+import { getUserPermissions } from "~/utils/authMiddleware";
 
 export async function registroEmprestimosAction({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
@@ -22,18 +21,8 @@ export async function registroEmprestimosAction({ request }: ActionFunctionArgs)
   console.log("===================================");
 
   try {
-    const users = await getUsersFirebase();
-    const telegramUser = getTelegramUsersInfo();
-    
-    let userId = telegramUser?.id;
-    let userPermissions = [UserCategory.ANY_USER];
-    
-    if (process.env.NODE_ENV === "development" && !userId) {
-      userId = 123456789;
-      userPermissions = [UserCategory.PROJECT_COORDINATORS];
-    } else if (userId && users[userId]) {
-      userPermissions = [users[userId].role];
-    }
+    const { userPermissions, userId: authUserId } = await getUserPermissions(request);
+    const userId = authUserId ? Number(authUserId) : undefined;
 
     switch (action) {
       case "solicitar":
