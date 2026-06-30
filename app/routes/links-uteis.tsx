@@ -1,4 +1,4 @@
-import { json, redirect } from "@remix-run/node";
+import { json } from "@remix-run/node";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link, useFetcher, useNavigate } from "@remix-run/react";
 import { BackButton } from "~/components/Forms/Buttons";
@@ -10,14 +10,6 @@ import { incrementClick } from "~/handlers/actions/links-uteis";
 import { useEffect } from "react";
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const url = new URL(request.url);
-  const gestao = url.searchParams.get('gestao');
-  
-  // Se tem parâmetro gestao=true, redirecionar para a página de gestão
-  if (gestao === 'true') {
-    return redirect('/links-uteis/gestao');
-  }
-  
   const links = await loadLinksUteis(LinkCategory.AMECICLISTAS);
   return json({ links });
 }

@@ -111,13 +111,6 @@ export default function GerenciarRecursos() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('gestao') === 'true') {
-      // Página está em modo gestão
-    }
-  }, []);
-
-  useEffect(() => {
     telegramInit();
     const userData = getTelegramUsersInfo();
     setUser(userData);

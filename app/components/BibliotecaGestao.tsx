@@ -67,14 +67,14 @@ export function BibliotecaGestao({ emprestimos, solicitacoes, livros, users, use
     const formData = new FormData();
     formData.append("action", "registrar_devolucao");
     formData.append("emprestimo_id", emprestimoId);
-    submit(formData, { method: "post", action: "/biblioteca?gestao=true" });
+    submit(formData, { method: "post", action: "/biblioteca/gestao" });
   };
 
   const handleAprovarSolicitacao = (solicitacaoId: string) => {
     const formData = new FormData();
     formData.append("action", "aprovar_solicitacao");
     formData.append("solicitacao_id", solicitacaoId);
-    submit(formData, { method: "post", action: "/biblioteca?gestao=true" });
+    submit(formData, { method: "post", action: "/biblioteca/gestao" });
   };
 
   const getLivroInfo = (subcodigo: string) => {
@@ -90,7 +90,7 @@ export function BibliotecaGestao({ emprestimos, solicitacoes, livros, users, use
     const formData = new FormData();
     formData.append("action", "rejeitar_solicitacao");
     formData.append("solicitacao_id", solicitacaoId);
-    submit(formData, { method: "post", action: "/biblioteca?gestao=true" });
+    submit(formData, { method: "post", action: "/biblioteca/gestao" });
   };
 
   return (

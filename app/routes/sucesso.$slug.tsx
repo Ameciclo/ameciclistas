@@ -35,74 +35,74 @@ const messages = {
   "biblioteca-aprovada": {
     title: "✅ Solicitação aprovada com sucesso!",
     message: "O empréstimo foi registrado e o usuário foi notificado.",
-    actions: [{ label: "📚 Voltar à Biblioteca", to: "/biblioteca?gestao=true" }],
+    actions: [{ label: "📚 Voltar à Biblioteca", to: "/biblioteca/gestao" }],
   },
   "biblioteca-rejeitada": {
     title: "✅ Solicitação rejeitada!",
     message: "A solicitação foi rejeitada e o usuário foi notificado.",
-    actions: [{ label: "📚 Voltar à Biblioteca", to: "/biblioteca?gestao=true" }],
+    actions: [{ label: "📚 Voltar à Biblioteca", to: "/biblioteca/gestao" }],
   },
   "biblioteca-devolucao": {
     title: "✅ Devolução registrada com sucesso!",
     message: "O livro foi marcado como devolvido no sistema.",
-    actions: [{ label: "📚 Voltar à Biblioteca", to: "/biblioteca?gestao=true" }],
+    actions: [{ label: "📚 Voltar à Biblioteca", to: "/biblioteca/gestao" }],
   },
   "biblioteca-cadastro": {
     title: "✅ Livro cadastrado com sucesso!",
     message: "O novo livro foi adicionado ao acervo da biblioteca.",
-    actions: [{ label: "📚 Voltar à Biblioteca", to: "/biblioteca?gestao=true" }],
+    actions: [{ label: "📚 Voltar à Biblioteca", to: "/biblioteca/gestao" }],
   },
   "biblioteca-atualizada": {
     title: "✅ Livro atualizado com sucesso!",
     message: "As informações do livro foram atualizadas.",
-    actions: [{ label: "📚 Voltar à Biblioteca", to: "/biblioteca?gestao=true" }],
+    actions: [{ label: "📚 Voltar à Biblioteca", to: "/biblioteca/gestao" }],
   },
   // Bota pra Rodar
   "bicicleta-aprovada": {
     title: "✅ Empréstimo aprovado com sucesso!",
     message: "A bicicleta foi liberada para o usuário.",
-    actions: [{ label: "🚴 Voltar ao Bota pra Rodar", to: "/bota-pra-rodar?gestao=true" }],
+    actions: [{ label: "🚴 Voltar ao Bota pra Rodar", to: "/bota-pra-rodar/gestao" }],
   },
   "bicicleta-rejeitada": {
     title: "✅ Solicitação rejeitada!",
     message: "A solicitação foi rejeitada e o usuário foi notificado.",
-    actions: [{ label: "🚴 Voltar ao Bota pra Rodar", to: "/bota-pra-rodar?gestao=true" }],
+    actions: [{ label: "🚴 Voltar ao Bota pra Rodar", to: "/bota-pra-rodar/gestao" }],
   },
   "bicicleta-devolucao": {
     title: "✅ Devolução registrada com sucesso!",
     message: "A bicicleta foi marcada como devolvida no sistema.",
-    actions: [{ label: "🚴 Voltar ao Bota pra Rodar", to: "/bota-pra-rodar?gestao=true" }],
+    actions: [{ label: "🚴 Voltar ao Bota pra Rodar", to: "/bota-pra-rodar/gestao" }],
   },
   "bicicleta-cadastro": {
     title: "✅ Bicicleta cadastrada com sucesso!",
     message: "A nova bicicleta foi adicionada ao sistema.",
-    actions: [{ label: "🚴 Voltar ao Bota pra Rodar", to: "/bota-pra-rodar?gestao=true" }],
+    actions: [{ label: "🚴 Voltar ao Bota pra Rodar", to: "/bota-pra-rodar/gestao" }],
   },
   "bicicleta-atualizada": {
     title: "✅ Bicicleta atualizada com sucesso!",
     message: "As informações da bicicleta foram atualizadas.",
-    actions: [{ label: "🚴 Voltar ao Bota pra Rodar", to: "/bota-pra-rodar?gestao=true" }],
+    actions: [{ label: "🚴 Voltar ao Bota pra Rodar", to: "/bota-pra-rodar/gestao" }],
   },
   // Registro de Empréstimos
   "inventario-aprovado": {
     title: "✅ Empréstimo aprovado com sucesso!",
     message: "O item foi liberado para o usuário.",
-    actions: [{ label: "📦 Voltar ao Registro de Empréstimos", to: "/registro-emprestimos?gestao=true" }],
+    actions: [{ label: "📦 Voltar ao Registro de Empréstimos", to: "/registro-emprestimos/gestao" }],
   },
   "inventario-rejeitado": {
     title: "✅ Solicitação rejeitada!",
     message: "A solicitação foi rejeitada e o usuário foi notificado.",
-    actions: [{ label: "📦 Voltar ao Registro de Empréstimos", to: "/registro-emprestimos?gestao=true" }],
+    actions: [{ label: "📦 Voltar ao Registro de Empréstimos", to: "/registro-emprestimos/gestao" }],
   },
   "inventario-devolucao": {
     title: "✅ Devolução registrada com sucesso!",
     message: "O item foi marcado como devolvido no sistema.",
-    actions: [{ label: "📦 Voltar ao Registro de Empréstimos", to: "/registro-emprestimos?gestao=true" }],
+    actions: [{ label: "📦 Voltar ao Registro de Empréstimos", to: "/registro-emprestimos/gestao" }],
   },
   "inventario-cadastro": {
     title: "✅ Item cadastrado com sucesso!",
     message: "O novo item foi adicionado ao inventário.",
-    actions: [{ label: "📦 Voltar ao Registro de Empréstimos", to: "/registro-emprestimos?gestao=true" }],
+    actions: [{ label: "📦 Voltar ao Registro de Empréstimos", to: "/registro-emprestimos/gestao" }],
   },
 };
 

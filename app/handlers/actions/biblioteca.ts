@@ -115,7 +115,7 @@ export async function bibliotecaAction({ request }: ActionFunctionArgs) {
           updated_at: new Date().toISOString()
         });
         
-        return redirect("/biblioteca?gestao=true");
+        return redirect("/biblioteca/gestao");
       } catch (error) {
         console.error("Erro ao registrar devolução:", error);
         return json({ success: false, error: "Erro ao registrar devolução" });

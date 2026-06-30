@@ -206,7 +206,7 @@ export default function Index() {
               )}
               {showGestaoButton && (
                 <Link
-                  to={`${link.to}?gestao=true`}
+                  to={`${link.to}/gestao`}
                   className="bg-orange-500 text-white px-3 py-3 rounded-md hover:bg-orange-600 transition-colors text-lg block no-underline flex items-center justify-center"
                   title="Gestão"
                 >
