@@ -1,12 +1,16 @@
 import { json, redirect, type ActionFunctionArgs, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { useAuth } from "~/utils/useAuth";
-import { UserCategory, type Bicicleta, type EmprestimoBicicleta } from "~/utils/types";
+import { useState, useEffect } from "react";
+import { UserCategory, type Bicicleta, type EmprestimoBicicleta, type UserData } from "~/utils/types";
 import { isAuth } from "~/utils/isAuthorized";
 import { getUserPermissions } from "~/utils/authMiddleware";
 import { getBicicletas, getEmprestimosBicicletas, getSolicitacoesBicicletas, getUsersFirebase, solicitarEmprestimoBicicleta, aprovarSolicitacaoBicicleta, rejeitarSolicitacaoBicicleta, registrarDevolucaoBicicleta, cadastrarBicicleta, atualizarBicicleta } from "~/api/firebaseConnection.server";
 import { BotaPraRodarGestao } from "~/components/BotaPraRodarGestao";
 import { BackButton } from "~/components/Forms/Buttons";
+import { useDevUser } from "~/utils/useDevUser";
+import { createDevTelegramUserWithCategories } from "~/utils/devTelegram";
+import { getTelegramUsersInfo } from "~/utils/users";
+import telegramInit from "~/utils/telegramInit";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   try {
@@ -117,7 +121,38 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export default function BotaPraRodarGestaoRoute() {
   const { bicicletas, emprestimos, solicitacoes, users } = useLoaderData<typeof loader>();
-  const { userPermissions } = useAuth();
+  const [user, setUser] = useState<UserData | null>(null);
+  const [userPermissions, setUserPermissions] = useState<string[]>([UserCategory.ANY_USER]);
+
+  const { devUser, isDevMode } = useDevUser();
+
+  useEffect(() => {
+    if (isDevMode && devUser) {
+      const devTelegramUser = createDevTelegramUserWithCategories(devUser);
+      setUserPermissions(devTelegramUser.categories);
+      setUser({
+        id: devUser.id,
+        first_name: devUser.name.split(" ")[0],
+        last_name: devUser.name.split(" ").slice(1).join(" ")
+      });
+    } else {
+      try {
+        telegramInit();
+        const userData = getTelegramUsersInfo();
+        setUser(userData);
+      } catch (error) {
+        console.error('Erro ao inicializar Telegram:', error);
+        setUser(null);
+      }
+    }
+  }, [devUser, isDevMode]);
+
+  useEffect(() => {
+    if (!isDevMode && user?.id && users[user.id]) {
+      const userRole = users[user.id].role;
+      setUserPermissions([userRole]);
+    }
+  }, [user, users, isDevMode]);
 
   return (
     <div className="container mx-auto py-8 px-4">

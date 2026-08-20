@@ -3,6 +3,7 @@ import { Form, useSubmit, useNavigation } from "@remix-run/react";
 import type { Emprestimo, SolicitacaoEmprestimo, Livro } from "~/utils/types";
 import { UserCategory } from "~/utils/types";
 import { isAuth } from "~/utils/isAuthorized";
+import { formatPhone } from "~/utils/format";
 
 interface BibliotecaGestaoProps {
   emprestimos: Emprestimo[];
@@ -14,6 +15,8 @@ interface BibliotecaGestaoProps {
 
 export function BibliotecaGestao({ emprestimos, solicitacoes, livros, users, userPermissions }: BibliotecaGestaoProps) {
   const canManage = isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS);
+  const isAmecicloCoordinator = isAuth(userPermissions, UserCategory.AMECICLO_COORDINATORS);
+
   const getUserName = (userId: string) => {
     const user = users[userId];
     
@@ -43,6 +46,15 @@ export function BibliotecaGestao({ emprestimos, solicitacoes, livros, users, use
     
     // Por último, nome genérico ou ID
     return user.name || `Usuário ${userId}`;
+  };
+
+  const getUserPhone = (userId: string) => {
+    const user = users[userId];
+    if (!user) return null;
+    return user.ameciclo_register?.telefone
+      || user.library_register?.telefone
+      || user.personal?.telefone
+      || null;
   };
 
   const getUserInfo = (userId: string) => {
@@ -94,7 +106,7 @@ export function BibliotecaGestao({ emprestimos, solicitacoes, livros, users, use
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
+    <div>
       <h2 className="text-2xl font-bold mb-4">Gestão da Biblioteca</h2>
       
       <div className="mb-6">
@@ -170,6 +182,11 @@ export function BibliotecaGestao({ emprestimos, solicitacoes, livros, users, use
                     <p className="text-gray-600 mb-1">Código: <strong>{emp.subcodigo}</strong></p>
                     <p className="text-gray-600 mb-1">Data de saída: {emp.data_saida}</p>
                     <p className="text-gray-600 mb-1">Solicitante: <strong>{getUserName(emp.usuario_id)}</strong></p>
+                    {isAmecicloCoordinator && getUserPhone(emp.usuario_id) && (
+                      <p className="text-sm text-gray-500">
+                        Telefone: {formatPhone(getUserPhone(emp.usuario_id)!)}
+                      </p>
+                    )}
                     <p className={`text-sm ${diasEmprestado > 30 ? 'text-red-600' : 'text-gray-600'}`}>
                       {diasEmprestado} dias emprestado
                     </p>
@@ -207,6 +224,11 @@ export function BibliotecaGestao({ emprestimos, solicitacoes, livros, users, use
                     <p className="text-gray-600 mb-1">Código: <strong>{sol.subcodigo}</strong></p>
                     <p className="text-gray-600 mb-1">Data da solicitação: {sol.data_solicitacao}</p>
                     <p className="text-gray-600 mb-1">Solicitante: <strong>{getUserName(sol.usuario_id)}</strong></p>
+                    {isAmecicloCoordinator && getUserPhone(sol.usuario_id) && (
+                      <p className="text-sm text-gray-500">
+                        Telefone: {formatPhone(getUserPhone(sol.usuario_id)!)}
+                      </p>
+                    )}
                   </div>
 
                   <div className="flex gap-2 justify-center">

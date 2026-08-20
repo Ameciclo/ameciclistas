@@ -7,6 +7,9 @@ import { getUserPermissions } from "~/utils/authMiddleware";
 import { isAuth } from "~/utils/isAuthorized";
 import { getTelegramUsersInfo } from "~/utils/users";
 import telegramInit from "~/utils/telegramInit";
+import { useDevUser } from "~/utils/useDevUser";
+import { createDevTelegramUserWithCategories } from "~/utils/devTelegram";
+import { formatPhone } from "~/utils/format";
 
 export const loader: LoaderFunction = async () => {
   const [sales, donations, users, products] = await Promise.all([
@@ -105,21 +108,40 @@ export const action: ActionFunction = async ({ request }) => {
 export default function GerenciarRecursos() {
   const { sales, donations, users, products } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const [activeTab, setActiveTab] = useState<"pending" | "confirmed" | "products" | "createProduct">("pending");
+  const [activeTab, setActiveTab] = useState<"pending" | "confirmed" | "products" | "createProduct" | "devedores">("pending");
   const [user, setUser] = useState<UserData | null>(null);
-  const [userPermissions, setUserPermissions] = useState<string[]>([]);
+  const [userPermissions, setUserPermissions] = useState<string[]>([UserCategory.ANY_USER]);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+
+  const { devUser, isDevMode } = useDevUser();
   
   useEffect(() => {
-    telegramInit();
-    const userData = getTelegramUsersInfo();
-    setUser(userData);
-    
-    if (userData?.id && users[userData.id]) {
-      const userRole = users[userData.id].role;
+    if (isDevMode && devUser) {
+      const devTelegramUser = createDevTelegramUserWithCategories(devUser);
+      setUserPermissions(devTelegramUser.categories);
+      setUser({
+        id: devUser.id,
+        first_name: devUser.name.split(" ")[0],
+        last_name: devUser.name.split(" ").slice(1).join(" ")
+      });
+    } else {
+      try {
+        telegramInit();
+        const userData = getTelegramUsersInfo();
+        setUser(userData);
+      } catch (error) {
+        console.error('Erro ao inicializar Telegram:', error);
+        setUser(null);
+      }
+    }
+  }, [devUser, isDevMode]);
+
+  useEffect(() => {
+    if (!isDevMode && user?.id && users[user.id]) {
+      const userRole = users[user.id].role;
       setUserPermissions([userRole]);
     }
-  }, [users]);
+  }, [user, users, isDevMode]);
 
   const salesList = sales ? Object.values(sales) as Sale[] : [];
   const donationsList = donations ? Object.values(donations) as Donation[] : [];
@@ -137,6 +159,57 @@ export default function GerenciarRecursos() {
   const confirmedDonations = donationsList
     .filter(donation => donation.status === SaleStatus.CONFIRMED)
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  const isProjectCoordinator = isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS);
+  const isAmecicloCoordinator = isAuth(userPermissions, UserCategory.AMECICLO_COORDINATORS);
+
+  const getUserPhone = (userId: number) => {
+    const userData = users[userId];
+    if (!userData) return null;
+    return userData.ameciclo_register?.telefone
+      || userData.library_register?.telefone
+      || userData.personal?.telefone
+      || null;
+  };
+
+  const pendingUnpaidSales = salesList.filter(sale => sale.status === SaleStatus.PENDING);
+  const pendingUnpaidDonations = donationsList.filter(donation => donation.status === SaleStatus.PENDING);
+
+  const debtorMap = new Map<number, { userId: number; userName: string; sales: Sale[]; donations: Donation[]; totalOwed: number }>();
+
+  pendingUnpaidSales.forEach(sale => {
+    if (!debtorMap.has(sale.userId)) {
+      debtorMap.set(sale.userId, { userId: sale.userId, userName: sale.userName, sales: [], donations: [], totalOwed: 0 });
+    }
+    const entry = debtorMap.get(sale.userId)!;
+    entry.sales.push(sale);
+    entry.totalOwed += sale.totalValue;
+  });
+
+  pendingUnpaidDonations.forEach(donation => {
+    if (!debtorMap.has(donation.userId)) {
+      debtorMap.set(donation.userId, { userId: donation.userId, userName: donation.userName, sales: [], donations: [], totalOwed: 0 });
+    }
+    const entry = debtorMap.get(donation.userId)!;
+    entry.donations.push(donation);
+    entry.totalOwed += donation.value;
+  });
+
+  const debtors = Array.from(debtorMap.values()).sort((a, b) => b.totalOwed - a.totalOwed);
+
+  const [expandedDebtors, setExpandedDebtors] = useState<Set<number>>(new Set());
+
+  const toggleDebtor = (userId: number) => {
+    setExpandedDebtors(prev => {
+      const next = new Set(prev);
+      if (next.has(userId)) {
+        next.delete(userId);
+      } else {
+        next.add(userId);
+      }
+      return next;
+    });
+  };
 
   const getStatusLabel = (status: SaleStatus) => {
     const labels = {
@@ -251,6 +324,18 @@ export default function GerenciarRecursos() {
             >
               {editingProduct ? "Editar Produto" : "Criar Produto"}
             </button>
+            {isProjectCoordinator && (
+              <button
+                onClick={() => setActiveTab("devedores")}
+                className={`py-2 px-3 rounded text-sm font-medium ${
+                  activeTab === "devedores"
+                    ? "bg-teal-600 text-white"
+                    : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+                }`}
+              >
+                Devedores ({debtors.length})
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -608,6 +693,95 @@ export default function GerenciarRecursos() {
             )}
           </div>
         </Form>
+      )}
+
+      {activeTab === "devedores" && (
+        <div className="space-y-6">
+          {debtors.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-600">Não há pessoas com pagamentos pendentes.</p>
+            </div>
+          ) : (
+            <>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <p className="text-blue-800">
+                  <strong>{debtors.length}</strong> {debtors.length === 1 ? "pessoa está devendo" : "pessoas estão devendo"}, 
+                  total de <strong>R$ {debtors.reduce((sum, d) => sum + d.totalOwed, 0).toFixed(2)}</strong>
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                {debtors.map((debtor) => (
+                  <div key={debtor.userId} className="bg-white border border-gray-200 rounded-lg shadow-sm">
+                    <button
+                      onClick={() => toggleDebtor(debtor.userId)}
+                      className="w-full p-4 text-left flex justify-between items-center hover:bg-gray-50 rounded-lg"
+                    >
+                      <div>
+                        <h3 className="font-medium text-gray-900">{debtor.userName}</h3>
+                        {isAmecicloCoordinator && getUserPhone(debtor.userId) && (
+                          <p className="text-sm text-gray-500">
+                            Telefone: {formatPhone(getUserPhone(debtor.userId)!)}
+                          </p>
+                        )}
+                        <p className="text-sm text-gray-600">
+                          {debtor.sales.length + debtor.donations.length} {debtor.sales.length + debtor.donations.length === 1 ? "item pendente" : "itens pendentes"} — 
+                          Total: <span className="text-red-600 font-semibold">R$ {debtor.totalOwed.toFixed(2)}</span>
+                        </p>
+                      </div>
+                      <span className="text-gray-400">
+                        {expandedDebtors.has(debtor.userId) ? "▲" : "▼"}
+                      </span>
+                    </button>
+
+                    {expandedDebtors.has(debtor.userId) && (
+                      <div className="px-4 pb-4 border-t border-gray-100">
+                        {debtor.sales.length > 0 && (
+                          <div className="mt-3">
+                            <h4 className="text-sm font-semibold text-gray-700 mb-2">Vendas</h4>
+                            {debtor.sales.map((sale) => (
+                              <div key={sale.id} className="flex justify-between text-sm py-1 border-b border-gray-50 last:border-0">
+                                <span className="text-gray-600">
+                                  {sale.productName}
+                                  {sale.registeredBy && (
+                                    <span className="text-blue-600 ml-1">
+                                      (via {sale.registeredByName})
+                                    </span>
+                                  )}
+                                </span>
+                                <span className="text-red-600 font-medium">R$ {sale.totalValue.toFixed(2)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {debtor.donations.length > 0 && (
+                          <div className="mt-3">
+                            <h4 className="text-sm font-semibold text-gray-700 mb-2">Doações</h4>
+                            {debtor.donations.map((donation) => (
+                              <div key={donation.id} className="flex justify-between text-sm py-1 border-b border-gray-50 last:border-0">
+                                <span className="text-gray-600">
+                                  Doação
+                                  {donation.description && ` — ${donation.description}`}
+                                  {donation.registeredBy && (
+                                    <span className="text-blue-600 ml-1">
+                                      (via {donation.registeredByName})
+                                    </span>
+                                  )}
+                                </span>
+                                <span className="text-red-600 font-medium">R$ {donation.value.toFixed(2)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
       )}
       
       <div className="mt-8">

@@ -3,6 +3,7 @@ import { Form, useSubmit } from "@remix-run/react";
 import type { EmprestimoBicicleta, SolicitacaoEmprestimoBicicleta, Bicicleta } from "~/utils/types";
 import { UserCategory } from "~/utils/types";
 import { isAuth } from "~/utils/isAuthorized";
+import { formatPhone } from "~/utils/format";
 
 interface BotaPraRodarGestaoProps {
   emprestimos: EmprestimoBicicleta[];
@@ -14,6 +15,7 @@ interface BotaPraRodarGestaoProps {
 
 export function BotaPraRodarGestao({ emprestimos, solicitacoes, bicicletas, users, userPermissions }: BotaPraRodarGestaoProps) {
   const canManage = isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS);
+  const isAmecicloCoordinator = isAuth(userPermissions, UserCategory.AMECICLO_COORDINATORS);
   const [currentUserId, setCurrentUserId] = useState<string>('');
   
   useEffect(() => {
@@ -85,8 +87,17 @@ export function BotaPraRodarGestao({ emprestimos, solicitacoes, bicicletas, user
     return bicicletas.find(b => b.codigo === codigo);
   };
 
+  const getUserPhone = (userId: string) => {
+    const user = users[userId];
+    if (!user) return null;
+    return user.ameciclo_register?.telefone
+      || user.library_register?.telefone
+      || user.personal?.telefone
+      || null;
+  };
+
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
+    <div>
       <h2 className="text-2xl font-bold mb-4">Gestão do Bota pra Rodar</h2>
       
       <div className="mb-6">
@@ -162,6 +173,11 @@ export function BotaPraRodarGestao({ emprestimos, solicitacoes, bicicletas, user
                     <p className="text-gray-600 mb-1">Código: <strong>{emp.codigo_bicicleta}</strong></p>
                     <p className="text-gray-600 mb-1">Data de saída: {emp.data_saida}</p>
                     <p className="text-gray-600 mb-1">Solicitante: <strong>{getUserName(emp.usuario_id.toString())}</strong></p>
+                    {isAmecicloCoordinator && getUserPhone(emp.usuario_id.toString()) && (
+                      <p className="text-gray-600 mb-1">
+                        Telefone: {formatPhone(getUserPhone(emp.usuario_id.toString())!)}
+                      </p>
+                    )}
                     <p className={`text-sm ${diasEmprestado > 7 ? 'text-red-600' : 'text-gray-600'}`}>
                       {diasEmprestado} dias emprestado
                     </p>
@@ -198,6 +214,11 @@ export function BotaPraRodarGestao({ emprestimos, solicitacoes, bicicletas, user
                     <p className="text-gray-600 mb-1">Código: <strong>{sol.codigo_bicicleta}</strong></p>
                     <p className="text-gray-600 mb-1">Data da solicitação: {sol.data_solicitacao}</p>
                     <p className="text-gray-600 mb-1">Solicitante: <strong>{getUserName(sol.usuario_id.toString())}</strong></p>
+                    {isAmecicloCoordinator && getUserPhone(sol.usuario_id.toString()) && (
+                      <p className="text-gray-600 mb-1">
+                        Telefone: {formatPhone(getUserPhone(sol.usuario_id.toString())!)}
+                      </p>
+                    )}
                   </div>
 
                   <div className="flex gap-2 justify-center">

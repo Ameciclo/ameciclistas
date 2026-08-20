@@ -3,6 +3,7 @@ import { Form, useActionData, useNavigation } from "@remix-run/react";
 import type { EmprestimoInventario, SolicitacaoEmprestimoInventario, ItemInventario, UsuarioComDados } from "~/utils/types";
 import { UserCategory } from "~/utils/types";
 import { isAuth } from "~/utils/isAuthorized";
+import { formatPhone } from "~/utils/format";
 
 interface RegistroEmprestimosGestaoProps {
   emprestimos: EmprestimoInventario[];
@@ -14,6 +15,7 @@ interface RegistroEmprestimosGestaoProps {
 
 export function RegistroEmprestimosGestao({ emprestimos, solicitacoes, itens, users, userPermissions }: RegistroEmprestimosGestaoProps) {
   const canManage = isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS);
+  const isAmecicloCoordinator = isAuth(userPermissions, UserCategory.AMECICLO_COORDINATORS);
   const [abaCadastro, setAbaCadastro] = useState(false);
   const actionData = useActionData();
   const [novoItem, setNovoItem] = useState({
@@ -47,6 +49,15 @@ export function RegistroEmprestimosGestao({ emprestimos, solicitacoes, itens, us
   const getUserName = (userId: number) => {
     const user = users[userId];
     return user?.name || user?.telegram_user?.first_name || `Usuário ${userId}`;
+  };
+
+  const getUserPhone = (userId: number) => {
+    const user = users[userId];
+    if (!user) return null;
+    return user.ameciclo_register?.telefone
+      || user.library_register?.telefone
+      || user.personal?.telefone
+      || null;
   };
 
   const getItemName = (codigo: string) => {
@@ -241,6 +252,11 @@ export function RegistroEmprestimosGestao({ emprestimos, solicitacoes, itens, us
                         <p className="font-semibold">{getItemName(solicitacao.codigo_item)}</p>
                         <p className="text-sm text-gray-600">Código: {solicitacao.codigo_item}</p>
                         <p className="text-sm text-gray-600">Solicitante: {getUserName(solicitacao.usuario_id)}</p>
+                        {isAmecicloCoordinator && getUserPhone(solicitacao.usuario_id) && (
+                          <p className="text-sm text-gray-500">
+                            Telefone: {formatPhone(getUserPhone(solicitacao.usuario_id)!)}
+                          </p>
+                        )}
                         <p className="text-sm text-gray-600">Data: {solicitacao.data_solicitacao}</p>
                       </div>
                       {canManage && (
@@ -288,6 +304,11 @@ export function RegistroEmprestimosGestao({ emprestimos, solicitacoes, itens, us
                         <p className="font-semibold">{getItemName(emprestimo.codigo_item)}</p>
                         <p className="text-sm text-gray-600">Código: {emprestimo.codigo_item}</p>
                         <p className="text-sm text-gray-600">Usuário: {getUserName(emprestimo.usuario_id)}</p>
+                        {isAmecicloCoordinator && getUserPhone(emprestimo.usuario_id) && (
+                          <p className="text-sm text-gray-500">
+                            Telefone: {formatPhone(getUserPhone(emprestimo.usuario_id)!)}
+                          </p>
+                        )}
                         <p className="text-sm text-gray-600">Data de saída: {emprestimo.data_saida}</p>
                       </div>
                       {canManage && (
