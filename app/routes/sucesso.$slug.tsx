@@ -104,6 +104,11 @@ const messages = {
     message: "O novo item foi adicionado ao inventário.",
     actions: [{ label: "📦 Voltar ao Registro de Empréstimos", to: "/registro-emprestimos/gestao" }],
   },
+  "workgroup-atualizado": {
+    title: "✅ Grupo de Trabalho atualizado com sucesso!",
+    message: "As informações do grupo foram salvas.",
+    actions: [{ label: "👥 Voltar à Gestão de Grupos", to: "/grupos-de-trabalho/gestao" }],
+  },
 };
 
 type MessageKey = keyof typeof messages; // Define as chaves válidas de `messages`

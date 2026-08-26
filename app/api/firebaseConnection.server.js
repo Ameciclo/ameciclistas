@@ -1020,3 +1020,41 @@ export async function registrarDevolucaoInventario(emprestimoId) {
     }
   });
 }
+
+export async function getWorkgroups() {
+  try {
+    const ref = db.ref("workgroups");
+    const snapshot = await ref.once("value");
+    const data = snapshot.val();
+
+    if (!data) {
+      return [];
+    }
+
+    return Object.keys(data).map((key) => ({
+      firebaseKey: key,
+      name: key,
+      ...data[key],
+    }));
+  } catch (error) {
+    console.error("Erro ao buscar grupos de trabalho:", error);
+    return [];
+  }
+}
+
+export async function updateWorkgroupMeta(workgroupKey, meta) {
+  const ref = db.ref(`workgroups/${workgroupKey}`);
+  await ref.update(meta);
+  return true;
+}
+
+export async function getWorkgroupByName(name) {
+  try {
+    const ref = db.ref(`workgroups/${name}`);
+    const snapshot = await ref.once("value");
+    return snapshot.val();
+  } catch (error) {
+    console.error("Erro ao buscar grupo de trabalho:", error);
+    return null;
+  }
+}

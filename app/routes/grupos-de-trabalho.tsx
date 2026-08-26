@@ -1,5 +1,5 @@
 import { useLoaderData } from "@remix-run/react";
-import { UserCategory } from "~/utils/types";
+import { UserCategory, FirebaseWorkgroup } from "~/utils/types";
 import { CardList } from "~/components/CardsList";
 import { BackButton } from "~/components/Forms/Buttons";
 import { requireAuth } from "~/utils/authMiddleware";
@@ -11,22 +11,16 @@ export const loader = requireAuth(UserCategory.AMECICLISTAS)(originalLoader);
 export default function GruposTrabalho() {
   const { workgroups } = useLoaderData<typeof loader>();
 
-  // Mapear cores para as categorias
-  const categoryColors: Record<string, string> = {
-    incidir: "#EF4444", // Vermelho
-    cultuar: "#3B82F6", // Azul
-    articular: "#10B981", // Verde
-  };
-
-  // Transformar grupos de trabalho em formato para o CardList
-  const cardItems = (workgroups || []).map((group) => ({
-    title: group.name || '',
-    description: group.description || '',
-    imageUrl: group.icon?.url,
-    linkUrl: group.telegram_url || '',
+  const cardItems = (workgroups || []).map((group: FirebaseWorkgroup) => ({
+    title: group.title || group.name,
+    description: group.description || "",
+    imageUrl: group.iconUrl
+      ? `/api/tg-icon?group=${encodeURIComponent(group.firebaseKey)}`
+      : undefined,
+    linkUrl: group.inviteLink || "",
     linkText: "Entrar no Grupo",
-    badge: group.directive || '',
-    badgeColor: categoryColors[group.directive?.toLowerCase()] || "gray",
+    badge: group.memberCount ? `${group.memberCount} membros` : "",
+    badgeColor: "teal",
   }));
 
   return (

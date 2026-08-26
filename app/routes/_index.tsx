@@ -70,6 +70,12 @@ const links = [
     requiredPermission: UserCategory.AMECICLISTAS,
   },
   {
+    to: "/grupos-de-trabalho/gestao",
+    label: "Gestão de Grupos de Trabalho",
+    icon: "🗂️",
+    requiredPermission: UserCategory.AMECICLO_COORDINATORS,
+  },
+  {
     to: "/user",
     label: "Suas informações",
     icon: "⚙️",

@@ -21,7 +21,7 @@ import FormTitle from "~/components/Forms/FormTitle";
 import TextInput from "~/components/Forms/Inputs/TextInput";
 
 export default function CriarEvento() {
-  const { usersInfo, currentUserCategories } = useLoaderData<typeof loader>();
+  const { usersInfo, currentUserCategories, workgroups } = useLoaderData<typeof loader>();
   const { userPermissions, isDevMode, devUser } = useAuth();
   const [user, setUser] = useState<UserData | null>({} as UserData);
   const [name, setName] = useState<string>("");
@@ -157,58 +157,10 @@ export default function CriarEvento() {
             value: "",
             label: "Selecione um Grupo",
           },
-          {
-            value: "-1001163972258",
-            label: "Incidência",
-          },
-          {
-            value: "-1001434654374",
-            label: "Pesquisa",
-          },
-          {
-            value: "-1001262630444",
-            label: "Formação Externa",
-          },
-          {
-            value: "-1001283224155",
-            label: "Interpautas",
-          },
-          {
-            value: "-1001387463477",
-            label: "Escola de Cicloativismo",
-          },
-          {
-            value: "-1002002954299",
-            label: "Cultura",
-          },
-          {
-            value: "-1001383160179",
-            label: "Coordenacao",
-          },
-          {
-            value: "-1001378328092",
-            label: "Secretaria",
-          },
-          {
-            value: "-1002230503739",
-            label: "Financeiro",
-          },
-          {
-            value: "-1001111602370",
-            label: "Captação",
-          },
-          {
-            value: "-1001443689418",
-            label: "Comunicação",
-          },
-          {
-            value: "-1001485248506",
-            label: "Tecnologia",
-          },
-          {
-            value: "-1001383160179",
-            label: "Conselho Político",
-          },
+          ...(workgroups || []).map((group: any) => ({
+            value: group.chatId,
+            label: group.title || group.name,
+          })),
         ]}
       />
 
