@@ -70,12 +70,6 @@ const links = [
     requiredPermission: UserCategory.AMECICLISTAS,
   },
   {
-    to: "/grupos-de-trabalho/gestao",
-    label: "Gestão de Grupos de Trabalho",
-    icon: "🗂️",
-    requiredPermission: UserCategory.AMECICLO_COORDINATORS,
-  },
-  {
     to: "/user",
     label: "Suas informações",
     icon: "⚙️",
@@ -187,9 +181,11 @@ export default function Index() {
           if (link.to === '/boletim-informativo' && isInTelegram) return null;
           
           const hasGestao = ['biblioteca', 'bota-pra-rodar', 'registro-emprestimos', 'links-uteis'].some(path => link.to.includes(path));
+          const isGruposTrabalho = link.to.includes('grupos-de-trabalho');
           const isRecursosIndependentes = link.to.includes('recursos-independentes');
           const hasEstatisticas = ['biblioteca', 'bota-pra-rodar'].some(path => link.to.includes(path));
-          const showGestaoButton = hasGestao && isAuth(effectivePermissions, UserCategory.PROJECT_COORDINATORS);
+          const gestaoPermission = isGruposTrabalho ? UserCategory.AMECICLO_COORDINATORS : UserCategory.PROJECT_COORDINATORS;
+          const showGestaoButton = (hasGestao || isGruposTrabalho) && isAuth(effectivePermissions, gestaoPermission);
           const showRecursosButtons = isRecursosIndependentes && isAuth(effectivePermissions, UserCategory.AMECICLISTAS);
           const showEstatisticasButton = hasEstatisticas;
           
@@ -212,7 +208,7 @@ export default function Index() {
               )}
               {showGestaoButton && (
                 <Link
-                  to={`${link.to}/gestao`}
+                  to={webUser ? `${link.to}/gestao` : (user?.id ? `${link.to}/gestao?userId=${user.id}` : `${link.to}/gestao`)}
                   className="bg-orange-500 text-white px-3 py-3 rounded-md hover:bg-orange-600 transition-colors text-lg block no-underline flex items-center justify-center"
                   title="Gestão"
                 >

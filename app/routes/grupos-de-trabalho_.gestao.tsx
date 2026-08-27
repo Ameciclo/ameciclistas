@@ -1,24 +1,20 @@
-import { json, redirect, type ActionFunctionArgs, type LoaderFunctionArgs } from "@remix-run/node";
+import { json, redirect, type ActionFunctionArgs } from "@remix-run/node";
 import { useLoaderData, useFetcher } from "@remix-run/react";
 import { UserCategory, type FirebaseWorkgroup } from "~/utils/types";
 import { isAuth } from "~/utils/isAuthorized";
-import { getUserPermissions } from "~/utils/authMiddleware";
+import { getUserPermissions, requireAuth } from "~/utils/authMiddleware";
 import { getWorkgroups, updateWorkgroupMeta } from "~/api/firebaseConnection.server";
 import { BackButton } from "~/components/Forms/Buttons";
 import FormTitle from "~/components/Forms/FormTitle";
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  const { userPermissions } = await getUserPermissions(request);
+export const loader = requireAuth(UserCategory.AMECICLO_COORDINATORS)(
+  async () => {
+    const workgroups: FirebaseWorkgroup[] = await getWorkgroups();
+    const sorted = [...workgroups].sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
 
-  if (!isAuth(userPermissions, UserCategory.AMECICLO_COORDINATORS)) {
-    return redirect("/");
+    return json({ workgroups: sorted });
   }
-
-  const workgroups: FirebaseWorkgroup[] = await getWorkgroups();
-  const sorted = [...workgroups].sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
-
-  return json({ workgroups: sorted });
-}
+);
 
 const sanitizeLabel = (label: string) =>
   label.trim().replace(/[.#$/[\]]/g, "").toLowerCase();
@@ -90,7 +86,7 @@ export default function GruposTrabalhoGestao() {
       </p>
 
       <div className="space-y-6">
-        {workgroups.map((group) => {
+        {workgroups.map((group: FirebaseWorkgroup) => {
           const labels = Object.keys(group.labels || {});
 
           return (
