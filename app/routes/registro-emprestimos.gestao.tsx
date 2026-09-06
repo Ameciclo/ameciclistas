@@ -4,7 +4,7 @@ import { useAuth } from "~/utils/useAuth";
 import { UserCategory, type ItemInventario, type EmprestimoInventario } from "~/utils/types";
 import { isAuth } from "~/utils/isAuthorized";
 import { getUserPermissions } from "~/utils/authMiddleware";
-import { getItensInventario, getEmprestimosInventario, getSolicitacoesInventario, getUsersFirebase, aprovarSolicitacaoInventario, rejeitarSolicitacaoInventario, registrarDevolucaoInventario, cadastrarItemInventario, saveProduct } from "~/api/firebaseConnection.server";
+import { getItensInventario, getEmprestimosInventario, getSolicitacoesInventario, getUsersFirebase, aprovarSolicitacaoInventario, rejeitarSolicitacaoInventario, registrarDevolucaoInventario, cadastrarItemInventario, saveProduct, editarItemInventario, excluirItemInventario, excluirEmprestimoInventario } from "~/api/firebaseConnection.server";
 import { RegistroEmprestimosGestao } from "~/components/RegistroEmprestimosGestao";
 import { BackButton } from "~/components/Forms/Buttons";
 
@@ -107,6 +107,85 @@ export async function action({ request }: ActionFunctionArgs) {
       }
 
       return json({ success: cadastrarAluguel ? "Item cadastrado no inventário e como aluguel!" : "Item cadastrado com sucesso!" });
+    }
+
+    if (action === "editar_item") {
+      if (!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) {
+        return json({ error: "Sem permissão" }, { status: 403 });
+      }
+
+      const codigoOriginal = formData.get("codigo_original") as string;
+      const codigoNovo = formData.get("codigo") as string;
+      const dadosItem = {
+        codigo: codigoNovo,
+        nome: formData.get("nome") as string,
+        categoria: formData.get("categoria") as string,
+        subcategoria: formData.get("subcategoria") as string || "",
+        detalhamento: formData.get("detalhamento") as string || "",
+        descricao: formData.get("descricao") as string || ""
+      };
+
+      if (codigoNovo !== codigoOriginal) {
+        const emprestimosData = await getEmprestimosInventario();
+        const emprestimos = emprestimosData ? Object.values(emprestimosData) : [];
+        const solicitacoesData = await getSolicitacoesInventario();
+        const solicitacoes = solicitacoesData ? Object.values(solicitacoesData) : [];
+
+        const temEmprestimoAtivo = emprestimos.some((emp: any) =>
+          emp.codigo_item === codigoOriginal && emp.status === 'emprestado'
+        );
+        const temSolicitacaoPendente = solicitacoes.some((sol: any) =>
+          sol.codigo_item === codigoOriginal && sol.status === 'pendente'
+        );
+
+        if (temEmprestimoAtivo) {
+          return json({ error: "Não é possível alterar o código de um item emprestado. Registre a devolução primeiro." }, { status: 400 });
+        }
+        if (temSolicitacaoPendente) {
+          return json({ error: "Não é possível alterar o código de um item com solicitação pendente. Rejeite a solicitação primeiro." }, { status: 400 });
+        }
+      }
+
+      await editarItemInventario(codigoOriginal, dadosItem);
+      return json({ success: "Item atualizado com sucesso!" });
+    }
+
+    if (action === "excluir_item") {
+      if (!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) {
+        return json({ error: "Sem permissão" }, { status: 403 });
+      }
+
+      const codigo = formData.get("codigo") as string;
+      const emprestimosData = await getEmprestimosInventario();
+      const emprestimos = emprestimosData ? Object.values(emprestimosData) : [];
+      const solicitacoesData = await getSolicitacoesInventario();
+      const solicitacoes = solicitacoesData ? Object.values(solicitacoesData) : [];
+
+      const temEmprestimoAtivo = emprestimos.some((emp: any) =>
+        emp.codigo_item === codigo && emp.status === 'emprestado'
+      );
+      const temSolicitacaoPendente = solicitacoes.some((sol: any) =>
+        sol.codigo_item === codigo && sol.status === 'pendente'
+      );
+
+      if (temEmprestimoAtivo) {
+        return json({ error: "Não é possível excluir um item emprestado. Registre a devolução primeiro." }, { status: 400 });
+      }
+      if (temSolicitacaoPendente) {
+        return json({ error: "Não é possível excluir um item com solicitação pendente. Rejeite a solicitação primeiro." }, { status: 400 });
+      }
+
+      await excluirItemInventario(codigo);
+      return json({ success: "Item excluído com sucesso!" });
+    }
+
+    if (action === "excluir_emprestimo") {
+      if (!isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS)) {
+        return json({ error: "Sem permissão" }, { status: 403 });
+      }
+      const emprestimoId = formData.get("emprestimo_id") as string;
+      await excluirEmprestimoInventario(emprestimoId);
+      return json({ success: "Registro de empréstimo excluído com sucesso!" });
     }
 
     return json({ error: "Ação não reconhecida" }, { status: 400 });

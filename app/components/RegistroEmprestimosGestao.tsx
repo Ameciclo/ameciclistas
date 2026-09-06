@@ -16,7 +16,7 @@ interface RegistroEmprestimosGestaoProps {
 export function RegistroEmprestimosGestao({ emprestimos, solicitacoes, itens, users, userPermissions }: RegistroEmprestimosGestaoProps) {
   const canManage = isAuth(userPermissions, UserCategory.PROJECT_COORDINATORS);
   const isAmecicloCoordinator = isAuth(userPermissions, UserCategory.AMECICLO_COORDINATORS);
-  const [abaCadastro, setAbaCadastro] = useState(false);
+  const [aba, setAba] = useState<'gestao' | 'itens' | 'cadastro'>('gestao');
   const actionData = useActionData();
   const [novoItem, setNovoItem] = useState({
     codigo: "",
@@ -28,11 +28,21 @@ export function RegistroEmprestimosGestao({ emprestimos, solicitacoes, itens, us
   });
   const [cadastrarAluguel, setCadastrarAluguel] = useState(false);
   const [precoAluguel, setPrecoAluguel] = useState("");
+  const [buscaItem, setBuscaItem] = useState("");
+  const [itemEditando, setItemEditando] = useState<ItemInventario | null>(null);
+  const [dadosEdicao, setDadosEdicao] = useState({
+    codigo: "",
+    nome: "",
+    categoria: "",
+    subcategoria: "",
+    detalhamento: "",
+    descricao: ""
+  });
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting" && navigation.formData?.get("action") === "cadastrar_item";
 
   useEffect(() => {
-    if (actionData?.success && abaCadastro) {
+    if (actionData?.success) {
       setNovoItem({
         codigo: "",
         nome: "",
@@ -43,8 +53,31 @@ export function RegistroEmprestimosGestao({ emprestimos, solicitacoes, itens, us
       });
       setCadastrarAluguel(false);
       setPrecoAluguel("");
+      setItemEditando(null);
     }
-  }, [actionData, abaCadastro]);
+  }, [actionData]);
+
+  const iniciarEdicao = (item: ItemInventario) => {
+    setItemEditando(item);
+    setDadosEdicao({
+      codigo: item.codigo,
+      nome: item.nome,
+      categoria: item.categoria,
+      subcategoria: item.subcategoria || "",
+      detalhamento: item.detalhamento || "",
+      descricao: item.descricao || ""
+    });
+  };
+
+  const itensFiltrados = itens.filter(item => {
+    const termo = buscaItem.toLowerCase().trim();
+    if (!termo) return true;
+    return (
+      item.nome.toLowerCase().includes(termo) ||
+      item.codigo.toLowerCase().includes(termo) ||
+      item.categoria.toLowerCase().includes(termo)
+    );
+  });
 
   const getUserName = (userId: number) => {
     const user = users[userId];
@@ -70,11 +103,11 @@ export function RegistroEmprestimosGestao({ emprestimos, solicitacoes, itens, us
       <div className="mb-6">
         <div className="bg-gray-50 p-4 rounded-lg">
           <h3 className="font-medium text-gray-900 mb-3">Seção:</h3>
-          <div className={`grid ${canManage ? 'grid-cols-2' : 'grid-cols-1'} gap-2`}>
+          <div className={`grid ${canManage ? 'grid-cols-3' : 'grid-cols-1'} gap-2`}>
             <button
-              onClick={() => setAbaCadastro(false)}
+              onClick={() => setAba('gestao')}
               className={`py-2 px-3 rounded text-sm font-medium ${
-                !abaCadastro
+                aba === 'gestao'
                   ? "bg-teal-600 text-white"
                   : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
               }`}
@@ -83,9 +116,21 @@ export function RegistroEmprestimosGestao({ emprestimos, solicitacoes, itens, us
             </button>
             {canManage && (
               <button
-                onClick={() => setAbaCadastro(true)}
+                onClick={() => setAba('itens')}
                 className={`py-2 px-3 rounded text-sm font-medium ${
-                  abaCadastro
+                  aba === 'itens'
+                    ? "bg-teal-600 text-white"
+                    : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+                }`}
+              >
+                Itens do Inventário
+              </button>
+            )}
+            {canManage && (
+              <button
+                onClick={() => setAba('cadastro')}
+                className={`py-2 px-3 rounded text-sm font-medium ${
+                  aba === 'cadastro'
                     ? "bg-teal-600 text-white"
                     : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
                 }`}
@@ -97,21 +142,21 @@ export function RegistroEmprestimosGestao({ emprestimos, solicitacoes, itens, us
         </div>
       </div>
 
-      {abaCadastro ? (
+      {actionData?.success && (
+        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+          {actionData.success}
+        </div>
+      )}
+
+      {actionData?.error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {actionData.error}
+        </div>
+      )}
+
+      {aba === 'cadastro' ? (
         <div className="bg-white rounded-lg shadow-md p-6">
           <h3 className="text-xl font-bold mb-4">Cadastrar Novo Item</h3>
-          
-          {actionData?.success && (
-            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-              {actionData.success}
-            </div>
-          )}
-
-          {actionData?.error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-              {actionData.error}
-            </div>
-          )}
           
           <Form method="post" className="space-y-4">
             <input type="hidden" name="action" value="cadastrar_item" />
@@ -238,6 +283,169 @@ export function RegistroEmprestimosGestao({ emprestimos, solicitacoes, itens, us
             </button>
           </Form>
         </div>
+      ) : aba === 'itens' ? (
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
+            <h3 className="text-xl font-bold">Itens do Inventário ({itens.length})</h3>
+            <input
+              type="text"
+              placeholder="Buscar por nome, código ou categoria..."
+              value={buscaItem}
+              onChange={(e) => setBuscaItem(e.target.value)}
+              className="w-full sm:w-72 px-3 py-2 border border-gray-300 rounded-md"
+            />
+          </div>
+
+          {itemEditando && (
+            <div className="border border-teal-300 rounded-lg p-4 mb-6 bg-teal-50">
+              <div className="flex justify-between items-center mb-4">
+                <h4 className="font-semibold text-teal-900">Editando: {itemEditando.nome}</h4>
+                <button
+                  onClick={() => setItemEditando(null)}
+                  className="text-sm text-gray-600 hover:text-gray-800"
+                >
+                  Cancelar
+                </button>
+              </div>
+              <Form method="post" className="space-y-4">
+                <input type="hidden" name="action" value="editar_item" />
+                <input type="hidden" name="codigo_original" value={itemEditando.codigo} />
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Código *</label>
+                  <input
+                    type="text"
+                    name="codigo"
+                    value={dadosEdicao.codigo}
+                    onChange={(e) => setDadosEdicao({...dadosEdicao, codigo: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Nome *</label>
+                  <input
+                    type="text"
+                    name="nome"
+                    value={dadosEdicao.nome}
+                    onChange={(e) => setDadosEdicao({...dadosEdicao, nome: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Categoria *</label>
+                  <select
+                    name="categoria"
+                    value={dadosEdicao.categoria}
+                    onChange={(e) => setDadosEdicao({...dadosEdicao, categoria: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    required
+                  >
+                    <option value="">Selecione uma categoria</option>
+                    <option value="oficina mecânica">Oficina mecânica</option>
+                    <option value="caixotes">Caixotes</option>
+                    <option value="mobiliário">Mobiliário</option>
+                    <option value="equipamentos eletrônicos">Equipamentos eletrônicos</option>
+                    <option value="equipamentos elétricos">Equipamentos elétricos</option>
+                    <option value="equipamentos em geral">Equipamentos em geral</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Subcategoria</label>
+                  <input
+                    type="text"
+                    name="subcategoria"
+                    value={dadosEdicao.subcategoria}
+                    onChange={(e) => setDadosEdicao({...dadosEdicao, subcategoria: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Detalhamento</label>
+                  <textarea
+                    name="detalhamento"
+                    value={dadosEdicao.detalhamento}
+                    onChange={(e) => setDadosEdicao({...dadosEdicao, detalhamento: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    rows={3}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
+                  <textarea
+                    name="descricao"
+                    value={dadosEdicao.descricao}
+                    onChange={(e) => setDadosEdicao({...dadosEdicao, descricao: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    rows={2}
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-md font-semibold"
+                >
+                  Salvar Alterações
+                </button>
+              </Form>
+            </div>
+          )}
+
+          {itensFiltrados.length === 0 ? (
+            <p className="text-gray-500">Nenhum item encontrado.</p>
+          ) : (
+            <div className="space-y-4">
+              {itensFiltrados.map((item) => (
+                <div key={item.codigo} className="border border-gray-200 rounded-lg p-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-semibold">{item.nome}</p>
+                      <p className="text-sm text-gray-600">Código: {item.codigo}</p>
+                      <p className="text-sm text-gray-600">Categoria: {item.categoria}</p>
+                      {item.subcategoria && (
+                        <p className="text-sm text-gray-600">Subcategoria: {item.subcategoria}</p>
+                      )}
+                      <div className="flex items-center mt-1">
+                        <span className={`inline-block w-3 h-3 rounded-full mr-2 ${item.emprestado ? 'bg-red-500' : 'bg-green-500'}`}></span>
+                        <span className={`text-sm font-semibold ${item.emprestado ? 'text-red-600' : 'text-green-600'}`}>
+                          {item.emprestado ? 'Emprestado' : 'Disponível'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => iniciarEdicao(item)}
+                        className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
+                      >
+                        Editar
+                      </button>
+                      <Form method="post" className="inline" onSubmit={(e) => {
+                        if (!confirm(`Tem certeza que deseja excluir o item "${item.nome}" (${item.codigo})? Esta ação não pode ser desfeita.`)) {
+                          e.preventDefault();
+                        }
+                      }}>
+                        <input type="hidden" name="action" value="excluir_item" />
+                        <input type="hidden" name="codigo" value={item.codigo} />
+                        <button
+                          type="submit"
+                          className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
+                        >
+                          Apagar
+                        </button>
+                      </Form>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       ) : (
         <div className="space-y-6">
           {/* Solicitações Pendentes */}
@@ -312,16 +520,32 @@ export function RegistroEmprestimosGestao({ emprestimos, solicitacoes, itens, us
                         <p className="text-sm text-gray-600">Data de saída: {emprestimo.data_saida}</p>
                       </div>
                       {canManage && (
-                        <Form method="post" className="inline">
-                          <input type="hidden" name="action" value="registrar_devolucao" />
-                          <input type="hidden" name="emprestimo_id" value={emprestimo.id} />
-                          <button
-                            type="submit"
-                            className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
-                          >
-                            Registrar Devolução
-                          </button>
-                        </Form>
+                        <div className="flex flex-col gap-2">
+                          <Form method="post" className="inline">
+                            <input type="hidden" name="action" value="registrar_devolucao" />
+                            <input type="hidden" name="emprestimo_id" value={emprestimo.id} />
+                            <button
+                              type="submit"
+                              className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
+                            >
+                              Registrar Devolução
+                            </button>
+                          </Form>
+                          <Form method="post" className="inline" onSubmit={(e) => {
+                            if (!confirm(`Tem certeza que deseja apagar este registro de empréstimo${emprestimo.status === 'emprestado' ? ' (o item será liberado)' : ''}? Esta ação não pode ser desfeita.`)) {
+                              e.preventDefault();
+                            }
+                          }}>
+                            <input type="hidden" name="action" value="excluir_emprestimo" />
+                            <input type="hidden" name="emprestimo_id" value={emprestimo.id} />
+                            <button
+                              type="submit"
+                              className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
+                            >
+                              Apagar
+                            </button>
+                          </Form>
+                        </div>
                       )}
                     </div>
                   </div>

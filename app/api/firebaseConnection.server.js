@@ -1021,6 +1021,86 @@ export async function registrarDevolucaoInventario(emprestimoId) {
   });
 }
 
+export async function editarItemInventario(codigoOriginal, dadosItem) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const keyOriginal = sanitizeFirebaseKey(codigoOriginal);
+      const keyNova = sanitizeFirebaseKey(dadosItem.codigo);
+
+      const itemRef = db.ref(`inventario/${keyOriginal}`);
+      const itemSnapshot = await itemRef.once("value");
+      const itemAtual = itemSnapshot.val();
+
+      if (!itemAtual) {
+        return reject(new Error("Item não encontrado."));
+      }
+
+      const dadosAtualizados = {
+        ...dadosItem,
+        disponivel: itemAtual.disponivel !== false,
+        emprestado: itemAtual.emprestado === true
+      };
+
+      if (keyNova !== keyOriginal) {
+        const novoSnapshot = await db.ref(`inventario/${keyNova}`).once("value");
+        if (novoSnapshot.exists()) {
+          return reject(new Error("Já existe um item com o novo código."));
+        }
+        await db.ref(`inventario/${keyNova}`).set(dadosAtualizados);
+        await itemRef.remove();
+      } else {
+        await itemRef.update(dadosAtualizados);
+      }
+
+      resolve(true);
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+
+export async function excluirItemInventario(codigo) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const ref = db.ref(`inventario/${sanitizeFirebaseKey(codigo)}`);
+      const snapshot = await ref.once("value");
+
+      if (!snapshot.exists()) {
+        return reject(new Error("Item não encontrado."));
+      }
+
+      await ref.remove();
+      resolve(true);
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+
+export async function excluirEmprestimoInventario(emprestimoId) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const emprestimoRef = db.ref(`emprestimos_inventario/${emprestimoId}`);
+      const emprestimoSnapshot = await emprestimoRef.once("value");
+      const emprestimo = emprestimoSnapshot.val();
+
+      if (!emprestimo) {
+        return reject(new Error("Empréstimo não encontrado."));
+      }
+
+      if (emprestimo.status === 'emprestado') {
+        const itemRef = db.ref(`inventario/${sanitizeFirebaseKey(emprestimo.codigo_item)}`);
+        await itemRef.update({ disponivel: true, emprestado: false });
+      }
+
+      await emprestimoRef.remove();
+      resolve(true);
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+
 export async function getWorkgroups() {
   try {
     const ref = db.ref("workgroups");
